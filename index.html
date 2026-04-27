@@ -1,0 +1,2683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Property Portfolio</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://apis.google.com/js/api.js" async></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --border: #E2DDD4;
+  --border2: #CEC9BE;
+  --text: #1A1916;
+  --text2: #6B6760;
+  --text3: #A09D98;
+  --green: #2D5A27;
+  --green-bg: #EAF2E8;
+  --red: #8B2020;
+  --red-bg: #F5EAEA;
+  --amber: #7A4A0A;
+  --amber-bg: #FAF0E0;
+  --blue: #1A3A5C;
+  --blue-bg: #E8F0F8;
+  --purple: #3D2B6B;
+  --purple-bg: #EEEAF5;
+  --teal: #1A4A40;
+  --teal-bg: #E6F2F0;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --nav-h: 60px;
+  --header-h: 56px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+#header { height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; position: sticky; top: 0; z-index: 100; }
+#header-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); flex: 1; }
+
+#content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--bg); padding-bottom: calc(var(--nav-h) + 16px); }
+#nav { height: var(--nav-h); background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; safe-area-inset-bottom: env(safe-area-inset-bottom); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: none; cursor: pointer; color: var(--text3); padding: 8px 4px; transition: color .15s; }
+.nav-btn.active { color: var(--text); }
+.nav-icon { font-size: 18px; line-height: 1; }
+.nav-label { font-size: 9px; font-weight: 500; letter-spacing: .02em; }
+.screen { display: none; padding: 16px; }
+.screen.active { display: block; }
+#prop-sheet { position: fixed; inset: 0; z-index: 200; display: none; }
+#prop-sheet.open { display: flex; flex-direction: column; justify-content: flex-end; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+.card-title { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+.section-label { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px; }
+h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; margin-bottom: 4px; }
+h3 { font-size: 16px; font-weight: 500; }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+.metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.metric-wide { grid-column: 1/-1; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-teal { background: var(--teal-bg); color: var(--teal); }
+.badge-purple { background: var(--purple-bg); color: var(--purple); }
+.badge-grey { background: var(--surface2); color: var(--text2); }
+.info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 13px; color: var(--text2); flex-shrink: 0; }
+.info-val { font-size: 14px; text-align: right; }
+.prop-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 12px; align-items: center; transition: border-color .15s; }
+.prop-item:hover, .prop-item:active { border-color: var(--border2); }
+.prop-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.prop-name { font-size: 15px; font-weight: 500; }
+.prop-addr { font-size: 13px; color: var(--text2); margin-top: 1px; }
+.prop-certs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.prop-arrow { color: var(--text3); font-size: 18px; flex-shrink: 0; }
+#prop-detail { position: fixed; inset: 0; z-index: 150; background: var(--bg); display: none; flex-direction: column; }
+#prop-detail.open { display: flex; }
+#detail-header { height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+.back-btn { font-size: 15px; color: var(--text2); background: none; border: none; cursor: pointer; padding: 8px 0; display: flex; align-items: center; gap: 4px; }
+#detail-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; padding-bottom: 32px; }
+.detail-tabs { display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin-bottom: 16px; scrollbar-width: none; }
+.detail-tabs::-webkit-scrollbar { display: none; }
+.dtab { font-size: 13px; font-weight: 500; padding: 7px 14px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.dtab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.dtab-content { display: none; }
+.dtab-content.active { display: block; }
+.txn-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.txn-row:last-child { border-bottom: none; }
+.txn-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.txn-body { flex: 1; min-width: 0; }
+.txn-desc { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txn-meta { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.txn-amount { font-size: 15px; font-weight: 500; flex-shrink: 0; }
+.txn-income { color: var(--green); }
+.txn-expense { color: var(--red); }
+.upload-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius); padding: 28px 16px; text-align: center; cursor: pointer; background: var(--surface2); margin-bottom: 10px; }
+.upload-zone p { font-size: 14px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.upload-zone span { font-size: 12px; color: var(--text3); }
+.upload-input { display: none; }
+.form-field { margin-bottom: 12px; }
+.form-field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  -webkit-appearance: none; appearance: none; outline: none;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--border2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; border: none; margin-top: 4px; }
+.btn-primary { background: var(--text); color: var(--bg); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--text2); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-box { padding: 20px; text-align: center; font-size: 14px; color: var(--text2); }
+.cert-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.cert-info { flex: 1; min-width: 0; }
+.cert-name { font-size: 14px; font-weight: 500; }
+.cert-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.icon-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.alert { background: var(--amber-bg); border: 1px solid #E8C878; border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; font-size: 13px; color: var(--amber); }
+.alert-red { background: var(--red-bg); border-color: #E8AAAA; color: var(--red); }
+#modal { position: fixed; inset: 0; z-index: 300; display: none; flex-direction: column; justify-content: flex-end; }
+#modal.open { display: flex; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.4); }
+.modal-panel { position: relative; background: var(--surface); border-radius: 20px 20px 0 0; padding: 16px 16px 40px; max-height: 90vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 16px; }
+.modal-title { font-size: 16px; font-weight: 500; margin-bottom: 16px; }
+.empty { text-align: center; padding: 32px 16px; color: var(--text2); font-size: 14px; }
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+.alert-strip { background: var(--red-bg); border: 1px solid #E8AAAA; border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 10px; font-size: 13px; color: var(--red); font-weight: 500; }
+.alert-strip-amber { background: var(--amber-bg); border-color: #E8C878; color: var(--amber); }
+.toggle-bar { display: flex; background: var(--surface2); border-radius: 20px; padding: 3px; margin-bottom: 14px; }
+.toggle-btn { flex: 1; padding: 7px; text-align: center; border-radius: 17px; font-size: 13px; font-weight: 500; border: none; background: none; color: var(--text2); cursor: pointer; transition: all .15s; }
+.toggle-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+@media (min-width: 600px) {
+  #content { max-width: 680px; margin: 0 auto; }
+  #nav { max-width: 680px; margin: 0 auto; }
+  .metrics { grid-template-columns: repeat(4, 1fr); }
+}
+.label-xs { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em }
+.label-xs-mb { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px }
+.text-sm { font-size:12px;color:var(--text2) }
+.text-sm-medium { font-size:13px;font-weight:500 }
+.text-md-medium { font-size:14px;font-weight:500 }
+.icon-btn-sm { width:24px;height:24px;font-size:11px }
+.share-val { font-size:11px;color:var(--blue);font-weight:500 }
+</style>
+</head>
+<body>
+<!-- Login overlay -->
+<div id="login-screen" style="position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+  <div style="font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:8px;color:var(--text)">Property Portfolio</div>
+  <div style="font-size:14px;color:var(--text2);margin-bottom:40px;text-align:center">Sign in to load and sync your data with Google Drive</div>
+  <button id="signin-btn" onclick="signIn()" style="display:flex;align-items:center;gap:12px;padding:12px 24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:15px;font-weight:500;color:var(--text)">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+    Sign in with Google
+  </button>
+  <div id="login-error" style="margin-top:16px;font-size:13px;color:var(--red);display:none"></div>
+  <div style="margin-top:48px;font-size:12px;color:var(--text3);text-align:center;max-width:280px">Your data is stored in your own Google Drive. Nothing is shared with third parties.</div>
+</div>
+<!-- Sync status -->
+<div id="sync-status" style="position:fixed;bottom:calc(var(--nav-h)+8px);right:12px;z-index:90;font-size:11px;padding:4px 10px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text2);display:none;pointer-events:none"></div>
+<div id="app">
+  <div id="header">
+    <div id="header-title">Portfolio</div>
+    <select id="owner-select" onchange="setOwnerMode(this.value)" style="font-size:12px;font-weight:500;padding:4px 8px;border:1px solid var(--border);border-radius:20px;background:var(--surface2);color:var(--text2);cursor:pointer;flex-shrink:0;max-width:130px;-webkit-appearance:none;appearance:none;text-align:center;outline:none">
+      <option value="">All owners</option>
+    </select>
+    <button onclick="openOwnerModal()" title="Manage owners" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)" aria-label="Manage owners">✎</button>
+    <button onclick="signOut()" title="Sign out" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)">⏻</button>
+  </div>
+  <div id="content">
+    <div id="screen-dashboard" class="screen active"></div>
+    <div id="screen-properties" class="screen"></div>
+    <div id="screen-finance" class="screen"></div>
+    <div id="screen-mtd" class="screen"></div>
+    <div id="screen-maintenance" class="screen"></div>
+    <div id="screen-docs" class="screen"></div>
+  </div>
+  <div id="nav">
+    <button class="nav-btn active" onclick="showScreen('dashboard',this)" data-screen="dashboard">
+      <span class="nav-icon">⌂</span><span class="nav-label">Overview</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('properties',this)" data-screen="properties">
+      <span class="nav-icon">⊞</span><span class="nav-label">Properties</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('finance',this)" data-screen="finance">
+      <span class="nav-icon">£</span><span class="nav-label">Finance</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('maintenance',this)" data-screen="maintenance">
+      <span class="nav-icon">🔧</span><span class="nav-label">Maintenance</span>
+    </button>
+    <button class="nav-btn" onclick="showScreen('docs',this)" data-screen="docs">
+      <span class="nav-icon">↑</span><span class="nav-label">Upload</span>
+    </button>
+  </div>
+</div>
+
+<!-- Property detail overlay -->
+<div id="prop-detail">
+  <div id="detail-header">
+    <button class="back-btn" onclick="closePropDetail()">← Back</button>
+    <div style="flex:1;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="detail-prop-name"></div>
+  </div>
+  <div id="detail-content"></div>
+</div>
+
+<!-- Modal (forms) -->
+<div id="modal">
+  <div class="modal-backdrop" onclick="closeModal()"></div>
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const PROP_COLORS = ['#2D5A27','#1A3A5C','#7A4A0A','#3D2B6B','#1A4A40'];
+const CAT_LABELS = {
+  'rental-income':'Rental income',
+  'premises':'Premises costs',
+  'repairs':'Repairs & maintenance',
+  'financial':'Financial costs',
+  'professional':'Professional fees',
+  'services':'Cost of services',
+  'travel':'Travel costs',
+  'other-allowable':'Other allowable expenses',
+};
+const CAT_BADGES = {
+  'rental-income':'badge-green',
+  'premises':'badge-blue',
+  'repairs':'badge-red',
+  'financial':'badge-purple',
+  'professional':'badge-amber',
+  'services':'badge-teal',
+  'travel':'badge-grey',
+  'other-allowable':'badge-grey',
+};
+const CAT_LEGACY = {
+  rent:'rental-income', repairs:'repairs', mortgage:'financial',
+  insurance:'premises', fees:'professional', utilities:'premises', other:'other-allowable'
+};
+const CERT_TYPES = ['Gas Safety','EPC','EICR','PAT Testing','Legionella','HMO Licence','Other'];
+
+const DEFAULT_PROPS = [
+  {id:'p1',name:'14 Maple Close',address:'Manchester, M20 3RD',status:'let',archived:false,color:PROP_COLORS[0],ownershipShare:100,
+   tenant:'James Carter',leaseStart:'2024-02-01',leaseEnd:'2025-01-31',deposit:'£2,175 (DPS)',tenantEmail:'j.carter@email.com',tenantPhone:'07712 345678',
+   rent:1450,lastRentIncrease:'2024-02-01',lastRentAmount:1400,purchase:215000,value:240000,mortgage:680,lender:'Nationwide',
+   agent:'Kepler Lettings',agentTel:'0161 900 1234',gasEngineer:'Mike Bowen Gas — 07891 123456',electrician:'JS Electrical — 07700 654321',solicitor:'Fletcher & Co',insurance:'Zurich LL — ZLL29341'},
+  {id:'p2',name:'7 Birchwood Ave',address:'Manchester, M14 6TZ',status:'let',archived:false,color:PROP_COLORS[1],ownershipShare:50,
+   tenant:'Sunita Patel',leaseStart:'2023-09-01',leaseEnd:'2024-08-31',deposit:'£2,700 (TDS)',tenantEmail:'s.patel@email.com',tenantPhone:'07834 987654',
+   rent:1800,lastRentIncrease:'2023-09-01',lastRentAmount:1700,purchase:285000,value:310000,mortgage:920,lender:'Halifax',
+   agent:'Direct let',agentTel:'—',gasEngineer:'Greenfield Gas — 07912 000111',electrician:'NW Electric — 07600 111222',solicitor:'Davies Solicitors',insurance:'LV= LL — LV88712'},
+  {id:'p3',name:'22 Thornton Rd',address:'Salford, M6 8PL',status:'vacant',archived:false,color:PROP_COLORS[2],ownershipShare:75,
+   tenant:'—',leaseStart:'—',leaseEnd:'—',deposit:'—',tenantEmail:'—',tenantPhone:'—',
+   rent:1000,lastRentIncrease:'',lastRentAmount:0,purchase:175000,value:195000,mortgage:540,lender:'Barclays',
+   agent:'Salford Lettings Co',agentTel:'0161 700 5678',gasEngineer:'City Gas — 07922 333444',electrician:'PowerRight — 07511 222333',solicitor:'Fletcher & Co',insurance:'Aviva LL — AV44210'}
+];
+const DEFAULT_OWNERS = [];
+const DEFAULT_TXNS = [
+  {id:'t1',date:'2025-04-01',type:'income',desc:'Monthly rent — April',prop:'p1',cat:'rental-income',amount:1450,supplier:'James Carter'},
+  {id:'t2',date:'2025-04-01',type:'income',desc:'Monthly rent — April',prop:'p2',cat:'rental-income',amount:1800,supplier:'Sunita Patel'},
+  {id:'t3',date:'2025-04-04',type:'expense',desc:'Leaking tap repair',prop:'p1',cat:'repairs',amount:120,supplier:'Mike Bowen'},
+  {id:'t4',date:'2025-03-25',type:'expense',desc:'Buildings insurance renewal',prop:'p2',cat:'premises',amount:380,supplier:'LV='},
+  {id:'t5',date:'2025-03-01',type:'expense',desc:'Mortgage payment',prop:'p3',cat:'financial',amount:540,supplier:'Barclays'},
+  {id:'t6',date:'2025-03-01',type:'income',desc:'Monthly rent — March',prop:'p1',cat:'rental-income',amount:1450,supplier:'James Carter'},
+  {id:'t7',date:'2025-03-01',type:'income',desc:'Monthly rent — March',prop:'p2',cat:'rental-income',amount:1800,supplier:'Sunita Patel'},
+];
+const DEFAULT_RENT_HISTORY = [
+  {id:'rh1',propId:'p1',amount:1300,startDate:'2022-02-01',endDate:'2023-01-31',tenant:'James Carter',notes:'Initial tenancy'},
+  {id:'rh2',propId:'p1',amount:1400,startDate:'2023-02-01',endDate:'2024-01-31',tenant:'James Carter',notes:'Renewal +7.7%'},
+  {id:'rh3',propId:'p1',amount:1450,startDate:'2024-02-01',endDate:null,tenant:'James Carter',notes:'Current'},
+  {id:'rh4',propId:'p2',amount:1700,startDate:'2023-09-01',endDate:'2024-08-31',tenant:'Sunita Patel',notes:'Initial tenancy'},
+  {id:'rh5',propId:'p2',amount:1800,startDate:'2024-09-01',endDate:null,tenant:'Sunita Patel',notes:'Renewal +5.9%'},
+];
+const DEFAULT_CERTS = [
+  {id:'c1',propId:'p1',type:'Gas Safety',issueDate:'2024-01-15',expiryDate:'2025-01-15',issuer:'Mike Bowen Gas',notes:'Annual check completed'},
+  {id:'c2',propId:'p1',type:'EPC',issueDate:'2022-06-10',expiryDate:'2025-08-10',issuer:'Greenfield Surveys',notes:'Band C (72)',epcRating:'C'},
+  {id:'c3',propId:'p1',type:'EICR',issueDate:'2024-03-20',expiryDate:'2029-03-20',issuer:'JS Electrical',notes:'Satisfactory'},
+  {id:'c4',propId:'p2',type:'Gas Safety',issueDate:'2024-09-01',expiryDate:'2025-09-01',issuer:'Greenfield Gas',notes:''},
+  {id:'c5',propId:'p2',type:'EPC',issueDate:'2022-11-15',expiryDate:'2027-11-15',issuer:'EPC Direct',notes:'Band B (84)',epcRating:'B'},
+  {id:'c6',propId:'p2',type:'EICR',issueDate:'2020-06-01',expiryDate:'2025-06-01',issuer:'NW Electric',notes:'Due for renewal'},
+  {id:'c7',propId:'p3',type:'Gas Safety',issueDate:'2024-12-01',expiryDate:'2025-12-01',issuer:'City Gas',notes:''},
+  {id:'c8',propId:'p3',type:'EPC',issueDate:'2023-05-10',expiryDate:'2028-05-10',issuer:'EPC Direct',notes:'Band D (55)',epcRating:'D'},
+  {id:'c9',propId:'p3',type:'EICR',issueDate:'2025-01-15',expiryDate:'2030-01-15',issuer:'PowerRight',notes:''},
+];
+const DEFAULT_APPLIANCES = [
+  {id:'a1',propId:'p1',name:'Boiler',make:'Worcester Bosch',model:'Greenstar 30i',serial:'WB7382910',location:'Kitchen',notes:'Installed 2021, serviced annually'},
+  {id:'a2',propId:'p1',name:'Fridge Freezer',make:'Samsung',model:'RB38T634DB1',serial:'0DM71BDQ200123A',location:'Kitchen',notes:''},
+  {id:'a3',propId:'p2',name:'Boiler',make:'Vaillant',model:'ecoTEC Plus 831',serial:'VL019283740',location:'Utility',notes:''},
+  {id:'a4',propId:'p2',name:'Dishwasher',make:'Bosch',model:'SMS46KI01G',serial:'HN220110382819',location:'Kitchen',notes:''},
+];
+const DEFAULT_MAINT = [
+  {id:'m1',propId:'p1',desc:'Leaking bathroom tap',date:'2025-04-04',status:'open',cost:0,notes:'Plumber booked'},
+  {id:'m2',propId:'p1',desc:'Boiler pressure drop',date:'2025-03-12',status:'resolved',cost:120,notes:'Repressurise and check'},
+  {id:'m3',propId:'p2',desc:'Damp patch in bedroom',date:'2025-02-20',status:'open',cost:0,notes:'Investigating cause'},
+  {id:'m4',propId:'p3',desc:'Redecoration void work',date:'2025-04-01',status:'open',cost:0,notes:'In progress'},
+];
+let state = {
+  props: [...DEFAULT_PROPS],
+  txns: [...DEFAULT_TXNS],
+  certs: [...DEFAULT_CERTS],
+  appliances: [...DEFAULT_APPLIANCES],
+  maint: [...DEFAULT_MAINT],
+  owners: [...DEFAULT_OWNERS],
+  rentHistory: [...DEFAULT_RENT_HISTORY],
+  filterProp: null,
+  selectedOwner: null,
+  currentScreen: 'dashboard',
+  financeTab: 'all',
+  dashPeriod: 'ytd',
+  shareMode: false,
+  showArchived: false,
+};
+const CLIENT_ID = '434046440829-4kr09lbdl6u5eu03h92g5obb12nc72fd.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const DATA_FILENAME = 'portfolio-data.json';
+const DRIVE_FOLDER_NAME = 'Property Portfolio';
+
+let gAccessToken = null;
+let gDriveDataFileId = null;
+let gDriveFolderIds = {}; // { rootId, [propName]: folderId }
+let saveTimer = null;
+
+function showSync(msg, isError) {
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.borderColor = isError ? 'var(--red-bg)' : 'var(--border)';
+  el.style.color = isError ? 'var(--red)' : 'var(--text2)';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display='none'; }, isError ? 5000 : 2500);
+}
+
+function signIn() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if(resp.error) {
+        const err = document.getElementById('login-error');
+        if(err) { err.textContent = 'Sign-in failed: ' + resp.error; err.style.display='block'; }
+        return;
+      }
+      gAccessToken = resp.access_token;
+      document.getElementById('login-screen').style.display = 'none';
+      showSync('⟳ Loading from Drive…');
+      await initDrive();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function signOut() {
+  if(gAccessToken) google.accounts.oauth2.revoke(gAccessToken);
+  gAccessToken = null;
+  gDriveDataFileId = null;
+  gDriveFolderIds = {};
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function driveRequest(url, options={}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': 'Bearer ' + gAccessToken,
+      ...(options.headers||{})
+    }
+  });
+  if(!res.ok) {
+    const text = await res.text();
+    throw new Error(`Drive API ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
+async function findOrCreateFolder(name, parentId) {
+  const q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
+  const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
+  if(result.files && result.files.length > 0) return result.files[0].id;
+  const created = await driveRequest('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] })
+  });
+  return created.id;
+}
+
+async function initDrive() {
+  try {
+    const rootId = await findOrCreateFolder(DRIVE_FOLDER_NAME, 'root');
+    gDriveFolderIds.root = rootId;
+    const q = `name='${DATA_FILENAME}' and '${rootId}' in parents and trashed=false`;
+    const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
+
+    if(result.files && result.files.length > 0) {
+      gDriveDataFileId = result.files[0].id;
+      const data = await fetch(`https://www.googleapis.com/drive/v3/files/${gDriveDataFileId}?alt=media`, {
+        headers: { 'Authorization': 'Bearer ' + gAccessToken }
+      }).then(r => r.json());
+      const keys = ['props','txns','certs','appliances','maint','owners','rentHistory'];
+      keys.forEach(k => { if(data[k]) state[k] = data[k]; });
+      state.txns = state.txns.map(t=>({...t, cat: CAT_LEGACY[t.cat]||t.cat}));
+      showSync('✓ Loaded from Drive');
+    } else {
+      showSync('✓ New portfolio created');
+      await saveToDrive();
+    }
+  } catch(e) {
+    console.error('Drive init error:', e);
+    showSync('⚠ Drive error — using local data', true);
+    await loadFromLocal();
+  }
+  renderAll();
+}
+
+async function saveToDrive() {
+  if(!gAccessToken) return;
+  const keys = ['props','txns','certs','appliances','maint','owners','rentHistory'];
+  const data = {};
+  keys.forEach(k => { data[k] = state[k]; });
+  const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+
+  try {
+    if(gDriveDataFileId) {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gDriveDataFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Bearer ' + gAccessToken, 'Content-Type': 'application/json' },
+        body: blob
+      });
+    } else {
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({
+        name: DATA_FILENAME,
+        parents: [gDriveFolderIds.root || 'root']
+      })], {type:'application/json'}));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + gAccessToken },
+        body: form
+      });
+      const created = await res.json();
+      gDriveDataFileId = created.id;
+    }
+    showSync('✓ Saved to Drive');
+  } catch(e) {
+    console.error('Drive save error:', e);
+    showSync('⚠ Save failed', true);
+  }
+}
+
+async function uploadFileToDrive(base64Data, mimeType, filename, propName, category) {
+  if(!gAccessToken) return null;
+  try {
+    if(!gDriveFolderIds.root) {
+      gDriveFolderIds.root = await findOrCreateFolder(DRIVE_FOLDER_NAME, 'root');
+    }
+    const propKey = propName || 'General';
+    if(!gDriveFolderIds[propKey]) {
+      gDriveFolderIds[propKey] = await findOrCreateFolder(propKey, gDriveFolderIds.root);
+    }
+    const catKey = propKey + '/' + (category||'Documents');
+    if(!gDriveFolderIds[catKey]) {
+      gDriveFolderIds[catKey] = await findOrCreateFolder(category||'Documents', gDriveFolderIds[propKey]);
+    }
+    const byteChars = atob(base64Data);
+    const bytes = new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
+    const blob = new Blob([bytes], {type: mimeType});
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify({
+      name: filename,
+      parents: [gDriveFolderIds[catKey]]
+    })], {type:'application/json'}));
+    form.append('file', blob);
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + gAccessToken },
+      body: form
+    });
+    const created = await res.json();
+    showSync('✓ Saved to Drive');
+    return created.webViewLink;
+  } catch(e) {
+    console.error('Drive upload error:', e);
+    showSync('⚠ Upload failed', true);
+    return null;
+  }
+}
+const DRIVE_MODE = false;
+
+async function loadState() {
+  if(DRIVE_MODE) {
+    document.getElementById('login-screen').style.display = 'flex';
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'none';
+  try {
+    const keys = ['props','txns','certs','appliances','maint','owners','rentHistory'];
+    for(const k of keys) {
+      try {
+        const r = await window.storage.get('pf-' + k);
+        if(r) state[k] = JSON.parse(r.value);
+      } catch(e) {}
+    }
+    state.txns = state.txns.map(t=>({...t, cat: CAT_LEGACY[t.cat]||t.cat}));
+  } catch(e) {}
+  renderAll();
+}
+
+function saveState(key) {
+  if(DRIVE_MODE) {
+    try { localStorage.setItem('pf-'+key, JSON.stringify(state[key])); } catch(e) {}
+    clearTimeout(saveTimer);
+    showSync('⟳ Saving…');
+    saveTimer = setTimeout(saveToDrive, 1500);
+    return;
+  }
+  try { window.storage.set('pf-' + key, JSON.stringify(state[key])); } catch(e) {}
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function fmtMoney(n) { return '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtDate(d) { if(!d||d==='—') return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
+function certStatus(expiry) {
+  if(!expiry) return 'grey';
+  const d = daysUntil(expiry);
+  if(d < 0) return 'red';
+  if(d < 60) return 'amber';
+  return 'green';
+}
+function certLabel(expiry) {
+  if(!expiry) return 'No date';
+  const d = daysUntil(expiry);
+  if(d < 0) return 'Expired';
+  if(d < 60) return d+'d left';
+  return 'Valid';
+}
+function propName(id) { const p = state.props.find(x=>x.id===id); return p ? p.name : id; }
+function filteredTxns() {
+  return state.txns.filter(t => !state.filterProp || t.prop === state.filterProp)
+    .sort((a,b) => b.date.localeCompare(a.date));
+}
+function getProp(id) { return state.props.find(p=>p.id===id); }
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active'); else {
+    document.querySelector('[data-screen="'+name+'"]').classList.add('active');
+  }
+  state.currentScreen = name;
+  renderScreen(name);
+}
+
+function renderAll() {
+  populateOwnerSelect();
+  renderScreen(state.currentScreen);
+}
+
+function renderScreen(name) {
+  if(name==='dashboard') renderDashboard();
+  else if(name==='properties') renderProperties();
+  else if(name==='finance') renderFinance();
+  else if(name==='mtd') renderMTD();
+  else if(name==='maintenance') renderMaintenance();
+  else if(name==='docs') renderDocs();
+}
+
+function setFilter(id) {
+  state.filterProp = id==='null'||!id ? null : id;
+  renderAll();
+}
+function getOwnerShare(prop) {
+  if(!state.shareMode || !state.selectedOwner) return 1;
+  const ownerEntry = (prop.owners||[]).find(o=>o.ownerId===state.selectedOwner);
+  if(ownerEntry) return ownerEntry.share/100;
+  return (prop.ownershipShare??100)/100;
+}
+function shareOf(prop, value) {
+  if(!state.shareMode) return value;
+  return value * getOwnerShare(prop);
+}
+function txnShare(txn) {
+  if(!state.shareMode) return txn.amount;
+  const p = getProp(txn.prop);
+  return txn.amount * getOwnerShare(p||{ownershipShare:100});
+}
+function setOwnerMode(val) {
+  if(!val) {
+    state.shareMode = false;
+    state.selectedOwner = null;
+    state.filterProp = null;
+  } else {
+    state.shareMode = true;
+    state.selectedOwner = val;
+    state.filterProp = null;
+  }
+  populateOwnerSelect();
+  renderAll();
+}
+function populateOwnerSelect() {
+  const sel = document.getElementById('owner-select');
+  if(!sel) return;
+  const activeOwners = state.owners.filter(o =>
+    state.props.some(p =>
+      (p.owners||[]).some(po => po.ownerId === o.id && po.share > 0)
+    )
+  );
+  const currentVal = state.selectedOwner || '';
+  if(currentVal && !activeOwners.find(o=>o.id===currentVal)) {
+    state.shareMode = false;
+    state.selectedOwner = null;
+  }
+  sel.innerHTML = `<option value="">All owners</option>` +
+    activeOwners.map(o=>`<option value="${o.id}"${o.id===(state.selectedOwner||'')?' selected':''}>${o.name}</option>`).join('');
+  sel.style.background = state.shareMode ? 'var(--blue-bg)' : 'var(--surface2)';
+  sel.style.color = state.shareMode ? 'var(--blue)' : 'var(--text2)';
+  sel.style.borderColor = state.shareMode ? '#B5D4F4' : 'var(--border)';
+}
+
+function openOwnerModal() {
+  const ownerRows = state.owners.length > 0
+    ? state.owners.map(o => {
+        const shares = state.props
+          .map(p => { const po = (p.owners||[]).find(x=>x.ownerId===o.id&&x.share>0); return po ? `${p.name} (${po.share}%)` : null; })
+          .filter(Boolean);
+        const isActive = shares.length > 0;
+        return `
+          <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;background:${isActive?'var(--surface)':'var(--surface2)'}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:${isActive?'6px':'0'}">
+              <input type="text" value="${o.name}" id="ownname-${o.id}"
+                style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--surface)"
+                onchange="renameOwner('${o.id}',this.value)">
+              <button class="icon-btn" onclick="deleteOwner('${o.id}')" title="Remove">✕</button>
+            </div>
+            ${isActive
+              ? `<div class="text-sm">${shares.join(' · ')}</div>`
+              : `<div style="font-size:12px;color:var(--text3)">No property share — won't appear in dropdown</div>`}
+          </div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">No owners yet. Add one below.</div>';
+
+  openModal(`
+    <div class="modal-title">Manage owners</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">Owners only appear in the dropdown if they have a share in at least one property. Set shares via each property's Financials tab.</p>
+    <div id="owner-rows">${ownerRows}</div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Add owner</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="new-global-owner" placeholder="Owner name"
+          style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
+          onkeydown="if(event.key==='Enter')addGlobalOwner()">
+        <button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:13px" onclick="addGlobalOwner()">Add</button>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="closeModal()">Done</button>`);
+}
+
+function addGlobalOwner() {
+  const el = document.getElementById('new-global-owner');
+  const name = el?.value?.trim();
+  if(!name) return;
+  if(state.owners.find(o=>o.name.toLowerCase()===name.toLowerCase())) {
+    const msg = document.getElementById('new-global-owner');
+    if(msg) { msg.style.borderColor='var(--red)'; msg.placeholder='Name already exists'; msg.value=''; }
+    setTimeout(()=>{ if(msg){msg.style.borderColor='';msg.placeholder='Owner name';} },2000);
+    return;
+  }
+  state.owners.push({id:uid(), name});
+  saveState('owners');
+  el.value = '';
+  openOwnerModal(); // re-render modal with new owner
+  populateOwnerSelect();
+}
+
+function renameOwner(id, newName) {
+  const o = state.owners.find(x=>x.id===id);
+  if(o && newName.trim()) { o.name = newName.trim(); saveState('owners'); populateOwnerSelect(); }
+}
+
+function deleteOwner(id) {
+  const o = state.owners.find(x=>x.id===id);
+  if(!o) return;
+  const shares = state.props
+    .map(p => { const po = (p.owners||[]).find(x=>x.ownerId===id&&x.share>0); return po ? p.name : null; })
+    .filter(Boolean);
+  const warning = shares.length > 0
+    ? `<div class="alert alert-red" style="margin-bottom:10px">This will also remove ${o.name} from: ${shares.join(', ')}</div>`
+    : '';
+  openModal(`
+    <div class="modal-title">Remove owner</div>
+    ${warning}
+    <p style="font-size:14px;margin-bottom:20px">Remove <strong>${o.name}</strong> from the owners list?</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="openOwnerModal()">Cancel</button>
+      <button class="btn" style="flex:1;background:var(--red-bg);color:var(--red)" onclick="confirmDeleteOwner('${id}')">Remove</button>
+    </div>`);
+}
+
+function confirmDeleteOwner(id) {
+  state.owners = state.owners.filter(o=>o.id!==id);
+  if(state.selectedOwner===id) { state.shareMode=false; state.selectedOwner=null; }
+  state.props.forEach(p=>{ if(p.owners) p.owners=p.owners.filter(o=>o.ownerId!==id); });
+  saveState('owners');
+  saveState('props');
+  populateOwnerSelect();
+  renderAll();
+  openOwnerModal();
+}
+function certBadgeRow(propId) {
+  return ['Gas Safety','EPC','EICR','Insurance'].map(key => {
+    const p = getProp(propId);
+    let st, expiry, extra = '';
+    if(key === 'Insurance') {
+      expiry = p?.insuranceRenewal ? fmtDate(p.insuranceRenewal) : '—';
+      st = p?.insuranceRenewal ? certStatus(p.insuranceRenewal) : 'grey';
+    } else {
+      const c = state.certs.find(c => c.propId===propId && c.type===key);
+      st = c ? certStatus(c.expiryDate) : 'grey';
+      expiry = c ? fmtDate(c.expiryDate) : '—';
+      if(key==='EPC' && c?.epcRating) extra = ` · Band ${c.epcRating}`;
+    }
+    const lbl = key==='Gas Safety' ? 'Gas' : key;
+    return `<div style="flex:1;min-width:0">
+      <div class="label-xs" style="margin-bottom:3px">${lbl}</div>
+      <span class="badge badge-${st}" style="font-size:11px">${expiry}${extra}</span>
+    </div>`;
+  }).join('');
+}
+
+function finStatRow(label, fullVal, shareVal, isIncome, ownerShare, ownerName, showShare) {
+  const hasVal = isIncome ? true : fullVal > 0;
+  const col = isIncome ? 'var(--green)' : (fullVal > 0 ? 'var(--red)' : 'var(--text3)');
+  const pre = (!isIncome && fullVal > 0) ? '-' : '';
+  const display = hasVal ? pre + fmtMoney(fullVal) : '—';
+  const shareDisplay = hasVal ? (isIncome ? '' : pre) + fmtMoney(shareVal) : '—';
+  if(showShare && ownerShare < 1) {
+    return `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--text2)">${label}</span>
+      <span style="font-size:12px;font-weight:500;color:${col};text-align:right">${display}</span>
+      <span style="font-size:12px;font-weight:500;color:var(--blue);text-align:right">${shareDisplay}</span>
+    </div>`;
+  }
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+    <span style="font-size:12px;color:var(--text2)">${label}</span>
+    <span style="font-size:12px;font-weight:500;color:${col}">${display}</span>
+  </div>`;
+}
+
+function txnRow(t, onDelete, showProp) {
+  const p = getProp(t.prop);
+  const cat = CAT_LABELS[t.cat] || t.cat;
+  const badge = CAT_BADGES[t.cat] || 'badge-grey';
+  const periodTag = t.periodStart
+    ? ` <span style="color:var(--blue);font-size:11px">· ${fmtDate(t.periodStart)}–${fmtDate(t.periodEnd)}</span>`
+    : '';
+  const propTag = showProp ? ` · ${p ? p.name : '?'}` : '';
+  return `<div class="txn-row">
+    <div class="txn-icon" style="background:${t.type==='income'?'var(--green-bg)':'var(--red-bg)'}">
+      <span style="font-size:13px">${t.type==='income'?'↓':'↑'}</span>
+    </div>
+    <div class="txn-body">
+      <div class="txn-desc">${t.desc}</div>
+      <div class="txn-meta">${fmtDate(t.date)}${propTag} · <span class="badge ${badge}">${cat}</span>${periodTag}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div class="txn-amount ${t.type==='income'?'txn-income':'txn-expense'}">${t.type==='expense'?'-':''}${fmtMoney(t.amount)}</div>
+      ${onDelete ? `<button class="icon-btn icon-btn-sm" onclick="${onDelete}">✕</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function propStatusBadge(status) {
+  return `<span class="badge badge-${status==='let'?'green':'amber'}">${status==='let'?'Let':'Vacant'}</span>`;
+}
+
+function certStatusBadgeInline(c) {
+  const st = certStatus(c.expiryDate);
+  const rating = c.type==='EPC' && c.epcRating ? ` Band ${c.epcRating}` : '';
+  return `<span class="badge badge-${st}">${certLabel(c.expiryDate)}${rating}</span>`;
+}
+function getPeriodRange(period) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  let start, end, prevStart, prevEnd, label;
+  if(period==='ytd') {
+    start = new Date(y,0,1); end = new Date(y,m,d,23,59,59);
+    prevStart = new Date(y-1,0,1); prevEnd = new Date(y-1,m,d,23,59,59);
+    label = 'YTD '+y;
+  } else if(period==='last12') {
+    start = new Date(y-1,m,d+1); end = new Date(y,m,d,23,59,59);
+    prevStart = new Date(y-2,m,d+1); prevEnd = new Date(y-1,m,d,23,59,59);
+    label = 'Last 12 months';
+  } else if(period==='q1') {
+    start = new Date(y,0,1); end = new Date(y,2,31,23,59,59);
+    prevStart = new Date(y-1,0,1); prevEnd = new Date(y-1,2,31,23,59,59);
+    label = 'Q1 '+y;
+  } else if(period==='q2') {
+    start = new Date(y,3,1); end = new Date(y,5,30,23,59,59);
+    prevStart = new Date(y-1,3,1); prevEnd = new Date(y-1,5,30,23,59,59);
+    label = 'Q2 '+y;
+  } else if(period==='q3') {
+    start = new Date(y,6,1); end = new Date(y,8,30,23,59,59);
+    prevStart = new Date(y-1,6,1); prevEnd = new Date(y-1,8,30,23,59,59);
+    label = 'Q3 '+y;
+  } else if(period==='q4') {
+    start = new Date(y,9,1); end = new Date(y,11,31,23,59,59);
+    prevStart = new Date(y-1,9,1); prevEnd = new Date(y-1,11,31,23,59,59);
+    label = 'Q4 '+y;
+  } else if(period==='tytd') { // tax year to date
+    const taxStart = now >= new Date(y,3,6) ? new Date(y,3,6) : new Date(y-1,3,6);
+    start = taxStart; end = new Date(y,m,d,23,59,59);
+    prevStart = new Date(taxStart.getFullYear()-1,3,6);
+    prevEnd = new Date(taxStart.getFullYear()-1, m, d, 23,59,59);
+    label = 'Tax YTD';
+  }
+  return {start,end,prevStart,prevEnd,label};
+}
+
+function txnsInRange(start, end) {
+  const fpIds = state.filterProp ? [state.filterProp] : state.props.map(p=>p.id);
+  return state.txns.filter(t=>{
+    if(!t.date) return false;
+    const d = new Date(t.date);
+    return d>=start && d<=end && fpIds.includes(t.prop);
+  });
+}
+function sumIncome(txns) { return txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0); }
+function sumExpense(txns) { return txns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t),0); }
+
+function deltaChip(curr, prev) {
+  if(prev===0) return '';
+  const diff = curr - prev;
+  const pct = ((diff/prev)*100).toFixed(1);
+  const up = diff >= 0;
+  const color = up ? 'var(--green)' : 'var(--red)';
+  const arrow = up ? '▲' : '▼';
+  return `<span style="font-size:11px;color:${color}">${arrow} ${fmtMoney(Math.abs(diff))} (${Math.abs(pct)}%)</span>`;
+}
+
+function renderDashboard() {
+  const fps = (state.filterProp ? state.props.filter(p=>p.id===state.filterProp) : state.props).filter(p=>state.showArchived||!p.archived);
+  const period = state.dashPeriod || 'ytd';
+  const {start,end,prevStart,prevEnd,label} = getPeriodRange(period);
+
+  const currTxns = txnsInRange(start, end);
+  const prevTxns = txnsInRange(prevStart, prevEnd);
+  const income = sumIncome(currTxns);
+  const expense = sumExpense(currTxns);
+  const net = income - expense;
+  const prevIncome = sumIncome(prevTxns);
+  const prevExpense = sumExpense(prevTxns);
+  const prevNet = prevIncome - prevExpense;
+  const fullIncome = currTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const fullExpense = currTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const fullNet = fullIncome - fullExpense;
+  const prevFullIncome = prevTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const prevFullExpense = prevTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const prevFullNet = prevFullIncome - prevFullExpense;
+
+  const showShare = state.shareMode && state.selectedOwner;
+  const selectedOwnerName = showShare ? (state.owners.find(o=>o.id===state.selectedOwner)?.name || '') : '';
+  const fullRent = fps.filter(p=>p.status==='let').reduce((s,p)=>s+p.rent,0);
+  const shareRent = fps.filter(p=>p.status==='let').reduce((s,p)=>s+shareOf(p,p.rent),0);
+  const letCount = fps.filter(p=>p.status==='let').length;
+  const avgYield = fps.filter(p=>p.value>0).length ? (fps.filter(p=>p.value>0).reduce((s,p)=>s+(p.rent*12/p.value*100),0)/fps.filter(p=>p.value>0).length).toFixed(1) : '—';
+
+  const fpIds = fps.map(p=>p.id);
+  const expiredCerts = state.certs.filter(c=>fpIds.includes(c.propId)&&certStatus(c.expiryDate)==='red');
+  const warnCerts = state.certs.filter(c=>fpIds.includes(c.propId)&&certStatus(c.expiryDate)==='amber');
+  const openMaint = state.maint.filter(m=>fpIds.includes(m.propId)&&m.status==='open');
+
+  let certAlerts = '';
+  if(expiredCerts.length) certAlerts += `<div class="alert-strip">⚠ ${expiredCerts.length} certificate${expiredCerts.length>1?'s':''} expired or overdue</div>`;
+  if(warnCerts.length) certAlerts += `<div class="alert-strip alert-strip-amber">⏱ ${warnCerts.length} certificate${warnCerts.length>1?'s':''} expiring within 60 days</div>`;
+
+  const periods = [
+    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},
+    {v:'q1',l:'Q1'},{v:'q2',l:'Q2'},{v:'q3',l:'Q3'},{v:'q4',l:'Q4'}
+  ];
+  const periodBar = `<div class="toggle-bar" style="margin-bottom:12px;overflow-x:auto;flex-wrap:nowrap">
+    ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderDashboard()">${p.l}</button>`).join('')}
+  </div>`;
+
+  const prevYear = prevStart.getFullYear();
+
+  function metricTile(lbl, fullVal, shareVal, prevFull, prevShare, color, sub) {
+    const valColor = color || 'var(--text)';
+    const comparatorFull = prevFull > 0 ? deltaChip(fullVal, prevFull) : '';
+    const comparatorShare = showShare && prevShare > 0 ? deltaChip(shareVal, prevShare) : '';
+
+    if(showShare) {
+      return `<div class="metric" style="padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">${lbl}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Full</div>
+          <div style="font-size:9px;color:var(--blue);text-transform:uppercase;letter-spacing:.04em">${selectedOwnerName}</div>
+          <div style="font-size:17px;font-weight:300;color:${valColor};letter-spacing:-.02em;line-height:1.2">${fmtMoney(fullVal)}</div>
+          <div style="font-size:17px;font-weight:300;color:var(--blue);letter-spacing:-.02em;line-height:1.2">${fmtMoney(shareVal)}</div>
+          ${comparatorFull||comparatorShare ? `
+          <div style="font-size:10px;color:var(--text2);padding-top:2px;line-height:1.3">${comparatorFull}</div>
+          <div style="font-size:10px;color:var(--blue);padding-top:2px;line-height:1.3">${comparatorShare}</div>` : ''}
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">${sub} · vs ${prevYear}</div>
+      </div>`;
+    }
+    return `<div class="metric" style="padding:12px 14px">
+      <div class="metric-label" style="margin-bottom:4px">${lbl}</div>
+      <div style="font-size:22px;font-weight:300;color:${valColor};letter-spacing:-.02em;margin-bottom:3px">${fmtMoney(fullVal)}</div>
+      <div class="text-sm">${sub}</div>
+      ${comparatorFull ? `<div style="font-size:11px;color:var(--text2);margin-top:3px">${comparatorFull} vs ${prevYear}</div>` : ''}
+    </div>`;
+  }
+
+  function rentTile() {
+    const sub = `${letCount} of ${fps.length} let`;
+    if(showShare) {
+      return `<div class="metric" style="padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Rent pcm</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Full</div>
+          <div style="font-size:9px;color:var(--blue);text-transform:uppercase;letter-spacing:.04em">${selectedOwnerName}</div>
+          <div style="font-size:17px;font-weight:300;letter-spacing:-.02em;line-height:1.2">${fmtMoney(fullRent)}</div>
+          <div style="font-size:17px;font-weight:300;color:var(--blue);letter-spacing:-.02em;line-height:1.2">${fmtMoney(shareRent)}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">${sub} · ${label}</div>
+      </div>`;
+    }
+    return `<div class="metric" style="padding:12px 14px">
+      <div class="metric-label" style="margin-bottom:4px">Rent pcm</div>
+      <div style="font-size:22px;font-weight:300;letter-spacing:-.02em;margin-bottom:3px">${fmtMoney(fullRent)}</div>
+      <div class="text-sm">${sub} · ${label}</div>
+    </div>`;
+  }
+
+  const propCards = fps.map(p => {
+    const ownerShare = getOwnerShare(p);
+    const fullRentP = p.rent;
+    const shareRentP = shareOf(p, p.rent);
+    const dispValue = p.value; // yield always on full value
+    const yld = dispValue > 0 ? ((fullRentP*12)/dispValue*100).toFixed(1)+'%' : '—';
+
+    const certRow = certBadgeRow(p.id);
+    const propTxns = state.txns.filter(t=>t.prop===p.id&&t.date&&new Date(t.date)>=start&&new Date(t.date)<=end);
+    const ptFullIncome = propTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const ptFullAgentFees = propTxns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+t.amount,0);
+    const ptFullPremises = propTxns.filter(t=>t.type==='expense'&&t.cat==='premises').reduce((s,t)=>s+t.amount,0);
+    const ptFullOther = propTxns.filter(t=>t.type==='expense'&&!['professional','premises'].includes(t.cat)).reduce((s,t)=>s+t.amount,0);
+    const ptFullNet = ptFullIncome - ptFullAgentFees - ptFullPremises - ptFullOther;
+
+    const ptShareIncome = ptFullIncome * ownerShare;
+    const ptShareFees = ptFullAgentFees * ownerShare;
+    const ptSharePremises = ptFullPremises * ownerShare;
+    const ptShareOther = ptFullOther * ownerShare;
+    const ptShareNet = ptShareIncome - ptShareFees - ptSharePremises - ptShareOther;
+
+    const shareBadge = p.owners && p.owners.length>1 ? `<span class="badge badge-blue" style="margin-left:4px">${p.owners.length} owners</span>` : '';
+    const rentDisplay = showShare && ownerShare < 1
+      ? `<div style="font-size:14px;font-weight:500">${fmtMoney(fullRentP)}</div><div style="font-size:11px;color:var(--blue);font-weight:500">${fmtMoney(shareRentP)} ${selectedOwnerName}</div>`
+      : `<div style="font-size:14px;font-weight:500">${fmtMoney(fullRentP)}</div>`;
+    function finRow(label, fullVal, shareVal, isIncome) {
+      const color = isIncome ? 'var(--green)' : (fullVal > 0 ? 'var(--red)' : 'var(--text3)');
+      const prefix = isIncome ? '' : (fullVal > 0 ? '-' : '');
+      const sharePrefix = isIncome ? '' : '-';
+      return `<div>
+        <div class="label-xs-mb">${label}</div>
+        <div style="font-size:13px;font-weight:500;color:${color}">${fullVal > 0 || isIncome ? prefix+fmtMoney(fullVal) : '—'}</div>
+        ${showShare && ownerShare < 1 ? `<div style="font-size:11px;color:var(--blue);font-weight:500">${fullVal > 0 || isIncome ? sharePrefix+fmtMoney(shareVal) : '—'}</div>` : ''}
+      </div>`;
+    }
+
+    return `<div class="card" style="cursor:pointer" onclick="openPropDetail('${p.id}')">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:500;display:flex;align-items:center;gap:4px;flex-wrap:wrap">${p.name}${shareBadge}</div>
+          <div class="text-sm">${p.address}</div>
+        </div>
+        ${p.archived?'<span class="badge badge-grey">Archived</span>':propStatusBadge(p.status)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
+        <div>
+          <div class="label-xs-mb">Rent pcm${showShare&&ownerShare<1?' (full / share)':''}</div>
+          ${rentDisplay}
+        </div>
+        <div><div class="label-xs-mb">Yield</div><div style="font-size:14px;font-weight:500">${yld}</div></div>
+        ${finRow('Income', ptFullIncome, ptShareIncome, true)}
+        ${finRow('Agent fees', ptFullAgentFees, ptShareFees, false)}
+        ${finRow('Mgmt costs', ptFullPremises, ptSharePremises, false)}
+        ${finRow('Other costs', ptFullOther, ptShareOther, false)}
+        <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+          <div class="label-xs-mb">Net income${showShare&&ownerShare<1?' (full / share)':''}</div>
+          <div style="font-size:15px;font-weight:500;color:${ptFullNet>=0?'var(--green)':'var(--red)'}">${ptFullNet<0?'-':''}${fmtMoney(ptFullNet)}</div>
+          ${showShare && ownerShare < 1 ? `<div style="font-size:12px;font-weight:500;color:var(--blue)">${ptShareNet<0?'-':''}${fmtMoney(ptShareNet)} ${selectedOwnerName}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">${certRow}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('screen-dashboard').innerHTML = `
+    ${periodBar}
+    ${showShare ? `<div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 12px;margin-bottom:10px">Showing full · <strong>${selectedOwnerName}'s share</strong> in blue</div>` : ''}
+    <div class="metrics">
+      ${rentTile()}
+      ${metricTile('Income', fullIncome, income, prevFullIncome, prevIncome, 'var(--green)', label)}
+      ${metricTile('Expenses', fullExpense, expense, prevFullExpense, prevExpense, 'var(--red)', label)}
+      ${metricTile('Net', fullNet, net, prevFullNet, prevNet, fullNet>=0?'var(--green)':'var(--red)', label)}
+      <div class="metric metric-wide" style="padding:12px 14px">
+        <div class="metric-label">Avg gross yield</div>
+        <div style="font-size:22px;font-weight:300;letter-spacing:-.02em;margin:4px 0">${avgYield}${avgYield!=='—'?'%':''}</div>
+        <div class="text-sm">Across ${fps.filter(p=>p.value>0).length} propert${fps.filter(p=>p.value>0).length===1?'y':'ies'}</div>
+      </div>
+    </div>
+    ${openMaint.length?`<div class="alert-strip alert-strip-amber" style="margin-bottom:10px">🔧 ${openMaint.length} open maintenance issue${openMaint.length>1?'s':''}</div>`:''}
+    ${certAlerts}
+    ${propCards}`;
+}
+function renderProperties() {
+  const allProps = (state.filterProp ? state.props.filter(p=>p.id===state.filterProp) : state.props);
+  const fps = allProps.filter(p=>state.showArchived||!p.archived);
+  const archivedCount = allProps.filter(p=>p.archived).length;
+  const period = state.dashPeriod || 'ytd';
+  const {start, end, label} = getPeriodRange(period);
+  const showShare = state.shareMode && state.selectedOwner;
+  const selectedOwnerName = showShare ? (state.owners.find(o=>o.id===state.selectedOwner)?.name || '') : '';
+
+  const expCatDefs = [
+    ['premises','Premises costs'],
+    ['repairs','Repairs & maintenance'],
+    ['financial','Financial costs'],
+    ['professional','Professional fees'],
+    ['services','Cost of services'],
+    ['travel','Travel costs'],
+    ['other-allowable','Other allowable expenses'],
+  ];
+
+  const archiveToggle = archivedCount > 0 ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;border:1px solid var(--border)">
+    <span style="font-size:13px;color:var(--text2)">${archivedCount} archived propert${archivedCount===1?'y':'ies'}</span>
+    <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="state.showArchived=!state.showArchived;renderProperties()">
+      ${state.showArchived?'Hide archived':'Show archived'}
+    </button>
+  </div>` : '';
+  document.getElementById('screen-properties').innerHTML = archiveToggle + fps.map(p=>{
+    const ownerShare = getOwnerShare(p);
+    const fullRentP = p.rent;
+    const shareRentP = shareOf(p, p.rent);
+    const dispValue = p.value;
+    const yield_pct = dispValue>0 ? ((fullRentP*12)/dispValue*100).toFixed(1) : '0.0';
+
+    const propTxns = state.txns.filter(t=>t.prop===p.id&&t.date&&new Date(t.date)>=start&&new Date(t.date)<=end);
+    const catFull = {};
+    Object.keys(CAT_LABELS).forEach(k=>{ catFull[k]=0; });
+    propTxns.forEach(t=>{ if(catFull[t.cat]!==undefined) catFull[t.cat]+=t.amount; });
+    const catShare = {};
+    Object.keys(CAT_LABELS).forEach(k=>{ catShare[k]=catFull[k]*ownerShare; });
+
+    const fullIncome = catFull['rental-income'];
+    const fullExpenses = Object.entries(catFull).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
+    const fullNet = fullIncome - fullExpenses;
+    const shareIncome = catShare['rental-income'];
+    const shareExpenses = Object.entries(catShare).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
+    const shareNet = shareIncome - shareExpenses;
+
+    const certBadges = state.certs.filter(c=>c.propId===p.id).slice(0,3).map(c=>{
+      const rating = c.type==='EPC'&&c.epcRating ? ` Band ${c.epcRating}` : '';
+      return `<span class="badge badge-${certStatus(c.expiryDate)}">${c.type}${rating}</span>`;
+    }).join('');
+    const colHeader = showShare && ownerShare < 1 ? `
+      <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:2px">
+        <span></span>
+        <span style="font-size:10px;color:var(--text2);text-align:right;text-transform:uppercase;letter-spacing:.04em">Full</span>
+        <span style="font-size:10px;color:var(--blue);text-align:right;text-transform:uppercase;letter-spacing:.04em">${selectedOwnerName}</span>
+      </div>` : '';
+    function catRow(label, fullVal, shareVal, isIncome) {
+      const col = isIncome ? 'var(--green)' : (fullVal>0 ? 'var(--red)' : 'var(--text3)');
+      const pre = isIncome ? '' : (fullVal>0 ? '-' : '');
+      const hasVal = isIncome ? true : fullVal > 0;
+      if(showShare && ownerShare < 1) {
+        return `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span class="text-sm">${label}</span>
+          <span style="font-size:12px;font-weight:500;color:${col};text-align:right">${hasVal?pre+fmtMoney(fullVal):'—'}</span>
+          <span style="font-size:12px;font-weight:500;color:var(--blue);text-align:right">${hasVal?(isIncome?'':pre)+fmtMoney(shareVal):'—'}</span>
+        </div>`;
+      }
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span class="text-sm">${label}</span>
+        <span style="font-size:12px;font-weight:500;color:${col}">${hasVal?pre+fmtMoney(fullVal):'—'}</span>
+      </div>`;
+    }
+
+    const rentDisplay = showShare && ownerShare < 1
+      ? `<div style="font-size:13px;font-weight:500">${fmtMoney(fullRentP)} <span style="font-size:11px;color:var(--blue);font-weight:500">/ ${fmtMoney(shareRentP)} ${selectedOwnerName}</span></div>`
+      : `<div style="font-size:13px;font-weight:500">${fmtMoney(fullRentP)}</div>`;
+
+    const netRow = showShare && ownerShare < 1
+      ? `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:7px 0">
+          <span style="font-size:13px;font-weight:500">Net income</span>
+          <span style="font-size:13px;font-weight:500;color:${fullNet>=0?'var(--green)':'var(--red)'};text-align:right">${fullNet<0?'-':''}${fmtMoney(fullNet)}</span>
+          <span style="font-size:13px;font-weight:500;color:var(--blue);text-align:right">${shareNet<0?'-':''}${fmtMoney(shareNet)}</span>
+        </div>`
+      : `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
+          <span style="font-size:13px;font-weight:500">Net income</span>
+          <span style="font-size:14px;font-weight:500;color:${fullNet>=0?'var(--green)':'var(--red)'}">${fullNet<0?'-':''}${fmtMoney(fullNet)}</span>
+        </div>`;
+
+    const incomeRow = showShare && ownerShare < 1
+      ? `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;font-weight:500">Rental income</span>
+          <span style="font-size:13px;font-weight:500;color:var(--green);text-align:right">${fmtMoney(fullIncome)}</span>
+          <span style="font-size:13px;font-weight:500;color:var(--blue);text-align:right">${fmtMoney(shareIncome)}</span>
+        </div>`
+      : `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;font-weight:500">Rental income</span>
+          <span style="font-size:13px;font-weight:500;color:var(--green)">${fmtMoney(fullIncome)}</span>
+        </div>`;
+
+    return `<div class="prop-item" onclick="openPropDetail('${p.id}')" style="flex-direction:column;align-items:stretch;gap:0">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="prop-dot" style="background:${p.color}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="prop-name">${p.name}</div>
+          <div class="prop-addr">${p.address}</div>
+        </div>
+        <span class="badge badge-${p.status==='let'?'green':'amber'}">${p.status==='let'?'Let':'Vacant'}</span>
+        <div class="prop-arrow">›</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
+        <div>
+          <div class="label-xs-mb">Rent pcm</div>
+          ${rentDisplay}
+        </div>
+        <div><div class="label-xs-mb">Yield</div><div style="font-size:13px;font-weight:500">${yield_pct}%</div></div>
+        <div><div class="label-xs-mb">Period</div><div class="text-sm">${label}</div></div>
+      </div>
+      <div>
+        ${colHeader}
+        ${incomeRow}
+        ${expCatDefs.map(([k,l])=>catRow(l, catFull[k], catShare[k], false)).join('')}
+        ${netRow}
+      </div>
+      ${certBadges?`<div class="prop-certs" style="margin-top:4px;padding-top:8px;border-top:1px solid var(--border)">${certBadges}</div>`:''}
+    </div>`;
+  }).join('') + `<button class="btn btn-secondary" style="margin-top:8px" onclick="openAddPropModal()">+ Add property</button>`;
+}
+function openPropDetail(id) {
+  const p = getProp(id);
+  if(!p) return;
+  document.getElementById('detail-prop-name').textContent = p.name;
+  const el = document.getElementById('prop-detail');
+  el.classList.add('open');
+  renderPropDetailContent(id);
+}
+function closePropDetail() { document.getElementById('prop-detail').classList.remove('open'); }
+
+function renderPropDetailContent(id) {
+  const p = getProp(id);
+  const propCerts = state.certs.filter(c=>c.propId===id);
+  const propApps = state.appliances.filter(a=>a.propId===id);
+  const propMaint = state.maint.filter(m=>m.propId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const propTxns = state.txns.filter(t=>t.prop===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const yield_pct = ((p.rent*12)/p.value*100).toFixed(1);
+
+  const propRentHistory = (state.rentHistory||[]).filter(r=>r.propId===id).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-tabs">
+      <button class="dtab active" onclick="switchDTab('tenant',this,'${id}')">Tenant</button>
+      <button class="dtab" onclick="switchDTab('financials',this,'${id}')">Financials</button>
+      <button class="dtab" onclick="switchDTab('certs',this,'${id}')">Certs & Appliances</button>
+      <button class="dtab" onclick="switchDTab('maintenance',this,'${id}')">Maintenance</button>
+      <button class="dtab" onclick="switchDTab('contacts',this,'${id}')">Contacts</button>
+      <button class="dtab" onclick="switchDTab('transactions',this,'${id}')">Finance log</button>
+    </div>
+    <div id="dtab-tenant" class="dtab-content active">
+      <div class="card">
+        ${[['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Current rent',fmtMoney(p.rent)+'/mo'],['Last rent increase',p.lastRentIncrease?fmtDate(p.lastRentIncrease):'—'],['Rent before increase',p.lastRentAmount>0?fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount?` (+${(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)}%)`:''):'—']].map(([l,v])=>`
+          <div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
+      </div>
+    </div>
+    <div id="dtab-financials" class="dtab-content">
+      <div class="card">
+        ${(()=>{
+          const share = getOwnerShare(p);
+          const r = state.shareMode ? shareOf(p, p.rent) : p.rent;
+          const v = state.shareMode ? shareOf(p, p.value) : p.value;
+          const pur = state.shareMode ? shareOf(p, p.purchase) : p.purchase;
+          const mort = state.shareMode ? shareOf(p, p.mortgage) : p.mortgage;
+          const yld = v > 0 ? ((r*12)/v*100).toFixed(1)+'%' : '—';
+          const ownerList = p.owners ? p.owners.map(o=>{
+            const own = state.owners.find(x=>x.id===o.ownerId);
+            return `${own?own.name:'?'}: ${o.share}%`;
+          }).join(', ') : `${p.ownershipShare??100}% (you)`;
+          const rows = [
+            ['Ownership', ownerList],
+            ['Monthly rent'+(state.shareMode?' (your share)':''), fmtMoney(r)+'/mo'],
+            ['Annual rent'+(state.shareMode?' (your share)':''), fmtMoney(r*12)],
+            ['Purchase price'+(state.shareMode?' (your share)':''), fmtMoney(pur)],
+            ['Current value'+(state.shareMode?' (your share)':''), fmtMoney(v)],
+            ['Gross yield', yld],
+            ['Mortgage/mo'+(state.shareMode?' (your share)':''), fmtMoney(mort)],
+            ['Net/mo'+(state.shareMode?' (your share)':''), fmtMoney(r-mort)],
+            ['Lender', p.lender],
+          ];
+          return rows.map(([l,v2])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v2}</span></div>`).join('');
+        })()}
+      </div>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openEditOwnershipModal('${id}')">Edit ownership</button>
+      <button class="btn" style="margin-top:8px;background:${p.archived?'var(--green-bg)':'var(--amber-bg)'};color:${p.archived?'var(--green)':'var(--amber)'}" onclick="toggleArchiveProp('${id}')">
+        ${p.archived?'✓ Restore property':'Archive property'}
+      </button>
+      ${p.archived?'<div style="font-size:12px;color:var(--amber);margin-top:6px;line-height:1.4">Archived properties are hidden from calculations and the overview. Restore to include again.</div>':''}
+      ${(()=>{
+        const rhRecords = [...(propRentHistory||[])];
+        if(p.lastRentIncrease && p.lastRentAmount > 0) {
+          const alreadyExists = rhRecords.some(r =>
+            r.startDate === p.lastRentIncrease && r.amount === p.lastRentAmount
+          );
+          if(!alreadyExists) {
+            rhRecords.push({
+              id:'__legacy__', propId:p.id,
+              amount: p.lastRentAmount,
+              startDate: p.lastRentIncrease,
+              endDate: null,
+              tenant: p.tenant||'',
+              notes: 'From tenant record'
+            });
+          }
+        }
+        const hasCurrentRent = rhRecords.some(r => r.amount === p.rent && !r.endDate);
+        rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+        if(!rhRecords.length) return '<div class="empty" style="padding:8px 0">No rent history recorded</div>';
+        return `<div class="section-label" style="margin-top:16px">Rent history</div>
+        <div class="card">
+          ${rhRecords.map((r,i)=>`
+            <div class="info-row" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:8px;align-items:center">
+              ${i===0?'<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 5px;border-radius:4px;white-space:nowrap">Current</span>':'<span></span>'}
+              <span style="font-size:14px;font-weight:500;color:var(--green)">${fmtMoney(r.amount)}/mo</span>
+              <span class="text-sm">${fmtDate(r.startDate)}${r.endDate?' – '+fmtDate(r.endDate):' →'}</span>
+              <span class="text-sm">${r.tenant||''}</span>
+              ${r.id==='__legacy__'?'<span></span>':`<button class="icon-btn" style="width:24px;height:24px;font-size:11px" onclick="deleteRentHistory('${r.id}','${id}')">✕</button>`}
+            </div>`).join('')}
+        </div>`;
+      })()}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
+    </div>
+    <div id="dtab-certs" class="dtab-content">
+      <div class="section-label" style="margin:0;margin-bottom:10px">Certificates</div>
+      ${propCerts.map(c=>`
+        <div class="cert-item" style="cursor:${c.docData?'pointer':'default'}" onclick="${c.docData?`openCertDoc('${c.id}')`:''}" >
+          <div class="cert-info">
+            <div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?` <span class="badge badge-grey" style="font-size:12px;font-weight:600">Band ${c.epcRating}</span>`:''}</div>
+            <div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div>
+            ${c.issuer?`<div class="cert-meta">${c.issuer}</div>`:''}
+            ${c.notes?`<div class="cert-meta" style="color:var(--text3)">${c.notes}</div>`:''}
+            ${c.docData?`<div class="cert-meta" style="color:var(--blue);margin-top:3px">📄 Document attached — tap to open</div>`:'<div class="cert-meta" style="color:var(--text3);margin-top:3px">No document — upload via Upload tab</div>'}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span>
+            ${c.docData?`<button class="icon-btn" style="font-size:11px;width:auto;padding:2px 8px;border-radius:var(--radius-sm)" onclick="event.stopPropagation();openCertDoc('${c.id}')">Open</button>`:''}
+            <button class="icon-btn" onclick="event.stopPropagation();deleteCert('${c.id}','${id}')" title="Delete">✕</button>
+          </div>
+        </div>`).join('') || '<div class="empty"><div class="empty-icon">📋</div>No certificates yet</div>'}
+      <button class="btn btn-secondary" style="margin-top:8px;margin-bottom:16px" onclick="openAddCertModal('${id}')">+ Add certificate</button>
+      <div class="section-label" style="margin:0;margin-bottom:10px">Appliances</div>
+      ${propApps.map(a=>`
+        <div class="cert-item">
+          <div class="cert-info">
+            <div class="cert-name">${a.name}</div>
+            <div class="cert-meta">${a.make} ${a.model}</div>
+            <div class="cert-meta">S/N: ${a.serial}</div>
+            ${a.location?`<div class="cert-meta">${a.location}</div>`:''}
+            ${a.notes?`<div class="cert-meta" style="color:var(--text3)">${a.notes}</div>`:''}
+          </div>
+          <button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')" title="Delete">✕</button>
+        </div>`).join('') || '<div class="empty"><div class="empty-icon">🏠</div>No appliances logged</div>'}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddApplianceModal('${id}')">+ Add appliance</button>
+    </div>
+    <div id="dtab-maintenance" class="dtab-content">
+      ${propMaint.map(m=>`
+        <div class="cert-item">
+          <div class="cert-info">
+            <div class="cert-name">${m.desc}</div>
+            <div class="cert-meta">${fmtDate(m.date)}${m.cost?' · '+fmtMoney(m.cost):''}</div>
+            ${m.notes?`<div class="cert-meta" style="color:var(--text3)">${m.notes}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <span class="badge badge-${m.status==='open'?'amber':'green'}">${m.status==='open'?'Open':'Resolved'}</span>
+            <button class="icon-btn" onclick="deleteMaint('${m.id}','${id}')" title="Delete">✕</button>
+          </div>
+        </div>`).join('') || '<div class="empty"><div class="empty-icon">🔧</div>No maintenance issues</div>'}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddMaintModal('${id}')">+ Log issue</button>
+    </div>
+    <div id="dtab-contacts" class="dtab-content">
+      <div class="card">
+        <div class="card-title">Key contacts</div>
+        ${[['Letting agent',p.agent],['Agent phone',p.agentTel],['Gas engineer',p.gasEngineer],['Electrician',p.electrician],['Solicitor',p.solicitor]].map(([l,v])=>`
+          <div class="info-row"><span class="info-label">${l}</span><span class="info-val" style="word-break:break-word">${v||'—'}</span></div>`).join('')}
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="card-title">Insurance</div>
+        ${[['Provider',p.insuranceProvider||p.insurance||'—'],['Policy number',p.insurancePolicyNo||'—'],['Type',p.insuranceType||'—'],['Annual premium',p.insurancePremium?fmtMoney(p.insurancePremium):'—'],['Renewal date',p.insuranceRenewal?fmtDate(p.insuranceRenewal):'—'],['Contact / broker',p.insuranceContact||'—']].map(([l,v])=>`
+          <div class="info-row"><span class="info-label">${l}</span><span class="info-val" style="word-break:break-word">${v}</span></div>`).join('')}
+        <button class="btn btn-secondary" style="margin-top:10px" onclick="openEditInsuranceModal('${id}')">Edit insurance details</button>
+      </div>
+    </div>
+    <div id="dtab-transactions" class="dtab-content">
+      <div class="card">
+        ${propTxns.length ? propTxns.map(t=>txnRow(t,`deleteTxn('${t.id}','${id}')`,false)).join('') : '<div class="empty" style="padding:12px 0">No transactions yet</div>'}
+      </div>
+    </div>`;
+}
+
+function switchDTab(name, btn, propId) {
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.dtab-content').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('dtab-'+name).classList.add('active');
+}
+
+function openAddRentHistoryModal(propId) {
+  openModal(`<div class="modal-title">Add rent record</div>
+    <div class="form-row">
+      <div class="form-field"><label>Monthly rent (£)</label><input type="number" id="rh-amount" step="1" placeholder="e.g. 1450"></div>
+      <div class="form-field"><label>Tenant</label><input type="text" id="rh-tenant" placeholder="Tenant name"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Start date</label><input type="date" id="rh-start"></div>
+      <div class="form-field"><label>End date</label><input type="date" id="rh-end"></div>
+    </div>
+    <div class="form-field"><label>Notes</label><input type="text" id="rh-notes" placeholder="e.g. Initial tenancy, renewal +5%"></div>
+    <button class="btn btn-primary" onclick="saveRentHistory('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+function saveRentHistory(propId) {
+  const amt = parseFloat(document.getElementById('rh-amount').value)||0;
+  if(!amt){alert('Please enter a rent amount.');return;}
+  if(!state.rentHistory) state.rentHistory=[];
+  state.rentHistory.push({id:uid(),propId,amount:amt,tenant:document.getElementById('rh-tenant').value,startDate:document.getElementById('rh-start').value,endDate:document.getElementById('rh-end').value||null,notes:document.getElementById('rh-notes').value});
+  saveState('rentHistory'); closeModal(); renderPropDetailContent(propId);
+}
+function deleteRentHistory(rhId, propId) {
+  
+  state.rentHistory = state.rentHistory.filter(r=>r.id!==rhId);
+  saveState('rentHistory'); renderPropDetailContent(propId);
+}
+function renderFinance() {
+  const period = state.dashPeriod || 'ytd';
+  const {start, end, label} = getPeriodRange(period);
+  const allTxns = state.filterProp
+    ? state.txns.filter(t=>t.prop===state.filterProp)
+    : state.txns;
+  const ftxns = allTxns.filter(t=>{
+    if(!t.date) return false;
+    const d = new Date(t.date);
+    return d >= start && d <= end;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+  const typeFilter = state.financeTab;
+  const shown = typeFilter==='all' ? ftxns : ftxns.filter(t=>t.type===typeFilter);
+  const income = ftxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
+  const expense = ftxns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t),0);
+  const net = income - expense;
+
+  const fmtShort = d => d ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}) : '';
+  const dateRange = `${fmtShort(start)} – ${fmtShort(end)}`;
+
+  const periods = [
+    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},
+    {v:'q1',l:'Q1'},{v:'q2',l:'Q2'},{v:'q3',l:'Q3'},{v:'q4',l:'Q4'}
+  ];
+  const periodBar = `<div class="toggle-bar" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap">
+    ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderFinance()">${p.l}</button>`).join('')}
+  </div>`;
+
+  document.getElementById('screen-finance').innerHTML = `
+    ${periodBar}
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center">${dateRange}</div>
+    <div class="metrics" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="metric">
+        <div class="metric-label">Income</div>
+        <div class="metric-value" style="color:var(--green);font-size:18px">${fmtMoney(income)}</div>
+        <div class="metric-sub">${ftxns.filter(t=>t.type==='income').length} entries</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Expenses</div>
+        <div class="metric-value" style="color:var(--red);font-size:18px">${fmtMoney(expense)}</div>
+        <div class="metric-sub">${ftxns.filter(t=>t.type==='expense').length} entries</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Net profit</div>
+        <div class="metric-value" style="color:${net>=0?'var(--green)':'var(--red)'};font-size:18px">${net<0?'-':''}${fmtMoney(net)}</div>
+        <div class="metric-sub">${label}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn btn-secondary" style="flex:1" onclick="openAddTxnModal()">+ Add transaction</button>
+      <button class="btn btn-primary" style="flex:1" onclick="showScreen('mtd',document.querySelector('[data-screen=mtd]'))">MTD export</button>
+    </div>
+    <div class="toggle-bar">
+      <button class="toggle-btn ${typeFilter==='all'?'active':''}" onclick="setFinTab('all')">All</button>
+      <button class="toggle-btn ${typeFilter==='income'?'active':''}" onclick="setFinTab('income')">Income</button>
+      <button class="toggle-btn ${typeFilter==='expense'?'active':''}" onclick="setFinTab('expense')">Expenses</button>
+    </div>
+    <div class="card">
+      ${shown.length ? shown.map(t=>txnRow(t,`deleteTxnGlobal('${t.id}')`,true)).join('') : '<div class="empty">No transactions for this period</div>'}
+    </div>`;
+}
+function setFinTab(t) { state.financeTab=t; renderFinance(); }
+function getTaxYear(date) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const cutoff = new Date(y, 3, 6); // 6 April
+  return d >= cutoff ? y : y - 1;
+}
+function getQuarter(date) {
+  const d = new Date(date);
+  const y = getTaxYear(date);
+  const q1s = new Date(y, 3, 6), q1e = new Date(y, 6, 5);
+  const q2s = new Date(y, 6, 6), q2e = new Date(y, 9, 5);
+  const q3s = new Date(y, 9, 6), q3e = new Date(y+1, 0, 5);
+  const q4s = new Date(y+1, 0, 6), q4e = new Date(y+1, 3, 5);
+  if(d>=q1s&&d<=q1e) return {q:1,label:'Q1',period:'6 Apr – 5 Jul',due:'7 Aug'};
+  if(d>=q2s&&d<=q2e) return {q:2,label:'Q2',period:'6 Jul – 5 Oct',due:'7 Nov'};
+  if(d>=q3s&&d<=q3e) return {q:3,label:'Q3',period:'6 Oct – 5 Jan',due:'7 Feb'};
+  if(d>=q4s&&d<=q4e) return {q:4,label:'Q4',period:'6 Jan – 5 Apr',due:'7 May'};
+  return {q:0,label:'',period:'',due:''};
+}
+
+function renderMTD() {
+  const taxYears = [];
+  const currentYear = getTaxYear(new Date().toISOString().slice(0,10));
+  for(let y = currentYear; y >= currentYear - 2; y--) taxYears.push(y);
+  if(!state.mtdYear) state.mtdYear = currentYear;
+  const yr = state.mtdYear;
+  const start = new Date(yr, 3, 6);
+  const end = new Date(yr+1, 3, 5, 23, 59);
+  const yearTxns = state.txns.filter(t => {
+    if(!t.date) return false;
+    const d = new Date(t.date);
+    return d >= start && d <= end;
+  });
+
+  const grossIncome = yearTxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
+  const financeExpenses = yearTxns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
+  const otherExpenses = yearTxns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
+  const totalExpenses = financeExpenses + otherExpenses;
+  const netProfit = grossIncome - totalExpenses;
+
+  const quarters = [1,2,3,4].map(q => {
+    let qs, qe;
+    if(q===1){qs=new Date(yr,3,6);qe=new Date(yr,6,5,23,59);}
+    else if(q===2){qs=new Date(yr,6,6);qe=new Date(yr,9,5,23,59);}
+    else if(q===3){qs=new Date(yr,9,6);qe=new Date(yr+1,0,5,23,59);}
+    else{qs=new Date(yr+1,0,6);qe=new Date(yr+1,3,5,23,59);}
+    const labels = ['Q1: 6 Apr – 5 Jul','Q2: 6 Jul – 5 Oct','Q3: 6 Oct – 5 Jan','Q4: 6 Jan – 5 Apr'];
+    const dues = ['7 Aug','7 Nov','7 Feb','7 May'];
+    const qt = yearTxns.filter(t=>{ const d=new Date(t.date); return d>=qs&&d<=qe; });
+    const qIncome = qt.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
+    const qFinance = qt.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
+    const qOther = qt.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
+    const now = new Date();
+    const isPast = qe < now;
+    const isDue = qs <= now && qe >= now;
+    return {q,label:labels[q-1],due:dues[q-1],income:qIncome,finance:qFinance,other:qOther,total:qIncome-qFinance-qOther,txCount:qt.length,isPast,isDue,qs,qe};
+  });
+
+  const yearOpts = taxYears.map(y=>`<option value="${y}"${y===yr?' selected':''}>${y}/${String(y+1).slice(2)} tax year</option>`).join('');
+
+  const quarterCards = quarters.map(q => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:500">${q.label}</div>
+          <div class="text-sm">Due ${q.due} · ${q.txCount} transactions</div>
+        </div>
+        <span class="badge ${q.isDue?'badge-amber':q.isPast?'badge-green':'badge-grey'}">${q.isDue?'Current':q.isPast?'Past':'Upcoming'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Gross income</div><div style="font-size:15px;font-weight:500;color:var(--green)">${fmtMoney(q.income)}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Finance costs</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.finance)}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Other expenses</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.other)}</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:13px;color:var(--text2)">Net: <strong style="color:${q.total>=0?'var(--green)':'var(--red)'}">${q.total<0?'-':''}${fmtMoney(q.total)}</strong></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;width:auto" onclick="exportQuarterCSV(${q.q},${yr})">CSV</button>
+          <button class="btn btn-primary" style="padding:6px 12px;font-size:12px;width:auto" onclick="exportQuarterMTD(${q.q},${yr})">MTD summary</button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('screen-mtd').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="back-btn" style="padding:0" onclick="showScreen('finance',document.querySelector('[data-screen=finance]'))">← Finance</button>
+      <div style="flex:1"></div>
+      <select class="filter-select" onchange="state.mtdYear=parseInt(this.value);renderMTD()">${yearOpts}</select>
+    </div>
+    <div class="card" style="margin-bottom:10px;background:var(--blue-bg);border-color:#B5D4F4">
+      <div style="font-size:13px;font-weight:500;color:var(--blue);margin-bottom:6px">MTD for Income Tax</div>
+      <div style="font-size:12px;color:var(--blue);line-height:1.5">4 quarterly updates required · Finance costs (mortgage interest) are always reported separately · Gross income is before deductions · Mandatory from April 2026 for income ≥ £50,000</div>
+    </div>
+    <div class="metrics" style="margin-bottom:10px">
+      <div class="metric"><div class="metric-label">Gross income</div><div class="metric-value" style="color:var(--green)">${fmtMoney(grossIncome)}</div><div class="metric-sub">${yr}/${String(yr+1).slice(2)} tax year</div></div>
+      <div class="metric"><div class="metric-label">Finance costs</div><div class="metric-value" style="color:var(--red)">${fmtMoney(financeExpenses)}</div><div class="metric-sub">Financial costs</div></div>
+      <div class="metric"><div class="metric-label">Other expenses</div><div class="metric-value" style="color:var(--red)">${fmtMoney(otherExpenses)}</div><div class="metric-sub">All non-finance</div></div>
+      <div class="metric"><div class="metric-label">Net profit</div><div class="metric-value" style="color:${netProfit>=0?'var(--green)':'var(--red)'}">${netProfit<0?'-':''}${fmtMoney(netProfit)}</div><div class="metric-sub">Before tax</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-secondary" style="flex:1" onclick="exportFullYearCSV(${yr})">Export full year CSV</button>
+      <button class="btn btn-primary" style="flex:1" onclick="exportFullYearMTD(${yr})">Full year MTD report</button>
+    </div>
+    <div class="section-label" style="margin:0;margin-bottom:10px">Quarterly breakdown</div>
+    ${quarterCards}
+    <div class="card" style="background:var(--amber-bg);border-color:#E8C878">
+      <div style="font-size:13px;font-weight:500;color:var(--amber);margin-bottom:4px">Important</div>
+      <div style="font-size:12px;color:var(--amber);line-height:1.6">These exports are for reference and to assist your accountant or MTD-compatible software. You cannot submit directly to HMRC from this app — you will need to use HMRC-approved software (e.g. Xero, Hammock, Landlord Studio) for actual submission. Always verify figures with your accountant before filing.</div>
+    </div>`;
+}
+
+function txnsForQuarter(q, yr) {
+  let qs, qe;
+  if(q===1){qs=new Date(yr,3,6);qe=new Date(yr,6,5,23,59);}
+  else if(q===2){qs=new Date(yr,6,6);qe=new Date(yr,9,5,23,59);}
+  else if(q===3){qs=new Date(yr,9,6);qe=new Date(yr+1,0,5,23,59);}
+  else{qs=new Date(yr+1,0,6);qe=new Date(yr+1,3,5,23,59);}
+  return state.txns.filter(t=>{ if(!t.date)return false; const d=new Date(t.date); return d>=qs&&d<=qe; });
+}
+
+function txnsForYear(yr) {
+  const s=new Date(yr,3,6), e=new Date(yr+1,3,5,23,59);
+  return state.txns.filter(t=>{ if(!t.date)return false; const d=new Date(t.date); return d>=s&&d<=e; });
+}
+
+function buildCSV(txns) {
+  const rows = [['Date','Description','Property','Category','Type','Amount (£)','Finance cost (Y/N)']];
+  txns.forEach(t => {
+    const p = getProp(t.prop);
+    rows.push([t.date, t.desc, p?p.name:t.prop, CAT_LABELS[t.cat]||t.cat, t.type==='income'?'Income':'Expense', t.type==='expense'?-t.amount:t.amount, t.cat==='financial'?'Y':'N']);
+  });
+  return rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+}
+
+function downloadText(filename, content, mime) {
+  const blob = new Blob([content],{type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportQuarterCSV(q, yr) {
+  const txns = txnsForQuarter(q, yr);
+  downloadText(`MTD_Q${q}_${yr}-${yr+1}.csv`, buildCSV(txns), 'text/csv');
+}
+
+function exportFullYearCSV(yr) {
+  const txns = txnsForYear(yr);
+  downloadText(`MTD_FullYear_${yr}-${yr+1}.csv`, buildCSV(txns), 'text/csv');
+}
+
+function buildMTDSummary(txns, label, yr) {
+  const income = txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
+  const finance = txns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
+  const other = txns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
+  const net = income-finance-other;
+  const catBreakdown = Object.entries(CAT_LABELS).map(([k,l])=>{
+    const total = txns.filter(t=>t.type==='expense'&&t.cat===k).reduce((s,t)=>s+txnShare(t),0);
+    return total>0?`  ${l}: £${total.toFixed(2)}`:'';
+  }).filter(Boolean).join('\n');
+
+  return `PROPERTY PORTFOLIO – MTD FOR INCOME TAX
+${label} | Tax year ${yr}/${yr+1}
+Generated: ${new Date().toLocaleDateString('en-GB')}
+${'─'.repeat(48)}
+
+UK PROPERTY INCOME
+  Gross rental income:          £${income.toFixed(2)}
+
+ALLOWABLE EXPENSES
+  Residential finance costs
+  (financial costs – Section 24 finance costs): £${finance.toFixed(2)}
+
+  Other allowable expenses:     £${other.toFixed(2)}
+${catBreakdown ? '\n  Breakdown:\n'+catBreakdown : ''}
+
+SUMMARY
+  Total expenses:               £${(finance+other).toFixed(2)}
+  Net profit / (loss):          £${net.toFixed(2)}
+
+${'─'.repeat(48)}
+TRANSACTION COUNT: ${txns.length} (${txns.filter(t=>t.type==='income').length} income, ${txns.filter(t=>t.type==='expense').length} expense)
+
+NOTE: Finance costs (mortgage interest) must always be
+reported separately under MTD for ITSA. Figures are on a
+cash basis. This summary is for reference only — submit
+via HMRC-approved MTD software for official filing.
+`;
+}
+
+function exportQuarterMTD(q, yr) {
+  const qLabels = ['','Q1 (6 Apr – 5 Jul)','Q2 (6 Jul – 5 Oct)','Q3 (6 Oct – 5 Jan)','Q4 (6 Jan – 5 Apr)'];
+  const txns = txnsForQuarter(q, yr);
+  downloadText(`MTD_Q${q}_${yr}-${yr+1}_summary.txt`, buildMTDSummary(txns, qLabels[q], yr), 'text/plain');
+}
+
+function exportFullYearMTD(yr) {
+  const txns = txnsForYear(yr);
+  downloadText(`MTD_FullYear_${yr}-${yr+1}_summary.txt`, buildMTDSummary(txns, 'Full tax year', yr), 'text/plain');
+}
+
+function renderMaintenance() {
+  const fps = state.filterProp ? state.props.filter(p=>p.id===state.filterProp) : state.props;
+  const fpIds = fps.map(p=>p.id);
+  const filter = state.maintFilter || 'open';
+  const shown = state.maint
+    .filter(m => fpIds.includes(m.propId) && (filter==='all' || m.status===filter))
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  const openCount = state.maint.filter(m=>fpIds.includes(m.propId)&&m.status==='open').length;
+  const resolvedCount = state.maint.filter(m=>fpIds.includes(m.propId)&&m.status==='resolved').length;
+  const totalCost = state.maint.filter(m=>fpIds.includes(m.propId)&&m.status==='resolved'&&m.cost>0).reduce((s,m)=>s+m.cost,0);
+
+  const issueCards = shown.map(m => {
+    const p = getProp(m.propId);
+    const priorityColor = m.priority==='high' ? 'var(--red)' : m.priority==='medium' ? 'var(--amber)' : 'var(--text3)';
+    const priorityBg = m.priority==='high' ? 'var(--red-bg)' : m.priority==='medium' ? 'var(--amber-bg)' : 'var(--surface2)';
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="flex:1;min-width:0;padding-right:10px">
+          <div style="font-size:15px;font-weight:500;margin-bottom:3px">${m.desc}</div>
+          <div class="text-sm">${p?p.name:'Unknown'} · ${m.date?fmtDate(m.date):'No date'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+          <span class="badge badge-${m.status==='open'?'amber':'green'}">${m.status==='open'?'Open':'Resolved'}</span>
+          ${m.priority?`<span class="badge" style="background:${priorityBg};color:${priorityColor}">${m.priority.charAt(0).toUpperCase()+m.priority.slice(1)}</span>`:''}
+        </div>
+      </div>
+      ${m.contractor?`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Contractor: ${m.contractor}</div>`:''}
+      ${m.cost>0?`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Cost: ${fmtMoney(m.cost)}</div>`:''}
+      ${m.notes?`<div style="font-size:13px;color:var(--text3);margin-bottom:8px;padding:8px;background:var(--surface2);border-radius:var(--radius-sm)">${m.notes}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+        ${m.status==='open'?`<button class="btn btn-secondary" style="flex:1;padding:7px;font-size:13px" onclick="markResolved('${m.id}')">Mark resolved</button>`:''}
+        <button class="btn btn-secondary" style="flex:1;padding:7px;font-size:13px" onclick="editMaint('${m.id}')">Edit</button>
+        <button class="btn" style="flex:1;padding:7px;font-size:13px;background:var(--red-bg);color:var(--red)" onclick="deleteMaintGlobal('${m.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('screen-maintenance').innerHTML = `
+    <div class="metrics" style="grid-template-columns:1fr 1fr">
+      <div class="metric"><div class="metric-label">Open</div><div class="metric-value" style="color:${openCount>0?'var(--amber)':'var(--text)'}">${openCount}</div></div>
+      <div class="metric"><div class="metric-label">Resolved</div><div class="metric-value" style="color:var(--green)">${resolvedCount}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="openAddMaintModal(null)">+ Log issue</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="openEmailUpload()">↑ From email</button>
+    </div>
+    <div id="maint-email-area"></div>
+    <div class="toggle-bar">
+      <button class="toggle-btn ${filter==='open'?'active':''}" onclick="setMaintFilter('open')">Open</button>
+      <button class="toggle-btn ${filter==='resolved'?'active':''}" onclick="setMaintFilter('resolved')">Resolved</button>
+      <button class="toggle-btn ${filter==='all'?'active':''}" onclick="setMaintFilter('all')">All</button>
+    </div>
+    ${issueCards || `<div class="empty"><div class="empty-icon">🔧</div>${filter==='open'?'No open issues — great!':'No issues found'}</div>`}`;
+}
+
+function setMaintFilter(f) { state.maintFilter = f; renderMaintenance(); }
+
+function markResolved(id) {
+  const m = state.maint.find(m=>m.id===id);
+  if(m){ m.status='resolved'; saveState('maint'); renderMaintenance(); renderDashboard(); }
+}
+
+function deleteMaintGlobal(id) {
+  
+  state.maint = state.maint.filter(m=>m.id!==id);
+  saveState('maint'); renderMaintenance(); renderDashboard();
+}
+
+function editMaint(id) {
+  const m = state.maint.find(x=>x.id===id);
+  if(!m) return;
+  const propOpts = state.props.map(p=>`<option value="${p.id}"${p.id===m.propId?' selected':''}>${p.name}</option>`).join('');
+  openModal(`<div class="modal-title">Edit issue</div>
+    <div class="form-field"><label>Property</label><select id="em-prop">${propOpts}</select></div>
+    <div class="form-field"><label>Description</label><input type="text" id="em-desc" value="${m.desc}"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Date</label><input type="date" id="em-date" value="${m.date||''}"></div>
+      <div class="form-field"><label>Status</label><select id="em-status"><option value="open"${m.status==='open'?' selected':''}>Open</option><option value="resolved"${m.status==='resolved'?' selected':''}>Resolved</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Priority</label><select id="em-priority"><option value=""${!m.priority?' selected':''}>—</option><option value="low"${m.priority==='low'?' selected':''}>Low</option><option value="medium"${m.priority==='medium'?' selected':''}>Medium</option><option value="high"${m.priority==='high'?' selected':''}>High</option></select></div>
+      <div class="form-field"><label>Cost (£)</label><input type="number" id="em-cost" value="${m.cost||''}" step="0.01"></div>
+    </div>
+    <div class="form-field"><label>Contractor</label><input type="text" id="em-contractor" value="${m.contractor||''}"></div>
+    <div class="form-field"><label>Notes</label><textarea id="em-notes" rows="3">${m.notes||''}</textarea></div>
+    <button class="btn btn-primary" onclick="saveEditMaint('${id}')">Save changes</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+
+function saveEditMaint(id) {
+  const m = state.maint.find(x=>x.id===id);
+  if(!m) return;
+  m.propId = document.getElementById('em-prop').value;
+  m.desc = document.getElementById('em-desc').value;
+  m.date = document.getElementById('em-date').value;
+  m.status = document.getElementById('em-status').value;
+  m.priority = document.getElementById('em-priority').value;
+  m.cost = parseFloat(document.getElementById('em-cost').value)||0;
+  m.contractor = document.getElementById('em-contractor').value;
+  m.notes = document.getElementById('em-notes').value;
+  saveState('maint'); closeModal(); renderMaintenance(); renderDashboard();
+}
+
+function openEmailUpload() {
+  const area = document.getElementById('maint-email-area');
+  area.innerHTML = `
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">Paste or upload email</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Paste the email text below or upload a screenshot — AI will extract the maintenance details.</p>
+      <div class="toggle-bar" id="email-input-toggle">
+        <button class="toggle-btn active" onclick="setEmailInputMode('paste',this)">Paste text</button>
+        <button class="toggle-btn" onclick="setEmailInputMode('image',this)">Upload image</button>
+      </div>
+      <div id="email-paste-area">
+        <div class="form-field"><label>Email text</label><textarea id="email-text" rows="6" placeholder="Paste the email content here…"></textarea></div>
+        <button class="btn btn-primary" onclick="extractFromEmailText()">Extract details</button>
+      </div>
+      <div id="email-image-area" style="display:none">
+        <div class="upload-zone" onclick="document.getElementById('email-img-input').click()">
+          <p>Tap to choose screenshot</p>
+          <span>JPG, PNG or PDF</span>
+        </div>
+        <input type="file" id="email-img-input" class="upload-input" accept=".jpg,.jpeg,.png,.pdf,.webp" onchange="extractFromEmailImage(this)">
+      </div>
+      <div id="email-extracting" style="display:none" class="loading-box"><span class="spinner"></span> Reading email…</div>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('maint-email-area').innerHTML=''">Cancel</button>
+    </div>
+    <div id="email-extracted-form"></div>`;
+}
+
+function setEmailInputMode(mode, btn) {
+  document.querySelectorAll('#email-input-toggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('email-paste-area').style.display = mode==='paste'?'block':'none';
+  document.getElementById('email-image-area').style.display = mode==='image'?'block':'none';
+}
+
+const EMAIL_PROMPT = `Extract maintenance issue details from this tenant email or message. Return ONLY a JSON object, no markdown:
+{"description":"one-line summary of the issue","property":"property name or address if mentioned, else empty string","date":"YYYY-MM-DD date reported if found, else today","priority":"high|medium|low — high if urgent/emergency, medium if inconvenient, low otherwise","notes":"any additional relevant detail from the email","contractor":"any contractor or tradesperson mentioned, else empty string","confidence":"high or low"}`;
+
+async function extractFromEmailText() {
+  const text = document.getElementById('email-text').value.trim();
+  if(!text){alert('Please paste some email text.');return;}
+  document.getElementById('email-paste-area').style.display='none';
+  document.getElementById('email-extracting').style.display='block';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:EMAIL_PROMPT+'\n\nEmail content:\n'+text}]})});
+    const data = await res.json();
+    const raw = data.content.map(c=>c.text||'').join('');
+    let ex={}; try{ex=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
+    showExtractedMaint(ex);
+  } catch(err) { showExtractedMaint({description:'',notes:text,priority:'medium',confidence:'low'}); }
+  document.getElementById('email-extracting').style.display='none';
+}
+
+async function extractFromEmailImage(input) {
+  const file=input.files[0]; if(!file) return;
+  document.getElementById('email-image-area').style.display='none';
+  document.getElementById('email-extracting').style.display='block';
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const base64=e.target.result.split(',')[1];
+    const mediaType=file.type||'image/jpeg';
+    try {
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:[{type:mediaType==='application/pdf'?'document':'image',source:{type:'base64',media_type:mediaType,data:base64}},{type:'text',text:EMAIL_PROMPT}]}]})});
+      const data=await res.json();
+      const raw=data.content.map(c=>c.text||'').join('');
+      let ex={}; try{ex=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
+      showExtractedMaint(ex);
+    } catch(err){ showExtractedMaint({description:'',priority:'medium',confidence:'low'}); }
+    document.getElementById('email-extracting').style.display='none';
+    input.value='';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showExtractedMaint(ex) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('email-extracted-form').innerHTML=`
+    <div class="card">
+      <div class="card-title">Review extracted details</div>
+      ${ex.confidence==='low'?'<div class="alert" style="margin-bottom:10px">Low confidence — please review carefully</div>':''}
+      <div class="form-field"><label>Property</label><select id="xm-prop">${propOpts}</select></div>
+      <div class="form-field"><label>Description</label><input type="text" id="xm-desc" value="${ex.description||''}"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Date reported</label><input type="date" id="xm-date" value="${ex.date||''}"></div>
+        <div class="form-field"><label>Priority</label><select id="xm-priority"><option value=""${!ex.priority?' selected':''}>—</option><option value="low"${ex.priority==='low'?' selected':''}>Low</option><option value="medium"${ex.priority==='medium'?' selected':''}>Medium</option><option value="high"${ex.priority==='high'?' selected':''}>High</option></select></div>
+      </div>
+      <div class="form-field"><label>Contractor</label><input type="text" id="xm-contractor" value="${ex.contractor||''}"></div>
+      <div class="form-field"><label>Notes</label><textarea id="xm-notes" rows="3">${ex.notes||''}</textarea></div>
+      <button class="btn btn-primary" onclick="saveExtractedMaint()">Save issue</button>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('maint-email-area').innerHTML='';document.getElementById('email-extracted-form').innerHTML=''">Cancel</button>
+    </div>`;
+}
+
+function saveExtractedMaint() {
+  const desc = document.getElementById('xm-desc').value;
+  if(!desc){alert('Please enter a description.');return;}
+  state.maint.push({id:uid(),propId:document.getElementById('xm-prop').value,desc,date:document.getElementById('xm-date').value,status:'open',priority:document.getElementById('xm-priority').value,cost:0,contractor:document.getElementById('xm-contractor').value,notes:document.getElementById('xm-notes').value});
+  saveState('maint');
+  document.getElementById('maint-email-area').innerHTML='<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green);margin-bottom:10px">✓ Issue logged</div>';
+  document.getElementById('email-extracted-form').innerHTML='';
+  setTimeout(()=>{ const a=document.getElementById('maint-email-area'); if(a) a.innerHTML=''; },2000);
+  renderMaintenance(); renderDashboard();
+}
+
+function renderDocs() {
+  document.getElementById('screen-docs').innerHTML = `
+    <div class="section-label" style="margin-top:0">Upload a document</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Upload a receipt, invoice, certificate or other document — AI will extract the key details.</p>
+    <div class="toggle-bar" id="doc-type-toggle">
+      <button class="toggle-btn active" onclick="setDocType('transaction',this)">Receipt / Invoice</button>
+      <button class="toggle-btn" onclick="setDocType('certificate',this)">Certificate</button>
+    </div>
+    <div class="upload-zone" onclick="document.getElementById('doc-upload-input').click()">
+      <p>Tap to choose a file</p>
+      <span>PDF or photo (JPG, PNG)</span>
+    </div>
+    <input type="file" id="doc-upload-input" class="upload-input" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleDocUpload(this)">
+    <div id="doc-extract-area"></div>
+    <div class="section-label">Manual entry</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="openAddTxnModal()">+ Transaction</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="openAddCertModal(null)">+ Certificate</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="openAddApplianceModal(null)">+ Appliance</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="openAddMaintModal(null)">+ Maintenance</button>
+    </div>`;
+}
+let currentDocType = 'transaction';
+function setDocType(type, btn) {
+  currentDocType = type;
+  document.querySelectorAll('#doc-type-toggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+let _lastUploadedFile = null;
+let _lastUploadedBase64 = null;
+let _lastUploadedMime = null;
+
+async function handleDocUpload(input) {
+  const file = input.files[0]; if(!file) return;
+  _lastUploadedFile = file;
+  _lastUploadedMime = file.type || 'application/pdf';
+  const area = document.getElementById('doc-extract-area');
+  area.innerHTML = '<div class="loading-box"><span class="spinner"></span> Extracting details…</div>';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    _lastUploadedBase64 = e.target.result.split(',')[1];
+    const isTransaction = currentDocType === 'transaction';
+    const prompt = isTransaction
+      ? `Extract financial details from this document. Return ONLY a JSON object, no markdown:\n{"date":"YYYY-MM-DD","type":"income or expense","description":"short description","amount":numeric,"supplier":"supplier or payee name","category":"rental-income|premises|repairs|financial|professional|services|travel|other-allowable","confidence":"high or low"}`
+      : `Extract certificate details from this document. Return ONLY a JSON object, no markdown:\n{"certType":"Gas Safety|EPC|EICR|PAT Testing|Legionella|Other","issueDate":"YYYY-MM-DD","expiryDate":"YYYY-MM-DD","issuer":"issuing company or engineer","epcRating":"A|B|C|D|E|F|G or empty string if not EPC","notes":"any relevant notes","confidence":"high or low"}`;
+    let ex = null;
+    let extractionFailed = false;
+    let failureReason = '';
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:1000,
+          messages:[{role:'user',content:[
+            {type:_lastUploadedMime==='application/pdf'?'document':'image',source:{type:'base64',media_type:_lastUploadedMime,data:_lastUploadedBase64}},
+            {type:'text',text:prompt}
+          ]}]
+        })
+      });
+      if(!res.ok) {
+        const errData = await res.json().catch(()=>({}));
+        extractionFailed = true;
+        failureReason = errData?.error?.message || `API error ${res.status}`;
+      } else {
+        const data = await res.json();
+        if(data.error) {
+          extractionFailed = true;
+          failureReason = data.error.message || 'API returned an error';
+        } else {
+          const text = data.content.map(c=>c.text||'').join('');
+          try {
+            ex = JSON.parse(text.replace(/```json|```/g,'').trim());
+          } catch(e2) {
+            ex = {};
+            ex.confidence = 'low';
+          }
+        }
+      }
+    } catch(err) {
+      extractionFailed = true;
+      failureReason = err.message || 'Network error';
+    }
+
+    if(extractionFailed) {
+      const warning = `<div class="alert alert-red" style="margin-bottom:10px">
+        <strong>Extraction failed</strong> — the document could not be read automatically.
+        ${failureReason ? `<div style="font-size:11px;margin-top:4px;opacity:.8">${failureReason}</div>` : ''}
+        <div style="font-size:12px;margin-top:6px">Common causes: large/multi-page PDF, scanned without text layer, or encrypted file. Please fill in the details below.</div>
+      </div>`;
+      area.innerHTML = warning;
+      if(isTransaction) showExtractedTxn({confidence:'low'});
+      else showExtractedCert({confidence:'low'});
+    } else {
+      if(isTransaction) showExtractedTxn(ex);
+      else showExtractedCert(ex);
+    }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function buildDocFilename(propId, date, type, suffix) {
+  const p = getProp(propId);
+  const fullName = p ? p.name : 'Unknown';
+  const words = fullName.replace(/[^a-zA-Z0-9 ]/g,'').trim().split(/\s+/);
+  const firstNonNumber = words.find(w => isNaN(w)) || words[0];
+  const roadName = firstNonNumber;
+  const d = date ? new Date(date) : new Date();
+  const yymm = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0');
+  const detail = type.replace(/[^a-zA-Z0-9]+/g,'-').replace(/-+$/,'');
+  const ext = _lastUploadedMime==='application/pdf' ? '.pdf' : (_lastUploadedMime.includes('png')?'.png':'.jpg');
+  return `${roadName}_${yymm}_${detail}${suffix?'_'+suffix:''}${ext}`;
+}
+async function saveDocCopy(filename, propId, category) {
+  if(!_lastUploadedBase64 || !_lastUploadedMime) return;
+  const p = getProp(propId);
+  const propName = p ? p.name : 'General';
+  if(gAccessToken) {
+    showSync('⟳ Uploading to Drive…');
+    const link = await uploadFileToDrive(_lastUploadedBase64, _lastUploadedMime, filename, propName, category||'Documents');
+    if(link) return; // success — no need to download
+  }
+  const byteChars = atob(_lastUploadedBase64);
+  const bytes = new Uint8Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
+  const blob = new Blob([bytes],{type:_lastUploadedMime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function showExtractedTxn(ex) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  const catOpts = Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}"${ex.category===v?' selected':''}>${l}</option>`).join(''); // full list for extracted docs
+  document.getElementById('doc-extract-area').innerHTML = `
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">Review extracted details</div>
+      ${ex.confidence==='low'?'<div class="alert" style="margin-bottom:10px">Low confidence — please check carefully</div>':''}
+      <div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="ex-date" value="${ex.date||''}"></div>
+      <div class="form-field"><label>Type</label><select id="ex-type"><option value="expense"${ex.type==='expense'?' selected':''}>Expense</option><option value="income"${ex.type==='income'?' selected':''}>Income</option></select></div></div>
+      <div class="form-field"><label>Description</label><input type="text" id="ex-desc" value="${ex.description||''}"></div>
+      <div class="form-row"><div class="form-field"><label>Amount (£)</label><input type="number" id="ex-amount" value="${ex.amount||''}" step="0.01"></div>
+      <div class="form-field"><label>Category</label><select id="ex-cat">${catOpts}</select></div></div>
+      <div class="form-row"><div class="form-field"><label>Property</label><select id="ex-prop">${propOpts}</select></div>
+      <div class="form-field"><label>Supplier</label><input type="text" id="ex-supplier" value="${ex.supplier||''}"></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
+        <input type="checkbox" id="ex-savecopy" style="width:18px;height:18px;cursor:pointer" checked>
+        <label for="ex-savecopy" style="font-size:13px;color:var(--text);cursor:pointer">Save a renamed copy to my device</label>
+      </div>
+      <button class="btn btn-primary" onclick="saveExtractedTxn()">Save transaction</button>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('doc-extract-area').innerHTML=''">Cancel</button>
+    </div>`;
+}
+
+function saveExtractedTxn() {
+  const propId = document.getElementById('ex-prop').value;
+  const date = document.getElementById('ex-date').value;
+  const cat = document.getElementById('ex-cat').value;
+  const t = {id:uid(),date,type:document.getElementById('ex-type').value,desc:document.getElementById('ex-desc').value,prop:propId,cat,amount:parseFloat(document.getElementById('ex-amount').value)||0,supplier:document.getElementById('ex-supplier').value};
+  const saveCopy = document.getElementById('ex-savecopy')?.checked;
+  state.txns.push(t); saveState('txns');
+  if(saveCopy) saveDocCopy(buildDocFilename(propId, date, CAT_LABELS[cat]||cat, ''), propId, CAT_LABELS[cat]||cat);
+  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Transaction saved' + (saveCopy?' — copy downloaded':'') + '</div>';
+  setTimeout(()=>{document.getElementById('doc-extract-area').innerHTML='';},2500);
+  renderDashboard();
+}
+
+function showExtractedCert(ex) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  const typeOpts = CERT_TYPES.map(t=>`<option value="${t}"${ex.certType===t?' selected':''}>${t}</option>`).join('');
+  const isEPC = ex.certType==='EPC';
+  document.getElementById('doc-extract-area').innerHTML = `
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">Review extracted certificate</div>
+      ${ex.confidence==='low'?'<div class="alert" style="margin-bottom:10px">Low confidence — please check carefully</div>':''}
+      <div class="form-row"><div class="form-field"><label>Property</label><select id="ex-cprop">${propOpts}</select></div>
+      <div class="form-field"><label>Certificate type</label><select id="ex-ctype" onchange="toggleExtractedEpc(this.value)">${typeOpts}</select></div></div>
+      <div class="form-field" id="ex-epc-wrap" style="${isEPC?'':'display:none'}"><label>EPC rating</label>
+        <select id="ex-epc-rating">
+          <option value="">— Select —</option>
+          ${['A','B','C','D','E','F','G'].map(r=>`<option value="${r}"${ex.epcRating===r?' selected':''}>${r}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-row"><div class="form-field"><label>Issue date</label><input type="date" id="ex-cissue" value="${ex.issueDate||''}"></div>
+      <div class="form-field"><label>Expiry date</label><input type="date" id="ex-cexpiry" value="${ex.expiryDate||''}"></div></div>
+      <div class="form-field"><label>Issuer</label><input type="text" id="ex-cissuer" value="${ex.issuer||''}"></div>
+      <div class="form-field"><label>Notes</label><input type="text" id="ex-cnotes" value="${ex.notes||''}"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
+        <input type="checkbox" id="ex-csavecopy" style="width:18px;height:18px;cursor:pointer" checked>
+        <label for="ex-csavecopy" style="font-size:13px;color:var(--text);cursor:pointer">Save a renamed copy to my device</label>
+      </div>
+      <button class="btn btn-primary" onclick="saveExtractedCert()">Save certificate</button>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('doc-extract-area').innerHTML=''">Cancel</button>
+    </div>`;
+}
+function toggleExtractedEpc(type) {
+  const wrap = document.getElementById('ex-epc-wrap');
+  if(wrap) wrap.style.display = type==='EPC' ? '' : 'none';
+}
+function saveExtractedCert() {
+  const propId = document.getElementById('ex-cprop').value;
+  const certType = document.getElementById('ex-ctype').value;
+  const issueDate = document.getElementById('ex-cissue').value;
+  const saveCopy = document.getElementById('ex-csavecopy')?.checked;
+  const epcRating = certType==='EPC' ? (document.getElementById('ex-epc-rating')?.value||'') : '';
+  const c = {
+    id:uid(), propId, type:certType, issueDate,
+    expiryDate:document.getElementById('ex-cexpiry').value,
+    issuer:document.getElementById('ex-cissuer').value,
+    notes:document.getElementById('ex-cnotes').value,
+    epcRating,
+    docData: _lastUploadedBase64 || '',
+    docMime: _lastUploadedMime || '',
+  };
+  state.certs.push(c); saveState('certs');
+  if(saveCopy) saveDocCopy(buildDocFilename(propId, issueDate, certType, ''), propId, 'Certificates');
+  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Certificate saved' + (saveCopy?' — copy downloaded':'') + '</div>';
+  setTimeout(()=>{document.getElementById('doc-extract-area').innerHTML='';},2500);
+  renderDashboard();
+}
+function openModal(html) { document.getElementById('modal-body').innerHTML=html; document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+const CAT_BY_TYPE = {
+  income: [
+    ['rental-income','Rental income'],
+    ['other-allowable','Other income'],
+  ],
+  expense: [
+    ['premises','Premises costs'],
+    ['repairs','Repairs & maintenance'],
+    ['financial','Financial costs'],
+    ['professional','Professional fees'],
+    ['services','Cost of services'],
+    ['travel','Travel costs'],
+    ['other-allowable','Other allowable expenses'],
+  ],
+};
+
+function getCatOpts(type) {
+  return (CAT_BY_TYPE[type] || CAT_BY_TYPE.expense)
+    .map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+}
+const PERIOD_CATS = ['rental-income','professional','premises','financial','services'];
+
+function openAddTxnModal() {
+  const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  openModal(`<div class="modal-title">Add transaction</div>
+    <div class="form-row">
+      <div class="form-field"><label>Date paid / received</label><input type="date" id="mt-date"></div>
+      <div class="form-field"><label>Type</label>
+        <select id="mt-type" onchange="updateTxnCats(this.value)">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field"><label>Description</label><input type="text" id="mt-desc" placeholder="e.g. Boiler repair"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div>
+      <div class="form-field"><label>Category</label><select id="mt-cat" onchange="updatePeriodFields(this.value)">${getCatOpts('expense')}</select></div>
+    </div>
+    <div id="mt-period-wrap" style="display:none">
+      <div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 10px;margin-bottom:8px">For MTD compliance, record the period this payment covers</div>
+      <div class="form-row">
+        <div class="form-field"><label>Period start</label><input type="date" id="mt-period-start"></div>
+        <div class="form-field"><label>Period end</label><input type="date" id="mt-period-end"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Property</label><select id="mt-prop">${propOpts}</select></div>
+      <div class="form-field"><label>Supplier / tenant</label><input type="text" id="mt-supplier"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveManualTxn()">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+
+function updateTxnCats(type) {
+  const sel = document.getElementById('mt-cat');
+  if(sel) { sel.innerHTML = getCatOpts(type); updatePeriodFields(sel.value); }
+}
+
+function updatePeriodFields(cat) {
+  const wrap = document.getElementById('mt-period-wrap');
+  if(wrap) wrap.style.display = PERIOD_CATS.includes(cat) ? '' : 'none';
+}
+
+function saveManualTxn() {
+  const d=document.getElementById('mt-date').value, desc=document.getElementById('mt-desc').value, amt=parseFloat(document.getElementById('mt-amount').value)||0;
+  if(!d||!desc||!amt){alert('Please fill in date, description and amount.');return;}
+  const cat = document.getElementById('mt-cat').value;
+  state.txns.push({id:uid(),date:d,type:document.getElementById('mt-type').value,desc,prop:document.getElementById('mt-prop').value,cat,amount:amt,supplier:document.getElementById('mt-supplier').value,periodStart:PERIOD_CATS.includes(cat)?(document.getElementById('mt-period-start')?.value||''):'',periodEnd:PERIOD_CATS.includes(cat)?(document.getElementById('mt-period-end')?.value||''):''});
+  saveState('txns'); closeModal(); renderFinance(); renderDashboard();
+}
+
+function openAddCertModal(propId) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}"${p.id===propId?' selected':''}>${p.name}</option>`).join('');
+  // Standard durations per cert type
+  const CERT_DURATIONS = {'Gas Safety':12,'EPC':120,'EICR':60,'PAT Testing':12,'Legionella':24,'HMO Licence':60,'Other':12};
+  const durationOpts = [
+    {v:'',l:'— or enter expiry date below —'},
+    {v:'12',l:'1 year'},
+    {v:'24',l:'2 years'},
+    {v:'36',l:'3 years'},
+    {v:'60',l:'5 years'},
+    {v:'84',l:'7 years'},
+    {v:'120',l:'10 years'},
+  ].map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
+
+  openModal(`<div class="modal-title">Add certificate</div>
+    <div class="form-field"><label>Property</label><select id="mc-prop">${propOpts}</select></div>
+    <div class="form-row">
+      <div class="form-field"><label>Certificate type</label>
+        <select id="mc-type" onchange="toggleEpcRating(this.value);mcAutoSetDuration(this.value)">
+          ${CERT_TYPES.map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-field" id="mc-epc-wrap" style="display:none"><label>EPC rating</label>
+        <select id="mc-epc-rating">
+          <option value="">— Select —</option>
+          ${['A','B','C','D','E','F','G'].map(r=>`<option value="${r}">${r}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Issue date</label>
+        <input type="date" id="mc-issue" oninput="mcCalcExpiry()">
+      </div>
+      <div class="form-field"><label>Duration</label>
+        <select id="mc-duration" onchange="mcCalcExpiry()">${durationOpts}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Expiry date</label>
+        <input type="date" id="mc-expiry">
+      </div>
+      <div id="mc-expiry-hint" style="display:flex;align-items:center;font-size:12px;color:var(--blue);padding-top:18px"></div>
+    </div>
+    <div class="form-field"><label>Issuer / engineer</label><input type="text" id="mc-issuer"></div>
+    <div class="form-field"><label>Notes</label><input type="text" id="mc-notes"></div>
+    <button class="btn btn-primary" onclick="saveManualCert('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+
+  // Pre-set duration based on cert type default
+  mcAutoSetDuration('Gas Safety');
+}
+
+const CERT_DEFAULT_DURATIONS = {'Gas Safety':'12','EPC':'120','EICR':'60','PAT Testing':'12','Legionella':'24','HMO Licence':'60','Other':'12'};
+
+function mcAutoSetDuration(type) {
+  const sel = document.getElementById('mc-duration');
+  if(sel && CERT_DEFAULT_DURATIONS[type]) {
+    sel.value = CERT_DEFAULT_DURATIONS[type];
+    mcCalcExpiry();
+  }
+}
+
+function mcCalcExpiry() {
+  const issueVal = document.getElementById('mc-issue')?.value;
+  const months = parseInt(document.getElementById('mc-duration')?.value||'0');
+  const hint = document.getElementById('mc-expiry-hint');
+  if(issueVal && months > 0) {
+    const d = new Date(issueVal);
+    d.setMonth(d.getMonth() + months);
+    const expiry = d.toISOString().slice(0,10);
+    const expiryEl = document.getElementById('mc-expiry');
+    if(expiryEl) expiryEl.value = expiry;
+    if(hint) hint.textContent = `Auto-calculated from ${months >= 12 ? months/12 + ' yr' : months + ' mo'}`;
+  } else {
+    if(hint) hint.textContent = '';
+  }
+}
+function toggleEpcRating(type) {
+  const wrap = document.getElementById('mc-epc-wrap');
+  if(wrap) wrap.style.display = type==='EPC' ? '' : 'none';
+}
+function saveManualCert(origPropId) {
+  const propId = document.getElementById('mc-prop').value;
+  const type = document.getElementById('mc-type').value;
+  state.certs.push({id:uid(),propId,type,issueDate:document.getElementById('mc-issue').value,expiryDate:document.getElementById('mc-expiry').value,issuer:document.getElementById('mc-issuer').value,notes:document.getElementById('mc-notes').value,epcRating:type==='EPC'?document.getElementById('mc-epc-rating').value:''});
+  saveState('certs'); closeModal();
+  if(origPropId) renderPropDetailContent(propId);
+  renderDashboard();
+}
+function deleteCert(certId, propId) { state.certs=state.certs.filter(c=>c.id!==certId); saveState('certs'); renderPropDetailContent(propId); renderDashboard(); }
+
+function openCertDoc(certId) {
+  const c = state.certs.find(x=>x.id===certId);
+  if(!c || !c.docData) return;
+  try {
+    const byteChars = atob(c.docData);
+    const bytes = new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
+    const blob = new Blob([bytes], {type: c.docMime||'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(()=>URL.revokeObjectURL(url), 10000);
+  } catch(e) {
+    alert('Could not open document.');
+  }
+}
+
+function openAddApplianceModal(propId) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}"${p.id===propId?' selected':''}>${p.name}</option>`).join('');
+  openModal(`<div class="modal-title">Add appliance</div>
+    <div class="form-field"><label>Property</label><select id="ma-prop">${propOpts}</select></div>
+    <div class="form-row"><div class="form-field"><label>Appliance name</label><input type="text" id="ma-name" placeholder="e.g. Boiler"></div>
+    <div class="form-field"><label>Location</label><input type="text" id="ma-loc" placeholder="e.g. Kitchen"></div></div>
+    <div class="form-row"><div class="form-field"><label>Make</label><input type="text" id="ma-make" placeholder="e.g. Bosch"></div>
+    <div class="form-field"><label>Model</label><input type="text" id="ma-model"></div></div>
+    <div class="form-field"><label>Serial number</label><input type="text" id="ma-serial"></div>
+    <div class="form-field"><label>Notes</label><input type="text" id="ma-notes" placeholder="e.g. Installed 2022, under warranty"></div>
+    <button class="btn btn-primary" onclick="saveAppliance('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+function saveAppliance(origPropId) {
+  const propId = document.getElementById('ma-prop').value;
+  const name = document.getElementById('ma-name').value;
+  if(!name){alert('Please enter an appliance name.');return;}
+  state.appliances.push({id:uid(),propId,name,location:document.getElementById('ma-loc').value,make:document.getElementById('ma-make').value,model:document.getElementById('ma-model').value,serial:document.getElementById('ma-serial').value,notes:document.getElementById('ma-notes').value});
+  saveState('appliances'); closeModal();
+  if(origPropId) renderPropDetailContent(propId);
+}
+function deleteAppliance(appId, propId) { state.appliances=state.appliances.filter(a=>a.id!==appId); saveState('appliances'); renderPropDetailContent(propId); }
+
+function openAddMaintModal(propId) {
+  const propOpts = state.props.map(p=>`<option value="${p.id}"${p.id===propId?' selected':''}>${p.name}</option>`).join('');
+  openModal(`<div class="modal-title">Log maintenance issue</div>
+    <div class="form-field"><label>Property</label><select id="mm-prop">${propOpts}</select></div>
+    <div class="form-field"><label>Description</label><input type="text" id="mm-desc" placeholder="e.g. Boiler pressure drop"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Date</label><input type="date" id="mm-date"></div>
+      <div class="form-field"><label>Status</label><select id="mm-status"><option value="open">Open</option><option value="resolved">Resolved</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Priority</label><select id="mm-priority"><option value="">—</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
+      <div class="form-field"><label>Cost (£)</label><input type="number" id="mm-cost" step="0.01"></div>
+    </div>
+    <div class="form-field"><label>Contractor</label><input type="text" id="mm-contractor" placeholder="e.g. Mike Bowen Gas"></div>
+    <div class="form-field"><label>Notes</label><textarea id="mm-notes" rows="3" placeholder="Any additional details…"></textarea></div>
+    <button class="btn btn-primary" onclick="saveMaint('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+function saveMaint(origPropId) {
+  const propId = document.getElementById('mm-prop').value;
+  const desc = document.getElementById('mm-desc').value;
+  if(!desc){alert('Please enter a description.');return;}
+  state.maint.push({id:uid(),propId,desc,date:document.getElementById('mm-date').value,status:document.getElementById('mm-status').value,priority:document.getElementById('mm-priority').value,cost:parseFloat(document.getElementById('mm-cost').value)||0,contractor:document.getElementById('mm-contractor').value,notes:document.getElementById('mm-notes').value});
+  saveState('maint'); closeModal();
+  if(origPropId) renderPropDetailContent(propId);
+  renderMaintenance(); renderDashboard();
+}
+function deleteMaint(mId, propId) { state.maint=state.maint.filter(m=>m.id!==mId); saveState('maint'); renderPropDetailContent(propId); renderDashboard(); }
+function deleteTxn(tId, propId) { state.txns=state.txns.filter(t=>t.id!==tId); saveState('txns'); renderPropDetailContent(propId); renderDashboard(); }
+function deleteTxnGlobal(tId) { state.txns=state.txns.filter(t=>t.id!==tId); saveState('txns'); renderFinance(); renderDashboard(); }
+
+function openAddPropModal() {
+  openModal(`
+    <div class="modal-title">Add property</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Step 1 of 2 — Property details</div>
+    <div class="form-row">
+      <div class="form-field"><label>Property name</label><input type="text" id="np-name" placeholder="e.g. 5 Oak Lane"></div>
+      <div class="form-field"><label>Address</label><input type="text" id="np-addr" placeholder="City, Postcode"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Status</label><select id="np-status"><option value="let">Let</option><option value="vacant">Vacant</option></select></div>
+      <div class="form-field"><label>Monthly rent (£)</label><input type="number" id="np-rent" step="1"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Purchase price (£)</label><input type="number" id="np-purchase" step="1000"></div>
+      <div class="form-field"><label>Current value (£)</label><input type="number" id="np-value" step="1000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Mortgage/mo (£)</label><input type="number" id="np-mortgage" step="1"></div>
+      <div class="form-field"><label>Lender</label><input type="text" id="np-lender"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Tenant name</label><input type="text" id="np-tenant"></div>
+      <div class="form-field"><label>Lease start</label><input type="date" id="np-lease-start"></div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddPropOwnerStep()">Next — Add owners →</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+
+function openAddPropOwnerStep() {
+  const name = document.getElementById('np-name')?.value?.trim();
+  if(!name){ alert('Please enter a property name.'); return; }
+
+  const s1 = {
+    name, addr: document.getElementById('np-addr').value,
+    status: document.getElementById('np-status').value,
+    rent: document.getElementById('np-rent').value,
+    purchase: document.getElementById('np-purchase').value,
+    value: document.getElementById('np-value').value,
+    mortgage: document.getElementById('np-mortgage').value,
+    lender: document.getElementById('np-lender').value,
+    tenant: document.getElementById('np-tenant').value,
+    leaseStart: document.getElementById('np-lease-start').value,
+
+  };
+  window._newPropStep1 = s1;
+  const existingRows = state.owners.map(o => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" id="np-ck-${o.id}" style="width:18px;height:18px;cursor:pointer;flex-shrink:0"
+        onchange="npTickChanged()">
+      <label for="np-ck-${o.id}" style="flex:1;font-size:14px;cursor:pointer">${o.name}</label>
+      <input type="number" id="np-own-share-${o.id}" placeholder="%" min="0" max="100" step="1"
+        style="width:64px;text-align:right;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
+        oninput="updateNewPropOwnerTotal()">
+      <span style="font-size:13px;color:var(--text2);flex-shrink:0">%</span>
+    </div>`).join('');
+  const blankSlots = [0,1,2,3].map(i => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" id="np-ck-new-${i}" style="width:18px;height:18px;cursor:pointer;flex-shrink:0"
+        onchange="npTickChanged()">
+      <input type="text" id="np-new-owner-name-${i}" placeholder="New owner name"
+        style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
+        oninput="if(this.value.trim()){document.getElementById('np-ck-new-${i}').checked=true;}npTickChanged()">
+      <input type="number" id="np-new-owner-share-${i}" placeholder="%" min="0" max="100" step="1"
+        style="width:64px;text-align:right;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
+        oninput="updateNewPropOwnerTotal()">
+      <span style="font-size:13px;color:var(--text2);flex-shrink:0">%</span>
+    </div>`).join('');
+
+  openModal(`
+    <div class="modal-title">Add property</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Step 2 of 2 — Owners of <strong>${name}</strong></div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5">Tick the owners, then tap <strong>Equal split</strong> to divide automatically, or enter shares manually. Leave all unticked if you're the sole owner.</p>
+    <div style="display:flex;align-items:center;padding:6px 0 6px 28px;margin-bottom:0">
+      <span style="flex:1;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Owner</span>
+      <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-right:24px">Share</span>
+    </div>
+    ${existingRows}
+    ${blankSlots}
+    <div id="np-owner-total-msg" style="font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);background:var(--surface2);margin:10px 0 10px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-primary" style="flex:1;font-size:13px" onclick="npOwnerEqualSplit()">Equal split</button>
+      <button class="btn btn-secondary" style="flex:1;font-size:13px" onclick="npOwnerClear()">Clear</button>
+    </div>
+    <button class="btn btn-primary" onclick="saveProp()">Save property</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddPropModal()">← Back</button>`);
+}
+
+function npTickChanged() {
+  const tickedExisting = state.owners.filter(o => document.getElementById('np-ck-'+o.id)?.checked);
+  const tickedNewCount = [0,1,2,3].filter(i => document.getElementById('np-ck-new-'+i)?.checked).length;
+  const totalTicked = tickedExisting.length + tickedNewCount;
+  if(totalTicked > 0) {
+    const each = +(100/totalTicked).toFixed(1);
+    const last = +(100 - each*(totalTicked-1)).toFixed(1);
+    let idx = 0;
+    tickedExisting.forEach(o => {
+      const el = document.getElementById('np-own-share-'+o.id);
+      if(el) { el.value = idx===totalTicked-1 ? last : each; idx++; }
+    });
+    state.owners.filter(o => !document.getElementById('np-ck-'+o.id)?.checked).forEach(o => {
+      const el = document.getElementById('np-own-share-'+o.id);
+      if(el) el.value = '';
+    });
+    [0,1,2,3].forEach(i => {
+      const el = document.getElementById('np-new-owner-share-'+i);
+      if(el) {
+        if(document.getElementById('np-ck-new-'+i)?.checked) {
+          el.value = idx===totalTicked-1 ? last : each;
+          idx++;
+        } else {
+          el.value = '';
+        }
+      }
+    });
+  } else {
+    state.owners.forEach(o => { const el=document.getElementById('np-own-share-'+o.id); if(el) el.value=''; });
+    [0,1,2,3].forEach(i => { const el=document.getElementById('np-new-owner-share-'+i); if(el) el.value=''; });
+  }
+  updateNewPropOwnerTotal();
+}
+
+function npOwnerEqualSplit() {
+  state.owners.forEach(o => {
+    const ck = document.getElementById('np-ck-'+o.id);
+    if(ck) ck.checked = true;
+  });
+  [0,1,2,3].forEach(i => {
+    const nm = document.getElementById('np-new-owner-name-'+i);
+    const ck = document.getElementById('np-ck-new-'+i);
+    if(nm && ck) ck.checked = nm.value.trim().length > 0;
+  });
+  npTickChanged();
+}
+
+function updateNewPropOwnerTotal() {
+  let total = 0;
+  state.owners.forEach(o => { total += parseFloat(document.getElementById('np-own-share-'+o.id)?.value||0); });
+  [0,1,2,3].forEach(i => { total += parseFloat(document.getElementById('np-new-owner-share-'+i)?.value||0); });
+  const msg = document.getElementById('np-owner-total-msg');
+  if(!msg) return;
+  if(total === 0) { msg.style.display='none'; return; }
+  msg.style.display='block';
+  const ok = Math.abs(total-100)<0.5;
+  msg.textContent = `Total: ${total.toFixed(0)}%${ok?' ✓':' — must equal 100%'}`;
+  msg.style.background = ok ? 'var(--green-bg)' : 'var(--amber-bg)';
+  msg.style.color = ok ? 'var(--green)' : 'var(--amber)';
+}
+
+function npOwnerClear() {
+  state.owners.forEach(o => {
+    const ck=document.getElementById('np-ck-'+o.id); if(ck) ck.checked=false;
+    const el=document.getElementById('np-own-share-'+o.id); if(el) el.value='';
+  });
+  [0,1,2,3].forEach(i => {
+    const ck=document.getElementById('np-ck-new-'+i); if(ck) ck.checked=false;
+    const n=document.getElementById('np-new-owner-name-'+i); if(n) n.value='';
+    const s=document.getElementById('np-new-owner-share-'+i); if(s) s.value='';
+  });
+  updateNewPropOwnerTotal();
+}
+
+function saveProp() {
+  const s1 = window._newPropStep1;
+  if(!s1 || !s1.name){ alert('Please enter a property name.'); return; }
+  const propOwners = [];
+  let totalShare = 0;
+  state.owners.forEach(o => {
+    const share = parseFloat(document.getElementById('np-own-share-'+o.id)?.value||0);
+    if(share > 0) { propOwners.push({ownerId:o.id, share}); totalShare+=share; }
+  });
+  [0,1,2,3].forEach(i => {
+    const nameEl = document.getElementById('np-new-owner-name-'+i);
+    const shareEl = document.getElementById('np-new-owner-share-'+i);
+    const name = nameEl?.value?.trim();
+    const share = parseFloat(shareEl?.value||0);
+    if(name) {
+      let owner = state.owners.find(o=>o.name.toLowerCase()===name.toLowerCase());
+      if(!owner) {
+        owner = {id: uid(), name};
+        state.owners.push(owner);
+      }
+      if(share > 0) { propOwners.push({ownerId:owner.id, share}); totalShare+=share; }
+      else { propOwners.push({ownerId:owner.id, share:0}); }
+    }
+  });
+  if(totalShare > 0 && Math.abs(totalShare-100) > 1) {
+    alert(`Ownership shares add up to ${totalShare.toFixed(0)}% — they must total 100%. Please adjust.`);
+    return;
+  }
+  if(propOwners.length > 0 && totalShare === 0) {
+    const each = +(100/propOwners.length).toFixed(1);
+    propOwners.forEach((o,i) => { o.share = i===propOwners.length-1 ? 100-(each*(propOwners.length-1)) : each; });
+  }
+  const myShare = propOwners.length > 0 ? (propOwners[0]?.share ?? 100) : 100;
+
+  const idx = state.props.length % PROP_COLORS.length;
+  state.props.push({
+    id: uid(), name: s1.name, address: s1.addr,
+    status: s1.status, color: PROP_COLORS[idx],
+    ownershipShare: myShare,
+    numOwners: propOwners.length || 1,
+    owners: propOwners.length > 0 ? propOwners : [],
+    tenant: s1.tenant||'—', leaseStart: s1.leaseStart||'—', leaseEnd:'—', deposit:'—',
+    tenantEmail:'—', tenantPhone:'—',
+    rent: parseFloat(s1.rent)||0,
+    lastRentIncrease: '',
+    lastRentAmount: 0,
+    purchase: parseFloat(s1.purchase)||0,
+    value: parseFloat(s1.value)||0,
+    mortgage: parseFloat(s1.mortgage)||0,
+    lender: s1.lender||'—',
+    agent:'—', agentTel:'—', gasEngineer:'—', electrician:'—', solicitor:'—', insurance:'—',
+    archived: false,
+  });
+  const newProp = state.props[state.props.length-1];
+  if(newProp.rent > 0) {
+    if(!state.rentHistory) state.rentHistory = [];
+    state.rentHistory.push({
+      id: uid(), propId: newProp.id,
+      amount: newProp.rent,
+      tenant: s1.tenant||'',
+      startDate: new Date().toISOString().slice(0,10),
+      endDate: null,
+      notes: 'Initial rent (added with property)'
+    });
+    saveState('rentHistory');
+  }
+
+  saveState('props');
+  saveState('owners');
+  window._newPropStep1 = null;
+  closeModal();
+  populateOwnerSelect();
+  renderProperties();
+  renderDashboard();
+}
+
+function toggleArchiveProp(id) {
+  const p = getProp(id);
+  if(!p) return;
+  p.archived = !p.archived;
+  saveState('props');
+  renderPropDetailContent(id);
+  renderDashboard();
+  renderProperties();
+}
+
+function openEditOwnershipModal(propId) {
+  const p = getProp(propId);
+  if(!p) return;
+  const propOwners = p.owners || [{ownerId:'o1',share:p.ownershipShare??100}];
+  const ownerRows = state.owners.map(o=>{
+    const entry = propOwners.find(x=>x.ownerId===o.id);
+    return `<div class="form-row" style="align-items:center;margin-bottom:6px">
+      <div class="form-field" style="margin-bottom:0"><label style="margin-bottom:3px">${o.name}</label>
+        <input type="number" id="own-${o.id}" value="${entry?entry.share:0}" min="0" max="100" step="0.1" style="text-align:right" oninput="updateOwnerTotal()">
+      </div>
+      <div style="padding-top:18px;color:var(--text2);font-size:14px;flex-shrink:0">%</div>
+    </div>`;
+  }).join('');
+  openModal(`<div class="modal-title">Ownership — ${p.name}</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Enter each owner's share. Total must equal 100%.</p>
+    ${ownerRows}
+    <div id="own-total-msg" style="font-size:12px;margin:8px 0 12px;padding:6px 10px;border-radius:var(--radius-sm);background:var(--surface2)"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+      <button class="btn btn-secondary" style="font-size:12px;padding:7px" onclick="setEqualSplit('${propId}')">Equal split</button>
+      <button class="btn btn-secondary" style="font-size:12px;padding:7px" onclick="clearOwnerShares()">Clear all</button>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">Manage owners</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="new-owner-name" placeholder="New owner name" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px">
+        <button class="btn btn-secondary" style="width:auto;padding:8px 12px;font-size:13px" onclick="addOwner()">Add</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveOwnership('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+  updateOwnerTotal();
+}
+function updateOwnerTotal() {
+  let total = 0;
+  state.owners.forEach(o=>{ total += parseFloat(document.getElementById('own-'+o.id)?.value||0); });
+  const msg = document.getElementById('own-total-msg');
+  if(!msg) return;
+  const ok = Math.abs(total-100)<0.1;
+  msg.textContent = `Total: ${total.toFixed(1)}%${ok?' ✓':' — must equal 100%'}`;
+  msg.style.background = ok ? 'var(--green-bg)' : 'var(--amber-bg)';
+  msg.style.color = ok ? 'var(--green)' : 'var(--amber)';
+}
+function setEqualSplit(propId) {
+  const active = state.owners.filter(o => {
+    const el = document.getElementById('own-'+o.id);
+    return el && parseFloat(el.value||0) > 0;
+  });
+  const n = active.length || state.owners.length;
+  if(!n) return;
+  const each = +(100/n).toFixed(1);
+  const targets = active.length ? active : state.owners;
+  targets.forEach((o,i)=>{
+    const el = document.getElementById('own-'+o.id);
+    if(el) el.value = i===n-1 ? (100-(each*(n-1))).toFixed(1) : each;
+  });
+  updateOwnerTotal();
+}
+function clearOwnerShares() {
+  state.owners.forEach(o=>{ const el=document.getElementById('own-'+o.id); if(el) el.value=0; });
+  updateOwnerTotal();
+}
+function addOwner() {
+  const nameEl = document.getElementById('new-owner-name');
+  const name = nameEl?.value?.trim();
+  if(!name) return;
+  let o = state.owners.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!o) {
+    o = {id:uid(),name};
+    state.owners.push(o);
+    saveState('owners');
+  }
+  nameEl.value='';
+  const modal = document.getElementById('modal-body');
+  const propIdMatch = modal?.innerHTML?.match(/saveOwnership\('([^']+)'\)/);
+  if(propIdMatch) openEditOwnershipModal(propIdMatch[1]);
+}
+function saveOwnership(propId) {
+  const p = getProp(propId);
+  if(!p) return;
+  let total = 0;
+  const owners = state.owners.map(o=>{
+    const share = parseFloat(document.getElementById('own-'+o.id)?.value||0);
+    total += share;
+    return {ownerId:o.id,share};
+  }).filter(x=>x.share>0);
+  if(owners.length > 0 && total > 0 && Math.abs(total-100)>1) {
+    alert('Total ownership must equal 100%. Current total: ' + total.toFixed(0) + '%');
+    return;
+  }
+  if(owners.length === 0 || total === 0) {
+    p.owners = [];
+    p.ownershipShare = 100;
+    p.numOwners = 1;
+    saveState('props'); closeModal(); renderPropDetailContent(propId); renderAll();
+    return;
+  }
+  p.owners = owners;
+  const myOwner = state.selectedOwner ? owners.find(x=>x.ownerId===state.selectedOwner) : owners[0];
+  p.ownershipShare = myOwner?.share ?? 100;
+  p.numOwners = owners.length;
+  saveState('props');
+  closeModal();
+  renderPropDetailContent(propId);
+  renderAll();
+}
+
+function openEditInsuranceModal(propId) {
+  const p = getProp(propId);
+  if(!p) return;
+  openModal(`<div class="modal-title">Insurance — ${p.name}</div>
+    <div class="form-field"><label>Provider</label><input type="text" id="ins-provider" value="${p.insuranceProvider||p.insurance||''}"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Policy number</label><input type="text" id="ins-policy" value="${p.insurancePolicyNo||''}"></div>
+      <div class="form-field"><label>Type</label><input type="text" id="ins-type" value="${p.insuranceType||''}" placeholder="e.g. Landlord buildings"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Annual premium (£)</label><input type="number" id="ins-premium" value="${p.insurancePremium||''}" step="0.01"></div>
+      <div class="form-field"><label>Renewal date</label><input type="date" id="ins-renewal" value="${p.insuranceRenewal||''}"></div>
+    </div>
+    <div class="form-field"><label>Contact / broker</label><input type="text" id="ins-contact" value="${p.insuranceContact||''}"></div>
+    <div class="form-field"><label>Notes</label><input type="text" id="ins-notes" value="${p.insuranceNotes||''}"></div>
+    <button class="btn btn-primary" onclick="saveInsurance('${propId}')">Save</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+}
+
+function saveInsurance(propId) {
+  const p = getProp(propId);
+  if(!p) return;
+  p.insuranceProvider = document.getElementById('ins-provider').value;
+  p.insurancePolicyNo = document.getElementById('ins-policy').value;
+  p.insuranceType = document.getElementById('ins-type').value;
+  p.insurancePremium = parseFloat(document.getElementById('ins-premium').value)||0;
+  p.insuranceRenewal = document.getElementById('ins-renewal').value;
+  p.insuranceContact = document.getElementById('ins-contact').value;
+  p.insuranceNotes = document.getElementById('ins-notes').value;
+  saveState('props');
+  closeModal();
+  renderPropDetailContent(propId);
+}
+
+loadState();
+</script>
+</body>
+</html>
