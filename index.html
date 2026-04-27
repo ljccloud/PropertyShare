@@ -499,7 +499,7 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = false;
+const DRIVE_MODE = true;
 
 async function loadState() {
   if(DRIVE_MODE) {
@@ -1933,26 +1933,32 @@ async function handleDocUpload(input) {
   reader.readAsDataURL(file);
 }
 
-function buildDocFilename(propId, date, type, suffix) {
+function propFirstWord(propId) {
   const p = getProp(propId);
   const fullName = p ? p.name : 'Unknown';
   const words = fullName.replace(/[^a-zA-Z0-9 ]/g,'').trim().split(/\s+/);
-  const firstNonNumber = words.find(w => isNaN(w)) || words[0];
-  const roadName = firstNonNumber;
+  return words.find(w => isNaN(w)) || words[0];
+}
+
+function buildDocFilename(propId, date, type, suffix) {
+  const roadName = propFirstWord(propId);
   const d = date ? new Date(date) : new Date();
   const yymm = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0');
-  const detail = type.replace(/[^a-zA-Z0-9]+/g,'-').replace(/-+$/,'');
+  // CamelCase the type: "Gas Safety" → "GasSafety", "Repairs & maintenance" → "RepairsMaintenance"
+  const detail = type.split(/[\s&\-_]+/).filter(Boolean)
+    .map((w,i) => i===0 ? w.charAt(0).toUpperCase()+w.slice(1) : w.charAt(0).toUpperCase()+w.slice(1))
+    .join('').replace(/[^a-zA-Z0-9]/g,'');
   const ext = _lastUploadedMime==='application/pdf' ? '.pdf' : (_lastUploadedMime.includes('png')?'.png':'.jpg');
   return `${roadName}_${yymm}_${detail}${suffix?'_'+suffix:''}${ext}`;
 }
+
 async function saveDocCopy(filename, propId, category) {
   if(!_lastUploadedBase64 || !_lastUploadedMime) return;
-  const p = getProp(propId);
-  const propName = p ? p.name : 'General';
+  const folderName = propFirstWord(propId); // e.g. "Maple" not "14 Maple Close"
   if(gAccessToken) {
     showSync('⟳ Uploading to Drive…');
-    const link = await uploadFileToDrive(_lastUploadedBase64, _lastUploadedMime, filename, propName, category||'Documents');
-    if(link) return; // success — no need to download
+    const link = await uploadFileToDrive(_lastUploadedBase64, _lastUploadedMime, filename, folderName, category||'Documents');
+    if(link) return;
   }
   const byteChars = atob(_lastUploadedBase64);
   const bytes = new Uint8Array(byteChars.length);
