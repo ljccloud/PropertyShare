@@ -820,12 +820,13 @@ function getPeriodRange(period) {
     start = new Date(y,9,1); end = new Date(y,11,31,23,59,59);
     prevStart = new Date(y-1,9,1); prevEnd = new Date(y-1,11,31,23,59,59);
     label = 'Q4 '+y;
-  } else if(period==='tytd') { // tax year to date
+  } else if(period==='tytd') {
     const taxStart = now >= new Date(y,3,6) ? new Date(y,3,6) : new Date(y-1,3,6);
     start = taxStart; end = new Date(y,m,d,23,59,59);
     prevStart = new Date(taxStart.getFullYear()-1,3,6);
     prevEnd = new Date(taxStart.getFullYear()-1, m, d, 23,59,59);
-    label = 'Tax YTD';
+    const taxY = taxStart.getFullYear();
+    label = `Tax YTD ${taxY}/${String(taxY+1).slice(2)}`;
   }
   return {start,end,prevStart,prevEnd,label};
 }
@@ -1974,17 +1975,26 @@ async function saveDocCopy(filename, propId, category) {
 function showExtractedTxn(ex) {
   const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   const catOpts = Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}"${ex.category===v?' selected':''}>${l}</option>`).join(''); // full list for extracted docs
+  const initCat = ex.category || 'other-allowable';
+  const showPeriod = PERIOD_CATS.includes(initCat);
   document.getElementById('doc-extract-area').innerHTML = `
     <div class="card" style="margin-top:10px">
       <div class="card-title">Review extracted details</div>
       ${ex.confidence==='low'?'<div class="alert" style="margin-bottom:10px">Low confidence — please check carefully</div>':''}
-      <div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="ex-date" value="${ex.date||''}"></div>
+      <div class="form-row"><div class="form-field"><label>Date paid / received</label><input type="date" id="ex-date" value="${ex.date||''}"></div>
       <div class="form-field"><label>Type</label><select id="ex-type"><option value="expense"${ex.type==='expense'?' selected':''}>Expense</option><option value="income"${ex.type==='income'?' selected':''}>Income</option></select></div></div>
       <div class="form-field"><label>Description</label><input type="text" id="ex-desc" value="${ex.description||''}"></div>
       <div class="form-row"><div class="form-field"><label>Amount (£)</label><input type="number" id="ex-amount" value="${ex.amount||''}" step="0.01"></div>
-      <div class="form-field"><label>Category</label><select id="ex-cat">${catOpts}</select></div></div>
+      <div class="form-field"><label>Category</label><select id="ex-cat" onchange="exUpdatePeriod(this.value)">${catOpts}</select></div></div>
       <div class="form-row"><div class="form-field"><label>Property</label><select id="ex-prop">${propOpts}</select></div>
       <div class="form-field"><label>Supplier</label><input type="text" id="ex-supplier" value="${ex.supplier||''}"></div></div>
+      <div id="ex-period-wrap" style="${showPeriod?'':'display:none'}">
+        <div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 10px;margin-bottom:8px">For MTD compliance, record the period this payment covers</div>
+        <div class="form-row">
+          <div class="form-field"><label>Period start</label><input type="date" id="ex-period-start"></div>
+          <div class="form-field"><label>Period end</label><input type="date" id="ex-period-end"></div>
+        </div>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
         <input type="checkbox" id="ex-savecopy" style="width:18px;height:18px;cursor:pointer" checked>
         <label for="ex-savecopy" style="font-size:13px;color:var(--text);cursor:pointer">Save a renamed copy to my device</label>
@@ -1994,11 +2004,26 @@ function showExtractedTxn(ex) {
     </div>`;
 }
 
+function exUpdatePeriod(cat) {
+  const wrap = document.getElementById('ex-period-wrap');
+  if(wrap) wrap.style.display = PERIOD_CATS.includes(cat) ? '' : 'none';
+}
+
 function saveExtractedTxn() {
   const propId = document.getElementById('ex-prop').value;
   const date = document.getElementById('ex-date').value;
   const cat = document.getElementById('ex-cat').value;
-  const t = {id:uid(),date,type:document.getElementById('ex-type').value,desc:document.getElementById('ex-desc').value,prop:propId,cat,amount:parseFloat(document.getElementById('ex-amount').value)||0,supplier:document.getElementById('ex-supplier').value};
+  const hasPeriod = PERIOD_CATS.includes(cat);
+  const t = {
+    id:uid(), date,
+    type: document.getElementById('ex-type').value,
+    desc: document.getElementById('ex-desc').value,
+    prop: propId, cat,
+    amount: parseFloat(document.getElementById('ex-amount').value)||0,
+    supplier: document.getElementById('ex-supplier').value,
+    periodStart: hasPeriod ? (document.getElementById('ex-period-start')?.value||'') : '',
+    periodEnd: hasPeriod ? (document.getElementById('ex-period-end')?.value||'') : '',
+  };
   const saveCopy = document.getElementById('ex-savecopy')?.checked;
   state.txns.push(t); saveState('txns');
   if(saveCopy) saveDocCopy(buildDocFilename(propId, date, CAT_LABELS[cat]||cat, ''), propId, CAT_LABELS[cat]||cat);
@@ -2083,7 +2108,8 @@ function getCatOpts(type) {
   return (CAT_BY_TYPE[type] || CAT_BY_TYPE.expense)
     .map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
 }
-const PERIOD_CATS = ['rental-income','professional','premises','financial','services'];
+// All categories where a payment can cover a specific period (MTD compliance)
+const PERIOD_CATS = ['rental-income','professional','premises','financial','services','repairs','travel','other-allowable'];
 
 function openAddTxnModal() {
   const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
