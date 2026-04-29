@@ -2111,36 +2111,56 @@ function getCatOpts(type) {
 // All categories where a payment can cover a specific period (MTD compliance)
 const PERIOD_CATS = ['rental-income','professional','premises','financial','services','repairs','travel','other-allowable'];
 
+const PERIOD_DURATION_OPTS = [
+  {v:'',l:'— specify dates below —'},
+  {v:'1',l:'1 month'},
+  {v:'3',l:'3 months'},
+  {v:'6',l:'6 months'},
+  {v:'12',l:'1 year'},
+  {v:'24',l:'2 years'},
+  {v:'36',l:'3 years'},
+];
+
 function openAddTxnModal() {
   const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  const durationOpts = PERIOD_DURATION_OPTS.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
   openModal(`<div class="modal-title">Add transaction</div>
     <div class="form-row">
-      <div class="form-field"><label>Date paid / received</label><input type="date" id="mt-date"></div>
+      <div class="form-field"><label>Property</label><select id="mt-prop">${propOpts}</select></div>
+      <div class="form-field"><label>Date received / paid</label><input type="date" id="mt-date"></div>
+    </div>
+    <div class="form-row">
       <div class="form-field"><label>Type</label>
         <select id="mt-type" onchange="updateTxnCats(this.value)">
-          <option value="expense">Expense</option>
           <option value="income">Income</option>
+          <option value="expense">Expense</option>
         </select>
       </div>
-    </div>
-    <div class="form-field"><label>Description</label><input type="text" id="mt-desc" placeholder="e.g. Boiler repair"></div>
-    <div class="form-row">
-      <div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div>
-      <div class="form-field"><label>Category</label><select id="mt-cat" onchange="updatePeriodFields(this.value)">${getCatOpts('expense')}</select></div>
-    </div>
-    <div id="mt-period-wrap" style="display:none">
-      <div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 10px;margin-bottom:8px">For MTD compliance, record the period this payment covers</div>
-      <div class="form-row">
-        <div class="form-field"><label>Period start</label><input type="date" id="mt-period-start"></div>
-        <div class="form-field"><label>Period end</label><input type="date" id="mt-period-end"></div>
+      <div class="form-field"><label>Category</label>
+        <select id="mt-cat" onchange="updatePeriodFields(this.value)">${getCatOpts('income')}</select>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-field"><label>Property</label><select id="mt-prop">${propOpts}</select></div>
+      <div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div>
+      <div class="form-field"><label>Description</label><input type="text" id="mt-desc" placeholder="e.g. Monthly rent"></div>
+    </div>
+    <div id="mt-period-wrap" style="display:none">
+      <div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 10px;margin-bottom:8px">Record the period this payment covers (MTD compliance)</div>
+      <div class="form-row">
+        <div class="form-field"><label>Period start</label><input type="date" id="mt-period-start" oninput="mtCalcPeriodEnd()"></div>
+        <div class="form-field"><label>Duration</label><select id="mt-period-duration" onchange="mtCalcPeriodEnd()">${durationOpts}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Period end</label><input type="date" id="mt-period-end"></div>
+        <div id="mt-period-hint" style="display:flex;align-items:center;font-size:12px;color:var(--blue);padding-top:18px"></div>
+      </div>
+    </div>
+    <div class="form-row">
       <div class="form-field"><label>Supplier / tenant</label><input type="text" id="mt-supplier"></div>
     </div>
     <button class="btn btn-primary" onclick="saveManualTxn()">Save</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
+  updatePeriodFields(getCatOpts('income').match(/value="([^"]+)"/)?.[1] || 'rental-income');
 }
 
 function updateTxnCats(type) {
@@ -2153,11 +2173,37 @@ function updatePeriodFields(cat) {
   if(wrap) wrap.style.display = PERIOD_CATS.includes(cat) ? '' : 'none';
 }
 
+function mtCalcPeriodEnd() {
+  const startVal = document.getElementById('mt-period-start')?.value;
+  const months = parseInt(document.getElementById('mt-period-duration')?.value||'0');
+  const hint = document.getElementById('mt-period-hint');
+  if(startVal && months > 0) {
+    const d = new Date(startVal);
+    d.setMonth(d.getMonth() + months);
+    d.setDate(d.getDate() - 1); // end is last day of period
+    const endEl = document.getElementById('mt-period-end');
+    if(endEl) endEl.value = d.toISOString().slice(0,10);
+    if(hint) hint.textContent = months >= 12 ? `${months/12} yr` : `${months} mo`;
+  } else {
+    if(hint) hint.textContent = '';
+  }
+}
+
 function saveManualTxn() {
-  const d=document.getElementById('mt-date').value, desc=document.getElementById('mt-desc').value, amt=parseFloat(document.getElementById('mt-amount').value)||0;
+  const d=document.getElementById('mt-date').value;
+  const desc=document.getElementById('mt-desc').value;
+  const amt=parseFloat(document.getElementById('mt-amount').value)||0;
   if(!d||!desc||!amt){alert('Please fill in date, description and amount.');return;}
   const cat = document.getElementById('mt-cat').value;
-  state.txns.push({id:uid(),date:d,type:document.getElementById('mt-type').value,desc,prop:document.getElementById('mt-prop').value,cat,amount:amt,supplier:document.getElementById('mt-supplier').value,periodStart:PERIOD_CATS.includes(cat)?(document.getElementById('mt-period-start')?.value||''):'',periodEnd:PERIOD_CATS.includes(cat)?(document.getElementById('mt-period-end')?.value||''):''});
+  state.txns.push({
+    id:uid(), date:d,
+    type:document.getElementById('mt-type').value,
+    desc, prop:document.getElementById('mt-prop').value,
+    cat, amount:amt,
+    supplier:document.getElementById('mt-supplier').value,
+    periodStart: PERIOD_CATS.includes(cat) ? (document.getElementById('mt-period-start')?.value||'') : '',
+    periodEnd: PERIOD_CATS.includes(cat) ? (document.getElementById('mt-period-end')?.value||'') : '',
+  });
   saveState('txns'); closeModal(); renderFinance(); renderDashboard();
 }
 
