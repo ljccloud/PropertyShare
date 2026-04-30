@@ -1188,96 +1188,9 @@ function renderPropDetailContent(id) {
     </div>
     <div id="dtab-tenant" class="dtab-content active">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="card-title" style="margin-bottom:0">Tenant details</div>
-          <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditTenantModal('${id}')">Edit</button>
-        </div>
-        ${[
-          ['Tenant',p.tenant],
-          ['Lease start',fmtDate(p.leaseStart)],
-          ['Lease end',fmtDate(p.leaseEnd)],
-          ['Deposit',p.deposit],
-          ['Email',p.tenantEmail],
-          ['Phone',p.tenantPhone],
-          ['Current rent',fmtMoney(p.rent)+'/mo'],
-          ['Last rent increase',p.lastRentIncrease?fmtDate(p.lastRentIncrease):'—'],
-          ['Rent before increase',p.lastRentAmount>0?fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount?` (+${(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)}%)`):'':'—'],
-        ].map(([l,v])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
+        ${[['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Current rent',fmtMoney(p.rent)+'/mo'],['Last rent increase',p.lastRentIncrease?fmtDate(p.lastRentIncrease):'—'],['Rent before increase',p.lastRentAmount>0?fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount?` (+${(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)}%)`:''):'—']].map(([l,v])=>`
+          <div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
       </div>
-
-      <div class="card" style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="card-title" style="margin-bottom:0">Letting agent</div>
-          <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditAgentModal('${id}')">Edit</button>
-        </div>
-        ${[
-          ['Agent name', p.agentName||p.agent||'—'],
-          ['Agent phone', p.agentTel||'—'],
-          ['Agent email', p.agentEmail||'—'],
-          ['Management fee', p.mgmtFee ? fmtMoney(p.mgmtFee)+'/mo' : '—'],
-          ['Incl. VAT', p.mgmtFeeVat ? fmtMoney(p.mgmtFeeVat)+'/mo' : '—'],
-        ].map(([l,v])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
-      </div>
-
-      <div class="card" style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="card-title" style="margin-bottom:0">Tenancy documents</div>
-        </div>
-        ${(()=>{
-          const docs = p.tenancyDocs||[];
-          const docList = docs.length ? docs.map(d=>`
-            <div class="cert-item" style="cursor:pointer" onclick="openTenancyDoc('${id}','${d.id}')">
-              <div class="cert-info">
-                <div class="cert-name">${d.name}</div>
-                <div class="cert-meta">${d.type} · ${fmtDate(d.date)}</div>
-                <div class="cert-meta" style="color:var(--blue)">📄 Tap to open</div>
-              </div>
-              <button class="icon-btn" onclick="event.stopPropagation();deleteTenancyDoc('${id}','${d.id}')">✕</button>
-            </div>`).join('')
-            : '<div class="empty" style="padding:8px 0"><div class="empty-icon">📁</div>No documents uploaded</div>';
-          return docList;
-        })()}
-        <div style="margin-top:10px">
-          <div class="form-field" style="margin-bottom:8px">
-            <label>Document type</label>
-            <select id="tdoc-type-${id}">
-              <option value="Lease">Lease</option>
-              <option value="Inventory">Inventory</option>
-              <option value="Tenancy agreement">Tenancy agreement</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="upload-zone" onclick="document.getElementById('tdoc-upload-${id}').click()" style="padding:16px">
-            <p style="margin-bottom:0;font-size:13px">Tap to upload a document</p>
-            <span>PDF or image</span>
-          </div>
-          <input type="file" id="tdoc-upload-${id}" class="upload-input" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="uploadTenancyDoc('${id}',this)">
-        </div>
-      </div>
-
-      ${(()=>{
-        const rhRecords = [...(propRentHistory||[])];
-        if(p.lastRentIncrease && p.lastRentAmount > 0) {
-          const alreadyExists = rhRecords.some(r => r.startDate === p.lastRentIncrease && r.amount === p.lastRentAmount);
-          if(!alreadyExists) {
-            rhRecords.push({id:'__legacy__',propId:p.id,amount:p.lastRentAmount,startDate:p.lastRentIncrease,endDate:null,tenant:p.tenant||'',notes:'From tenant record'});
-          }
-        }
-        rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
-        if(!rhRecords.length) return '';
-        return `<div class="section-label" style="margin-top:16px">Rent history</div>
-        <div class="card">
-          ${rhRecords.map((r,i)=>`
-            <div class="info-row" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:8px;align-items:center">
-              ${i===0?'<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 5px;border-radius:4px;white-space:nowrap">Current</span>':'<span></span>'}
-              <span style="font-size:14px;font-weight:500;color:var(--green)">${fmtMoney(r.amount)}/mo</span>
-              <span class="text-sm">${fmtDate(r.startDate)}${r.endDate?' – '+fmtDate(r.endDate):' →'}</span>
-              <span class="text-sm">${r.tenant||''}</span>
-              ${r.id==='__legacy__'?'<span></span>':`<button class="icon-btn" style="width:24px;height:24px;font-size:11px" onclick="deleteRentHistory('${r.id}','${id}')">✕</button>`}
-            </div>`).join('')}
-        </div>
-        <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>`;
-      })()}
     </div>
     <div id="dtab-financials" class="dtab-content">
       <div class="card">
@@ -1311,6 +1224,39 @@ function renderPropDetailContent(id) {
         ${p.archived?'✓ Restore property':'Archive property'}
       </button>
       ${p.archived?'<div style="font-size:12px;color:var(--amber);margin-top:6px;line-height:1.4">Archived properties are hidden from calculations and the overview. Restore to include again.</div>':''}
+      ${(()=>{
+        const rhRecords = [...(propRentHistory||[])];
+        if(p.lastRentIncrease && p.lastRentAmount > 0) {
+          const alreadyExists = rhRecords.some(r =>
+            r.startDate === p.lastRentIncrease && r.amount === p.lastRentAmount
+          );
+          if(!alreadyExists) {
+            rhRecords.push({
+              id:'__legacy__', propId:p.id,
+              amount: p.lastRentAmount,
+              startDate: p.lastRentIncrease,
+              endDate: null,
+              tenant: p.tenant||'',
+              notes: 'From tenant record'
+            });
+          }
+        }
+        const hasCurrentRent = rhRecords.some(r => r.amount === p.rent && !r.endDate);
+        rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+        if(!rhRecords.length) return '<div class="empty" style="padding:8px 0">No rent history recorded</div>';
+        return `<div class="section-label" style="margin-top:16px">Rent history</div>
+        <div class="card">
+          ${rhRecords.map((r,i)=>`
+            <div class="info-row" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:8px;align-items:center">
+              ${i===0?'<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 5px;border-radius:4px;white-space:nowrap">Current</span>':'<span></span>'}
+              <span style="font-size:14px;font-weight:500;color:var(--green)">${fmtMoney(r.amount)}/mo</span>
+              <span class="text-sm">${fmtDate(r.startDate)}${r.endDate?' – '+fmtDate(r.endDate):' →'}</span>
+              <span class="text-sm">${r.tenant||''}</span>
+              ${r.id==='__legacy__'?'<span></span>':`<button class="icon-btn" style="width:24px;height:24px;font-size:11px" onclick="deleteRentHistory('${r.id}','${id}')">✕</button>`}
+            </div>`).join('')}
+        </div>`;
+      })()}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
     </div>
     <div id="dtab-certs" class="dtab-content">
       <div class="section-label" style="margin:0;margin-bottom:10px">Certificates</div>
@@ -1384,125 +1330,6 @@ function switchDTab(name, btn, propId) {
   document.querySelectorAll('.dtab-content').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('dtab-'+name).classList.add('active');
-}
-
-function openEditTenantModal(propId) {
-  const p = getProp(propId);
-  if(!p) return;
-  openModal(`<div class="modal-title">Edit tenant details</div>
-    <div class="form-row">
-      <div class="form-field"><label>Tenant name</label><input type="text" id="et-name" value="${p.tenant||''}"></div>
-      <div class="form-field"><label>Current rent (£/mo)</label><input type="number" id="et-rent" value="${p.rent||''}" step="1"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-field"><label>Lease start</label><input type="date" id="et-lstart" value="${p.leaseStart&&p.leaseStart!=='—'?p.leaseStart:''}"></div>
-      <div class="form-field"><label>Lease end</label><input type="date" id="et-lend" value="${p.leaseEnd&&p.leaseEnd!=='—'?p.leaseEnd:''}"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-field"><label>Deposit</label><input type="text" id="et-deposit" value="${p.deposit&&p.deposit!=='—'?p.deposit:''}"></div>
-      <div class="form-field"><label>Tenant email</label><input type="text" id="et-email" value="${p.tenantEmail&&p.tenantEmail!=='—'?p.tenantEmail:''}"></div>
-    </div>
-    <div class="form-field"><label>Tenant phone</label><input type="text" id="et-phone" value="${p.tenantPhone&&p.tenantPhone!=='—'?p.tenantPhone:''}"></div>
-    <button class="btn btn-primary" onclick="saveTenantEdit('${propId}')">Save</button>
-    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-}
-function saveTenantEdit(propId) {
-  const p = getProp(propId);
-  if(!p) return;
-  p.tenant = document.getElementById('et-name').value||'—';
-  p.rent = parseFloat(document.getElementById('et-rent').value)||p.rent;
-  p.leaseStart = document.getElementById('et-lstart').value||'—';
-  p.leaseEnd = document.getElementById('et-lend').value||'—';
-  p.deposit = document.getElementById('et-deposit').value||'—';
-  p.tenantEmail = document.getElementById('et-email').value||'—';
-  p.tenantPhone = document.getElementById('et-phone').value||'—';
-  saveState('props'); closeModal(); renderPropDetailContent(propId); renderDashboard();
-}
-
-function openEditAgentModal(propId) {
-  const p = getProp(propId);
-  if(!p) return;
-  const fee = p.mgmtFee||'';
-  const feeVat = p.mgmtFeeVat||'';
-  openModal(`<div class="modal-title">Edit letting agent</div>
-    <div class="form-row">
-      <div class="form-field"><label>Agent name</label><input type="text" id="ea-name" value="${p.agentName||p.agent||''}"></div>
-      <div class="form-field"><label>Agent phone</label><input type="text" id="ea-tel" value="${p.agentTel||''}"></div>
-    </div>
-    <div class="form-field"><label>Agent email</label><input type="text" id="ea-email" value="${p.agentEmail||''}"></div>
-    <div class="form-row">
-      <div class="form-field"><label>Management fee (£/mo)</label><input type="number" id="ea-fee" value="${fee}" step="0.01" placeholder="ex VAT"></div>
-      <div class="form-field"><label>Incl. VAT (£/mo)</label><input type="number" id="ea-feevat" value="${feeVat}" step="0.01" placeholder="inc VAT" oninput="eaCalcFee()"></div>
-    </div>
-    <div id="ea-hint" style="font-size:12px;color:var(--text2);margin-bottom:8px"></div>
-    <button class="btn btn-primary" onclick="saveAgentEdit('${propId}')">Save</button>
-    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-}
-function eaCalcFee() {
-  const vat = parseFloat(document.getElementById('ea-feevat')?.value||0);
-  if(vat > 0) {
-    const exVat = (vat/1.2).toFixed(2);
-    const feeEl = document.getElementById('ea-fee');
-    if(feeEl && !feeEl.value) feeEl.value = exVat;
-    const hint = document.getElementById('ea-hint');
-    if(hint) hint.textContent = `Ex VAT: £${exVat}/mo (20% VAT = £${(vat-vat/1.2).toFixed(2)})`;
-  }
-}
-function saveAgentEdit(propId) {
-  const p = getProp(propId);
-  if(!p) return;
-  p.agentName = document.getElementById('ea-name').value||'—';
-  p.agent = p.agentName;
-  p.agentTel = document.getElementById('ea-tel').value||'—';
-  p.agentEmail = document.getElementById('ea-email').value||'—';
-  p.mgmtFee = parseFloat(document.getElementById('ea-fee').value)||0;
-  p.mgmtFeeVat = parseFloat(document.getElementById('ea-feevat').value)||0;
-  saveState('props'); closeModal(); renderPropDetailContent(propId);
-}
-
-function uploadTenancyDoc(propId, input) {
-  const file = input.files[0]; if(!file) return;
-  const typeEl = document.getElementById('tdoc-type-'+propId);
-  const docType = typeEl?.value || 'Other';
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const p = getProp(propId);
-    if(!p) return;
-    if(!p.tenancyDocs) p.tenancyDocs = [];
-    p.tenancyDocs.push({
-      id: uid(),
-      name: file.name,
-      type: docType,
-      date: new Date().toISOString().slice(0,10),
-      docData: e.target.result.split(',')[1],
-      docMime: file.type || 'application/pdf',
-    });
-    saveState('props');
-    input.value = '';
-    renderPropDetailContent(propId);
-  };
-  reader.readAsDataURL(file);
-}
-function openTenancyDoc(propId, docId) {
-  const p = getProp(propId);
-  const doc = (p?.tenancyDocs||[]).find(d=>d.id===docId);
-  if(!doc?.docData) return;
-  try {
-    const byteChars = atob(doc.docData);
-    const bytes = new Uint8Array(byteChars.length);
-    for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
-    const blob = new Blob([bytes],{type:doc.docMime||'application/pdf'});
-    const url = URL.createObjectURL(blob);
-    window.open(url,'_blank');
-    setTimeout(()=>URL.revokeObjectURL(url),10000);
-  } catch(e) { alert('Could not open document.'); }
-}
-function deleteTenancyDoc(propId, docId) {
-  const p = getProp(propId);
-  if(!p) return;
-  p.tenancyDocs = (p.tenancyDocs||[]).filter(d=>d.id!==docId);
-  saveState('props');
-  renderPropDetailContent(propId);
 }
 
 function openAddRentHistoryModal(propId) {
