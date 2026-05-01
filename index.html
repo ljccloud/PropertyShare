@@ -150,10 +150,7 @@ h3 { font-size: 16px; font-weight: 500; }
 .label-xs { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em }
 .label-xs-mb { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px }
 .text-sm { font-size:12px;color:var(--text2) }
-.text-sm-medium { font-size:13px;font-weight:500 }
-.text-md-medium { font-size:14px;font-weight:500 }
 .icon-btn-sm { width:24px;height:24px;font-size:11px }
-.share-val { font-size:11px;color:var(--blue);font-weight:500 }
 </style>
 </head>
 <body>
@@ -499,7 +496,7 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = true;
+const DRIVE_MODE = false;
 
 async function loadState() {
   if(DRIVE_MODE) {
@@ -1169,23 +1166,21 @@ function closePropDetail() { document.getElementById('prop-detail').classList.re
 
 function renderPropDetailContent(id) {
   const p = getProp(id);
-  const propCerts = state.certs.filter(c=>c.propId===id);
-  const propApps = state.appliances.filter(a=>a.propId===id);
-  const propMaint = state.maint.filter(m=>m.propId===id).sort((a,b)=>b.date.localeCompare(a.date));
-  const propTxns = state.txns.filter(t=>t.prop===id).sort((a,b)=>b.date.localeCompare(a.date));
-  const yield_pct = ((p.rent*12)/p.value*100).toFixed(1);
+  if(!p) return;
 
-  const propRentHistory = (state.rentHistory||[]).filter(r=>r.propId===id).sort((a,b)=>b.startDate.localeCompare(a.startDate));
+  const propCerts      = state.certs.filter(c=>c.propId===id);
+  const propApps       = state.appliances.filter(a=>a.propId===id);
+  const propMaint      = state.maint.filter(m=>m.propId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const propTxns       = state.txns.filter(t=>t.prop===id).sort((a,b)=>b.date.localeCompare(a.date));
 
-  document.getElementById('detail-content').innerHTML = `
-    <div class="detail-tabs">
-      <button class="dtab active" onclick="switchDTab('tenant',this,'${id}')">Tenant</button>
-      <button class="dtab" onclick="switchDTab('financials',this,'${id}')">Financials</button>
-      <button class="dtab" onclick="switchDTab('certs',this,'${id}')">Certs & Appliances</button>
-      <button class="dtab" onclick="switchDTab('maintenance',this,'${id}')">Maintenance</button>
-      <button class="dtab" onclick="switchDTab('contacts',this,'${id}')">Contacts</button>
-      <button class="dtab" onclick="switchDTab('transactions',this,'${id}')">Finance log</button>
-    </div>
+  const rhRecords = [...(state.rentHistory||[]).filter(r=>r.propId===id)];
+  if(p.lastRentIncrease && (p.lastRentAmount||0) > 0) {
+    const exists = rhRecords.some(r=>r.startDate===p.lastRentIncrease && r.amount===p.lastRentAmount);
+    if(!exists) rhRecords.push({id:'__legacy__',propId:id,amount:p.lastRentAmount,startDate:p.lastRentIncrease,endDate:null,tenant:p.tenant||'',notes:'From tenant record'});
+  }
+  rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+
+  const tenantTab = `
     <div id="dtab-tenant" class="dtab-content active">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -1193,16 +1188,16 @@ function renderPropDetailContent(id) {
           <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditTenantModal('${id}')">Edit</button>
         </div>
         ${[
-          ['Tenant',p.tenant],
-          ['Lease start',fmtDate(p.leaseStart)],
-          ['Lease end',fmtDate(p.leaseEnd)],
-          ['Deposit',p.deposit],
-          ['Email',p.tenantEmail],
-          ['Phone',p.tenantPhone],
-          ['Current rent',fmtMoney(p.rent)+'/mo'],
-          ['Last rent increase',p.lastRentIncrease?fmtDate(p.lastRentIncrease):'—'],
-          ['Rent before increase',(p.lastRentAmount||0)>0?fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount>0?' (+'+((( p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)+'%)':''):'—'],
-        ].map(([l,v])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
+          ['Tenant', p.tenant||'—'],
+          ['Lease start', fmtDate(p.leaseStart)],
+          ['Lease end', fmtDate(p.leaseEnd)],
+          ['Deposit', p.deposit||'—'],
+          ['Email', p.tenantEmail||'—'],
+          ['Phone', p.tenantPhone||'—'],
+          ['Current rent', fmtMoney(p.rent)+'/mo'],
+          ['Last rent increase', p.lastRentIncrease ? fmtDate(p.lastRentIncrease) : '—'],
+          ['Previous rent', (p.lastRentAmount||0)>0 ? fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount>0?' (+'+(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)+'%)':'') : '—'],
+        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
       </div>
 
       <div class="card" style="margin-top:10px">
@@ -1211,21 +1206,18 @@ function renderPropDetailContent(id) {
           <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditAgentModal('${id}')">Edit</button>
         </div>
         ${[
-          ['Agent name', p.agentName||p.agent||'—'],
-          ['Agent phone', p.agentTel||'—'],
-          ['Agent email', p.agentEmail||'—'],
-          ['Management fee', p.mgmtFee ? fmtMoney(p.mgmtFee)+'/mo' : '—'],
-          ['Incl. VAT', p.mgmtFeeVat ? fmtMoney(p.mgmtFeeVat)+'/mo' : '—'],
-        ].map(([l,v])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v}</span></div>`).join('')}
+          ['Agent name',  p.agentName||p.agent||'—'],
+          ['Phone',       p.agentTel||'—'],
+          ['Email',       p.agentEmail||'—'],
+          ['Mgmt fee',    p.mgmtFee    ? fmtMoney(p.mgmtFee)+'/mo ex VAT' : '—'],
+          ['Incl. VAT',   p.mgmtFeeVat ? fmtMoney(p.mgmtFeeVat)+'/mo' : '—'],
+        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
       </div>
 
       <div class="card" style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="card-title" style="margin-bottom:0">Tenancy documents</div>
-        </div>
-        ${(()=>{
-          const docs = p.tenancyDocs||[];
-          const docList = docs.length ? docs.map(d=>`
+        <div class="card-title">Tenancy documents</div>
+        ${(p.tenancyDocs||[]).length
+          ? (p.tenancyDocs||[]).map(d=>`
             <div class="cert-item" style="cursor:pointer" onclick="openTenancyDoc('${id}','${d.id}')">
               <div class="cert-info">
                 <div class="cert-name">${d.name}</div>
@@ -1234,9 +1226,7 @@ function renderPropDetailContent(id) {
               </div>
               <button class="icon-btn" onclick="event.stopPropagation();deleteTenancyDoc('${id}','${d.id}')">✕</button>
             </div>`).join('')
-            : '<div class="empty" style="padding:8px 0"><div class="empty-icon">📁</div>No documents uploaded</div>';
-          return docList;
-        })()}
+          : '<div class="empty" style="padding:8px 0"><div class="empty-icon">📁</div>No documents uploaded</div>'}
         <div style="margin-top:10px">
           <div class="form-field" style="margin-bottom:8px">
             <label>Document type</label>
@@ -1255,130 +1245,152 @@ function renderPropDetailContent(id) {
         </div>
       </div>
 
-      ${(()=>{
-        const rhRecords = [...(propRentHistory||[])];
-        if(p.lastRentIncrease && p.lastRentAmount > 0) {
-          const alreadyExists = rhRecords.some(r => r.startDate === p.lastRentIncrease && r.amount === p.lastRentAmount);
-          if(!alreadyExists) {
-            rhRecords.push({id:'__legacy__',propId:p.id,amount:p.lastRentAmount,startDate:p.lastRentIncrease,endDate:null,tenant:p.tenant||'',notes:'From tenant record'});
-          }
-        }
-        rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
-        if(!rhRecords.length) return '';
-        return `<div class="section-label" style="margin-top:16px">Rent history</div>
-        <div class="card">
-          ${rhRecords.map((r,i)=>`
-            <div class="info-row" style="display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:8px;align-items:center">
-              ${i===0?'<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 5px;border-radius:4px;white-space:nowrap">Current</span>':'<span></span>'}
-              <span style="font-size:14px;font-weight:500;color:var(--green)">${fmtMoney(r.amount)}/mo</span>
-              <span class="text-sm">${fmtDate(r.startDate)}${r.endDate?' – '+fmtDate(r.endDate):' →'}</span>
-              <span class="text-sm">${r.tenant||''}</span>
-              ${r.id==='__legacy__'?'<span></span>':`<button class="icon-btn" style="width:24px;height:24px;font-size:11px" onclick="deleteRentHistory('${r.id}','${id}')">✕</button>`}
-            </div>`).join('')}
-        </div>
-        <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>`;
-      })()}
-    </div>
+      ${rhRecords.length ? `
+      <div class="section-label" style="margin-top:16px">Rent history</div>
+      <div class="card">
+        ${rhRecords.map((r,i)=>`
+          <div class="info-row" style="display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center">
+            ${i===0?'<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 5px;border-radius:4px">Current</span>':'<span></span>'}
+            <span style="font-size:14px;font-weight:500;color:var(--green)">${fmtMoney(r.amount)}/mo</span>
+            <span class="text-sm">${fmtDate(r.startDate)}${r.endDate?' – '+fmtDate(r.endDate):' →'}</span>
+            ${r.id==='__legacy__'?'<span></span>':`<button class="icon-btn" style="width:24px;height:24px;font-size:11px" onclick="deleteRentHistory('${r.id}','${id}')">✕</button>`}
+          </div>`).join('')}
+      </div>` : ''}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
+    </div>`;
+
+  const share = getOwnerShare(p);
+  const dispRent  = state.shareMode ? shareOf(p,p.rent)     : p.rent;
+  const dispValue = state.shareMode ? shareOf(p,p.value)    : p.value;
+  const dispPurch = state.shareMode ? shareOf(p,p.purchase) : p.purchase;
+  const dispMort  = state.shareMode ? shareOf(p,p.mortgage) : p.mortgage;
+  const yld = dispValue>0 ? ((dispRent*12)/dispValue*100).toFixed(1)+'%' : '—';
+  const ownerList = (p.owners&&p.owners.length)
+    ? p.owners.map(o=>{ const ow=state.owners.find(x=>x.id===o.ownerId); return (ow?ow.name:'?')+': '+o.share+'%'; }).join(', ')
+    : (p.ownershipShare||100)+'% (you)';
+  const sfx = state.shareMode?' (your share)':'';
+  const financialsTab = `
     <div id="dtab-financials" class="dtab-content">
       <div class="card">
-        ${(()=>{
-          const share = getOwnerShare(p);
-          const r = state.shareMode ? shareOf(p, p.rent) : p.rent;
-          const v = state.shareMode ? shareOf(p, p.value) : p.value;
-          const pur = state.shareMode ? shareOf(p, p.purchase) : p.purchase;
-          const mort = state.shareMode ? shareOf(p, p.mortgage) : p.mortgage;
-          const yld = v > 0 ? ((r*12)/v*100).toFixed(1)+'%' : '—';
-          const ownerList = p.owners ? p.owners.map(o=>{
-            const own = state.owners.find(x=>x.id===o.ownerId);
-            return `${own?own.name:'?'}: ${o.share}%`;
-          }).join(', ') : `${p.ownershipShare??100}% (you)`;
-          const rows = [
-            ['Ownership', ownerList],
-            ['Monthly rent'+(state.shareMode?' (your share)':''), fmtMoney(r)+'/mo'],
-            ['Annual rent'+(state.shareMode?' (your share)':''), fmtMoney(r*12)],
-            ['Purchase price'+(state.shareMode?' (your share)':''), fmtMoney(pur)],
-            ['Current value'+(state.shareMode?' (your share)':''), fmtMoney(v)],
-            ['Gross yield', yld],
-            ['Mortgage/mo'+(state.shareMode?' (your share)':''), fmtMoney(mort)],
-            ['Net/mo'+(state.shareMode?' (your share)':''), fmtMoney(r-mort)],
-            ['Lender', p.lender],
-          ];
-          return rows.map(([l,v2])=>`<div class="info-row"><span class="info-label">${l}</span><span class="info-val">${v2}</span></div>`).join('');
-        })()}
+        ${[
+          ['Ownership', ownerList],
+          ['Monthly rent'+sfx, fmtMoney(dispRent)+'/mo'],
+          ['Annual rent'+sfx,  fmtMoney(dispRent*12)],
+          ['Purchase price'+sfx, fmtMoney(dispPurch)],
+          ['Current value'+sfx, fmtMoney(dispValue)],
+          ['Gross yield', yld],
+          ['Mortgage/mo'+sfx, fmtMoney(dispMort)],
+          ['Net/mo'+sfx, fmtMoney(dispRent-dispMort)],
+          ['Lender', p.lender||'—'],
+        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
       </div>
       <button class="btn btn-secondary" style="margin-top:8px" onclick="openEditOwnershipModal('${id}')">Edit ownership</button>
       <button class="btn" style="margin-top:8px;background:${p.archived?'var(--green-bg)':'var(--amber-bg)'};color:${p.archived?'var(--green)':'var(--amber)'}" onclick="toggleArchiveProp('${id}')">
         ${p.archived?'✓ Restore property':'Archive property'}
       </button>
-      ${p.archived?'<div style="font-size:12px;color:var(--amber);margin-top:6px;line-height:1.4">Archived properties are hidden from calculations and the overview. Restore to include again.</div>':''}
-    </div>
+      ${p.archived?'<div style="font-size:12px;color:var(--amber);margin-top:6px">Archived — hidden from calculations. Restore to include again.</div>':''}
+    </div>`;
+
+  const certsTab = `
     <div id="dtab-certs" class="dtab-content">
-      <div class="section-label" style="margin:0;margin-bottom:10px">Certificates</div>
-      ${propCerts.map(c=>`
-        <div class="cert-item" style="cursor:${c.docData?'pointer':'default'}" onclick="${c.docData?'openCertDoc(\''+c.id+'\')':''}" >
+      <div style="font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Certificates</div>
+      ${propCerts.length ? propCerts.map(c=>`
+        <div class="cert-item" style="cursor:${c.docData?'pointer':'default'}" onclick="${c.docData?'openCertDoc(\''+c.id+'\')':''}">
           <div class="cert-info">
-            <div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?` <span class="badge badge-grey" style="font-size:12px;font-weight:600">Band ${c.epcRating}</span>`:''}</div>
+            <div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?' <span class="badge badge-grey" style="font-size:12px;font-weight:600">Band '+c.epcRating+'</span>':''}</div>
             <div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div>
-            ${c.issuer?`<div class="cert-meta">${c.issuer}</div>`:''}
-            ${c.notes?`<div class="cert-meta" style="color:var(--text3)">${c.notes}</div>`:''}
-            ${c.docData?`<div class="cert-meta" style="color:var(--blue);margin-top:3px">📄 Document attached — tap to open</div>`:'<div class="cert-meta" style="color:var(--text3);margin-top:3px">No document — upload via Upload tab</div>'}
+            ${c.issuer?'<div class="cert-meta">'+c.issuer+'</div>':''}
+            ${c.notes?'<div class="cert-meta" style="color:var(--text3)">'+c.notes+'</div>':''}
+            ${c.docData?'<div class="cert-meta" style="color:var(--blue);margin-top:3px">📄 Document attached — tap to open</div>':'<div class="cert-meta" style="color:var(--text3);margin-top:3px">No document — upload via Upload tab</div>'}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
             <span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span>
-            ${c.docData?`<button class="icon-btn" style="font-size:11px;width:auto;padding:2px 8px;border-radius:var(--radius-sm)" onclick="event.stopPropagation();openCertDoc('${c.id}')">Open</button>`:''}
+            ${c.docData?'<button class="icon-btn" style="font-size:11px;width:auto;padding:2px 8px;border-radius:var(--radius-sm)" onclick="event.stopPropagation();openCertDoc(\''+c.id+'\')">Open</button>':''}
             <button class="icon-btn" onclick="event.stopPropagation();deleteCert('${c.id}','${id}')" title="Delete">✕</button>
           </div>
-        </div>`).join('') || '<div class="empty"><div class="empty-icon">📋</div>No certificates yet</div>'}
+        </div>`).join('')
+        : '<div class="empty"><div class="empty-icon">📋</div>No certificates yet</div>'}
       <button class="btn btn-secondary" style="margin-top:8px;margin-bottom:16px" onclick="openAddCertModal('${id}')">+ Add certificate</button>
-      <div class="section-label" style="margin:0;margin-bottom:10px">Appliances</div>
-      ${propApps.map(a=>`
+      <div style="font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Appliances</div>
+      ${propApps.length ? propApps.map(a=>`
         <div class="cert-item">
           <div class="cert-info">
             <div class="cert-name">${a.name}</div>
             <div class="cert-meta">${a.make} ${a.model}</div>
             <div class="cert-meta">S/N: ${a.serial}</div>
-            ${a.location?`<div class="cert-meta">${a.location}</div>`:''}
-            ${a.notes?`<div class="cert-meta" style="color:var(--text3)">${a.notes}</div>`:''}
+            ${a.location?'<div class="cert-meta">'+a.location+'</div>':''}
+            ${a.notes?'<div class="cert-meta" style="color:var(--text3)">'+a.notes+'</div>':''}
           </div>
           <button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')" title="Delete">✕</button>
-        </div>`).join('') || '<div class="empty"><div class="empty-icon">🏠</div>No appliances logged</div>'}
+        </div>`).join('')
+        : '<div class="empty"><div class="empty-icon">🏠</div>No appliances logged</div>'}
       <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddApplianceModal('${id}')">+ Add appliance</button>
-    </div>
+    </div>`;
+
+  const maintTab = `
     <div id="dtab-maintenance" class="dtab-content">
-      ${propMaint.map(m=>`
+      ${propMaint.length ? propMaint.map(m=>`
         <div class="cert-item">
           <div class="cert-info">
             <div class="cert-name">${m.desc}</div>
             <div class="cert-meta">${fmtDate(m.date)}${m.cost?' · '+fmtMoney(m.cost):''}</div>
-            ${m.notes?`<div class="cert-meta" style="color:var(--text3)">${m.notes}</div>`:''}
+            ${m.notes?'<div class="cert-meta" style="color:var(--text3)">'+m.notes+'</div>':''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
             <span class="badge badge-${m.status==='open'?'amber':'green'}">${m.status==='open'?'Open':'Resolved'}</span>
             <button class="icon-btn" onclick="deleteMaint('${m.id}','${id}')" title="Delete">✕</button>
           </div>
-        </div>`).join('') || '<div class="empty"><div class="empty-icon">🔧</div>No maintenance issues</div>'}
+        </div>`).join('')
+        : '<div class="empty"><div class="empty-icon">🔧</div>No maintenance issues</div>'}
       <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddMaintModal('${id}')">+ Log issue</button>
-    </div>
+    </div>`;
+
+  const contactsTab = `
     <div id="dtab-contacts" class="dtab-content">
       <div class="card">
         <div class="card-title">Key contacts</div>
-        ${[['Letting agent',p.agent],['Agent phone',p.agentTel],['Gas engineer',p.gasEngineer],['Electrician',p.electrician],['Solicitor',p.solicitor]].map(([l,v])=>`
-          <div class="info-row"><span class="info-label">${l}</span><span class="info-val" style="word-break:break-word">${v||'—'}</span></div>`).join('')}
+        ${[
+          ['Letting agent', p.agentName||p.agent||'—'],
+          ['Agent phone', p.agentTel||'—'],
+          ['Gas engineer', p.gasEngineer||'—'],
+          ['Electrician', p.electrician||'—'],
+          ['Solicitor', p.solicitor||'—'],
+        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val" style="word-break:break-word">'+v+'</span></div>').join('')}
       </div>
       <div class="card" style="margin-top:10px">
         <div class="card-title">Insurance</div>
-        ${[['Provider',p.insuranceProvider||p.insurance||'—'],['Policy number',p.insurancePolicyNo||'—'],['Type',p.insuranceType||'—'],['Annual premium',p.insurancePremium?fmtMoney(p.insurancePremium):'—'],['Renewal date',p.insuranceRenewal?fmtDate(p.insuranceRenewal):'—'],['Contact / broker',p.insuranceContact||'—']].map(([l,v])=>`
-          <div class="info-row"><span class="info-label">${l}</span><span class="info-val" style="word-break:break-word">${v}</span></div>`).join('')}
-        <button class="btn btn-secondary" style="margin-top:10px" onclick="openEditInsuranceModal('${id}')">Edit insurance details</button>
-      </div>
-    </div>
-    <div id="dtab-transactions" class="dtab-content">
-      <div class="card">
-        ${propTxns.length ? propTxns.map(t=>txnRow(t,`deleteTxn('${t.id}','${id}')`,false)).join('') : '<div class="empty" style="padding:12px 0">No transactions yet</div>'}
+        ${[
+          ['Provider',    p.insuranceProvider||p.insurance||'—'],
+          ['Policy no.',  p.insurancePolicyNo||'—'],
+          ['Type',        p.insuranceType||'—'],
+          ['Premium',     p.insurancePremium?fmtMoney(p.insurancePremium)+'/yr':'—'],
+          ['Renewal',     p.insuranceRenewal?fmtDate(p.insuranceRenewal):'—'],
+          ['Broker',      p.insuranceContact||'—'],
+        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val" style="word-break:break-word">'+v+'</span></div>').join('')}
+        <button class="btn btn-secondary" style="margin-top:10px" onclick="openEditInsuranceModal('${id}')">Edit insurance</button>
       </div>
     </div>`;
-}
 
+  const finLogTab = `
+    <div id="dtab-transactions" class="dtab-content">
+      <div class="card">
+        ${propTxns.length
+          ? propTxns.map(t=>txnRow(t,"deleteTxn('"+t.id+"','"+id+"')",false)).join('')
+          : '<div class="empty" style="padding:12px 0">No transactions yet</div>'}
+      </div>
+    </div>`;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-tabs">
+      <button class="dtab active" onclick="switchDTab('tenant',this,'${id}')">Tenant</button>
+      <button class="dtab" onclick="switchDTab('financials',this,'${id}')">Financials</button>
+      <button class="dtab" onclick="switchDTab('certs',this,'${id}')">Certs & Appliances</button>
+      <button class="dtab" onclick="switchDTab('maintenance',this,'${id}')">Maintenance</button>
+      <button class="dtab" onclick="switchDTab('contacts',this,'${id}')">Contacts</button>
+      <button class="dtab" onclick="switchDTab('transactions',this,'${id}')">Finance log</button>
+    </div>
+    ${tenantTab}${financialsTab}${certsTab}${maintTab}${contactsTab}${finLogTab}`;
+}
 function switchDTab(name, btn, propId) {
   document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.dtab-content').forEach(c=>c.classList.remove('active'));
@@ -2118,7 +2130,6 @@ function buildDocFilename(propId, date, type, suffix) {
   const roadName = propFirstWord(propId);
   const d = date ? new Date(date) : new Date();
   const yymm = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0');
-  // CamelCase the type: "Gas Safety" → "GasSafety", "Repairs & maintenance" → "RepairsMaintenance"
   const detail = type.split(/[\s&\-_]+/).filter(Boolean)
     .map((w,i) => i===0 ? w.charAt(0).toUpperCase()+w.slice(1) : w.charAt(0).toUpperCase()+w.slice(1))
     .join('').replace(/[^a-zA-Z0-9]/g,'');
@@ -2281,7 +2292,6 @@ function getCatOpts(type) {
   return (CAT_BY_TYPE[type] || CAT_BY_TYPE.expense)
     .map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
 }
-// All categories where a payment can cover a specific period (MTD compliance)
 const PERIOD_CATS = ['rental-income','professional','premises','financial','services','repairs','travel','other-allowable'];
 
 const PERIOD_DURATION_OPTS = [
@@ -2382,7 +2392,6 @@ function saveManualTxn() {
 
 function openAddCertModal(propId) {
   const propOpts = state.props.map(p=>`<option value="${p.id}"${p.id===propId?' selected':''}>${p.name}</option>`).join('');
-  // Standard durations per cert type
   const CERT_DURATIONS = {'Gas Safety':12,'EPC':120,'EICR':60,'PAT Testing':12,'Legionella':24,'HMO Licence':60,'Other':12};
   const durationOpts = [
     {v:'',l:'— or enter expiry date below —'},
@@ -2428,7 +2437,6 @@ function openAddCertModal(propId) {
     <button class="btn btn-primary" onclick="saveManualCert('${propId}')">Save</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
 
-  // Pre-set duration based on cert type default
   mcAutoSetDuration('Gas Safety');
 }
 
