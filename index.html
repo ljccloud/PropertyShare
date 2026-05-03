@@ -151,6 +151,13 @@ h3 { font-size: 16px; font-weight: 500; }
 .label-xs-mb { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px }
 .text-sm { font-size:12px;color:var(--text2) }
 .icon-btn-sm { width:24px;height:24px;font-size:11px }
+
+.fw5-13 { font-size:13px; font-weight:500 }
+.fw5-14 { font-size:14px; font-weight:500 }
+.fw5-11-blue { font-size:11px; color:var(--blue); font-weight:500 }
+.btn-sm-edit { width:auto; padding:5px 12px; font-size:12px }
+.flex-row { display:flex; justify-content:space-between; align-items:center }
+.gap-8 { display:flex; gap:8px }
 </style>
 </head>
 <body>
@@ -496,7 +503,7 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = true;
+const DRIVE_MODE = false;
 
 async function loadState() {
   if(DRIVE_MODE) {
@@ -656,7 +663,7 @@ function openOwnerModal() {
     <div id="owner-rows">${ownerRows}</div>
     <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
       <div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Add owner</div>
-      <div style="display:flex;gap:8px">
+      <div class="gap-8">
         <input type="text" id="new-global-owner" placeholder="Owner name"
           style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
           onkeydown="if(event.key==='Enter')addGlobalOwner()">
@@ -701,7 +708,7 @@ function deleteOwner(id) {
     <div class="modal-title">Remove owner</div>
     ${warning}
     <p style="font-size:14px;margin-bottom:20px">Remove <strong>${o.name}</strong> from the owners list?</p>
-    <div style="display:flex;gap:8px">
+    <div class="gap-8">
       <button class="btn btn-secondary" style="flex:1" onclick="openOwnerModal()">Cancel</button>
       <button class="btn" style="flex:1;background:var(--red-bg);color:var(--red)" onclick="confirmDeleteOwner('${id}')">Remove</button>
     </div>`);
@@ -716,6 +723,21 @@ function confirmDeleteOwner(id) {
   populateOwnerSelect();
   renderAll();
   openOwnerModal();
+}
+
+function epcBand(r){return r?'<span class="badge badge-grey" style="font-size:12px;font-weight:600">Band '+r+'</span>':''}
+function infoRow(label, value) {
+  return '<div class="info-row"><span class="info-label">'+label+'</span><span class="info-val">'+value+'</span></div>';
+}
+function infoRows(pairs) {
+  return pairs.map(([l,v])=>infoRow(l,v)).join('');
+}
+
+function txnCatTotals(propId, start, end) {
+  const txns = state.txns.filter(t=>t.prop===propId && t.date && new Date(t.date)>=start && new Date(t.date)<=end);
+  const totals = Object.fromEntries(Object.keys(CAT_LABELS).map(k=>[k,0]));
+  txns.forEach(t=>{ if(t.cat in totals) totals[t.cat]+=t.amount; });
+  return totals;
 }
 function certBadgeRow(propId) {
   return ['Gas Safety','EPC','EICR','Insurance'].map(key => {
@@ -736,25 +758,6 @@ function certBadgeRow(propId) {
       <span class="badge badge-${st}" style="font-size:11px">${expiry}${extra}</span>
     </div>`;
   }).join('');
-}
-
-function finStatRow(label, fullVal, shareVal, isIncome, ownerShare, ownerName, showShare) {
-  const hasVal = isIncome ? true : fullVal > 0;
-  const col = isIncome ? 'var(--green)' : (fullVal > 0 ? 'var(--red)' : 'var(--text3)');
-  const pre = (!isIncome && fullVal > 0) ? '-' : '';
-  const display = hasVal ? pre + fmtMoney(fullVal) : '—';
-  const shareDisplay = hasVal ? (isIncome ? '' : pre) + fmtMoney(shareVal) : '—';
-  if(showShare && ownerShare < 1) {
-    return `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:12px;color:var(--text2)">${label}</span>
-      <span style="font-size:12px;font-weight:500;color:${col};text-align:right">${display}</span>
-      <span style="font-size:12px;font-weight:500;color:var(--blue);text-align:right">${shareDisplay}</span>
-    </div>`;
-  }
-  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)">
-    <span style="font-size:12px;color:var(--text2)">${label}</span>
-    <span style="font-size:12px;font-weight:500;color:${col}">${display}</span>
-  </div>`;
 }
 
 function txnRow(t, onDelete, showProp) {
@@ -967,8 +970,8 @@ function renderDashboard() {
 
     const shareBadge = p.owners && p.owners.length>1 ? `<span class="badge badge-blue" style="margin-left:4px">${p.owners.length} owners</span>` : '';
     const rentDisplay = showShare && ownerShare < 1
-      ? `<div style="font-size:14px;font-weight:500">${fmtMoney(fullRentP)}</div><div style="font-size:11px;color:var(--blue);font-weight:500">${fmtMoney(shareRentP)} ${selectedOwnerName}</div>`
-      : `<div style="font-size:14px;font-weight:500">${fmtMoney(fullRentP)}</div>`;
+      ? `<div class="fw5-14">${fmtMoney(fullRentP)}</div><div class="fw5-11-blue">${fmtMoney(shareRentP)} ${selectedOwnerName}</div>`
+      : `<div class="fw5-14">${fmtMoney(fullRentP)}</div>`;
     function finRow(label, fullVal, shareVal, isIncome) {
       const color = isIncome ? 'var(--green)' : (fullVal > 0 ? 'var(--red)' : 'var(--text3)');
       const prefix = isIncome ? '' : (fullVal > 0 ? '-' : '');
@@ -976,7 +979,7 @@ function renderDashboard() {
       return `<div>
         <div class="label-xs-mb">${label}</div>
         <div style="font-size:13px;font-weight:500;color:${color}">${fullVal > 0 || isIncome ? prefix+fmtMoney(fullVal) : '—'}</div>
-        ${showShare && ownerShare < 1 ? `<div style="font-size:11px;color:var(--blue);font-weight:500">${fullVal > 0 || isIncome ? sharePrefix+fmtMoney(shareVal) : '—'}</div>` : ''}
+        ${showShare && ownerShare < 1 ? `<div class="fw5-11-blue">${fullVal > 0 || isIncome ? sharePrefix+fmtMoney(shareVal) : '—'}</div>` : ''}
       </div>`;
     }
 
@@ -994,7 +997,7 @@ function renderDashboard() {
           <div class="label-xs-mb">Rent pcm${showShare&&ownerShare<1?' (full / share)':''}</div>
           ${rentDisplay}
         </div>
-        <div><div class="label-xs-mb">Yield</div><div style="font-size:14px;font-weight:500">${yld}</div></div>
+        <div><div class="label-xs-mb">Yield</div><div class="fw5-14">${yld}</div></div>
         ${finRow('Income', ptFullIncome, ptShareIncome, true)}
         ${finRow('Agent fees', ptFullAgentFees, ptShareFees, false)}
         ${finRow('Mgmt costs', ptFullPremises, ptSharePremises, false)}
@@ -1048,7 +1051,7 @@ function renderProperties() {
 
   const archiveToggle = archivedCount > 0 ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;border:1px solid var(--border)">
     <span style="font-size:13px;color:var(--text2)">${archivedCount} archived propert${archivedCount===1?'y':'ies'}</span>
-    <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="state.showArchived=!state.showArchived;renderProperties()">
+    <button class="btn btn-secondary" class="btn-sm-edit" onclick="state.showArchived=!state.showArchived;renderProperties()">
       ${state.showArchived?'Hide archived':'Show archived'}
     </button>
   </div>` : '';
@@ -1059,12 +1062,8 @@ function renderProperties() {
     const dispValue = p.value;
     const yield_pct = dispValue>0 ? ((fullRentP*12)/dispValue*100).toFixed(1) : '0.0';
 
-    const propTxns = state.txns.filter(t=>t.prop===p.id&&t.date&&new Date(t.date)>=start&&new Date(t.date)<=end);
-    const catFull = {};
-    Object.keys(CAT_LABELS).forEach(k=>{ catFull[k]=0; });
-    propTxns.forEach(t=>{ if(catFull[t.cat]!==undefined) catFull[t.cat]+=t.amount; });
-    const catShare = {};
-    Object.keys(CAT_LABELS).forEach(k=>{ catShare[k]=catFull[k]*ownerShare; });
+    const catFull = txnCatTotals(p.id, start, end);
+    const catShare = Object.fromEntries(Object.entries(catFull).map(([k,v])=>[k,v*ownerShare]));
 
     const fullIncome = catFull['rental-income'];
     const fullExpenses = Object.entries(catFull).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
@@ -1101,28 +1100,28 @@ function renderProperties() {
     }
 
     const rentDisplay = showShare && ownerShare < 1
-      ? `<div style="font-size:13px;font-weight:500">${fmtMoney(fullRentP)} <span style="font-size:11px;color:var(--blue);font-weight:500">/ ${fmtMoney(shareRentP)} ${selectedOwnerName}</span></div>`
-      : `<div style="font-size:13px;font-weight:500">${fmtMoney(fullRentP)}</div>`;
+      ? `<div class="fw5-13">${fmtMoney(fullRentP)} <span class="fw5-11-blue">/ ${fmtMoney(shareRentP)} ${selectedOwnerName}</span></div>`
+      : `<div class="fw5-13">${fmtMoney(fullRentP)}</div>`;
 
     const netRow = showShare && ownerShare < 1
       ? `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:7px 0">
-          <span style="font-size:13px;font-weight:500">Net income</span>
+          <span class="fw5-13">Net income</span>
           <span style="font-size:13px;font-weight:500;color:${fullNet>=0?'var(--green)':'var(--red)'};text-align:right">${fullNet<0?'-':''}${fmtMoney(fullNet)}</span>
           <span style="font-size:13px;font-weight:500;color:var(--blue);text-align:right">${shareNet<0?'-':''}${fmtMoney(shareNet)}</span>
         </div>`
-      : `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
-          <span style="font-size:13px;font-weight:500">Net income</span>
+      : `<div class="flex-row" style="padding:7px 0">
+          <span class="fw5-13">Net income</span>
           <span style="font-size:14px;font-weight:500;color:${fullNet>=0?'var(--green)':'var(--red)'}">${fullNet<0?'-':''}${fmtMoney(fullNet)}</span>
         </div>`;
 
     const incomeRow = showShare && ownerShare < 1
       ? `<div style="display:grid;grid-template-columns:1fr 80px 80px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:13px;font-weight:500">Rental income</span>
+          <span class="fw5-13">Rental income</span>
           <span style="font-size:13px;font-weight:500;color:var(--green);text-align:right">${fmtMoney(fullIncome)}</span>
           <span style="font-size:13px;font-weight:500;color:var(--blue);text-align:right">${fmtMoney(shareIncome)}</span>
         </div>`
       : `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:13px;font-weight:500">Rental income</span>
+          <span class="fw5-13">Rental income</span>
           <span style="font-size:13px;font-weight:500;color:var(--green)">${fmtMoney(fullIncome)}</span>
         </div>`;
 
@@ -1141,7 +1140,7 @@ function renderProperties() {
           <div class="label-xs-mb">Rent pcm</div>
           ${rentDisplay}
         </div>
-        <div><div class="label-xs-mb">Yield</div><div style="font-size:13px;font-weight:500">${yield_pct}%</div></div>
+        <div><div class="label-xs-mb">Yield</div><div class="fw5-13">${yield_pct}%</div></div>
         <div><div class="label-xs-mb">Period</div><div class="text-sm">${label}</div></div>
       </div>
       <div>
@@ -1183,11 +1182,11 @@ function renderPropDetailContent(id) {
   const tenantTab = `
     <div id="dtab-tenant" class="dtab-content active">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="flex-row" style="margin-bottom:10px">
           <div class="card-title" style="margin-bottom:0">Tenant details</div>
-          <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditTenantModal('${id}')">Edit</button>
+          <button class="btn btn-secondary" class="btn-sm-edit" onclick="openEditTenantModal('${id}')">Edit</button>
         </div>
-        ${[
+        ${infoRows([
           ['Tenant', p.tenant||'—'],
           ['Lease start', fmtDate(p.leaseStart)],
           ['Lease end', fmtDate(p.leaseEnd)],
@@ -1197,21 +1196,21 @@ function renderPropDetailContent(id) {
           ['Current rent', fmtMoney(p.rent)+'/mo'],
           ['Last rent increase', p.lastRentIncrease ? fmtDate(p.lastRentIncrease) : '—'],
           ['Previous rent', (p.lastRentAmount||0)>0 ? fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount>0?' (+'+(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)+'%)':'') : '—'],
-        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
+        ])}
       </div>
 
       <div class="card" style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="flex-row" style="margin-bottom:10px">
           <div class="card-title" style="margin-bottom:0">Letting agent</div>
-          <button class="btn btn-secondary" style="width:auto;padding:5px 12px;font-size:12px" onclick="openEditAgentModal('${id}')">Edit</button>
+          <button class="btn btn-secondary" class="btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button>
         </div>
-        ${[
+        ${infoRows([
           ['Agent name',  p.agentName||p.agent||'—'],
           ['Phone',       p.agentTel||'—'],
           ['Email',       p.agentEmail||'—'],
           ['Mgmt fee',    p.mgmtFee    ? fmtMoney(p.mgmtFee)+'/mo ex VAT' : '—'],
           ['Incl. VAT',   p.mgmtFeeVat ? fmtMoney(p.mgmtFeeVat)+'/mo' : '—'],
-        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
+        ])}
       </div>
 
       <div class="card" style="margin-top:10px">
@@ -1272,7 +1271,7 @@ function renderPropDetailContent(id) {
   const financialsTab = `
     <div id="dtab-financials" class="dtab-content">
       <div class="card">
-        ${[
+        ${infoRows([
           ['Ownership', ownerList],
           ['Monthly rent'+sfx, fmtMoney(dispRent)+'/mo'],
           ['Annual rent'+sfx,  fmtMoney(dispRent*12)],
@@ -1282,7 +1281,7 @@ function renderPropDetailContent(id) {
           ['Mortgage/mo'+sfx, fmtMoney(dispMort)],
           ['Net/mo'+sfx, fmtMoney(dispRent-dispMort)],
           ['Lender', p.lender||'—'],
-        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>').join('')}
+        ])}
       </div>
       <button class="btn btn-secondary" style="margin-top:8px" onclick="openEditOwnershipModal('${id}')">Edit ownership</button>
       <button class="btn" style="margin-top:8px;background:${p.archived?'var(--green-bg)':'var(--amber-bg)'};color:${p.archived?'var(--green)':'var(--amber)'}" onclick="toggleArchiveProp('${id}')">
@@ -1297,7 +1296,7 @@ function renderPropDetailContent(id) {
       ${propCerts.length ? propCerts.map(c=>`
         <div class="cert-item" style="cursor:${c.docData?'pointer':'default'}" onclick="${c.docData?'openCertDoc(\''+c.id+'\')':''}">
           <div class="cert-info">
-            <div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?' <span class="badge badge-grey" style="font-size:12px;font-weight:600">Band '+c.epcRating+'</span>':''}</div>
+            <div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?epcBand(c.epcRating):''}</div>
             <div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div>
             ${c.issuer?'<div class="cert-meta">'+c.issuer+'</div>':''}
             ${c.notes?'<div class="cert-meta" style="color:var(--text3)">'+c.notes+'</div>':''}
@@ -1349,24 +1348,24 @@ function renderPropDetailContent(id) {
     <div id="dtab-contacts" class="dtab-content">
       <div class="card">
         <div class="card-title">Key contacts</div>
-        ${[
+        ${infoRows([
           ['Letting agent', p.agentName||p.agent||'—'],
           ['Agent phone', p.agentTel||'—'],
           ['Gas engineer', p.gasEngineer||'—'],
           ['Electrician', p.electrician||'—'],
           ['Solicitor', p.solicitor||'—'],
-        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val" style="word-break:break-word">'+v+'</span></div>').join('')}
+        ])}
       </div>
       <div class="card" style="margin-top:10px">
         <div class="card-title">Insurance</div>
-        ${[
+        ${infoRows([
           ['Provider',    p.insuranceProvider||p.insurance||'—'],
           ['Policy no.',  p.insurancePolicyNo||'—'],
           ['Type',        p.insuranceType||'—'],
           ['Premium',     p.insurancePremium?fmtMoney(p.insurancePremium)+'/yr':'—'],
           ['Renewal',     p.insuranceRenewal?fmtDate(p.insuranceRenewal):'—'],
           ['Broker',      p.insuranceContact||'—'],
-        ].map(([l,v])=>'<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val" style="word-break:break-word">'+v+'</span></div>').join('')}
+        ])}
         <button class="btn btn-secondary" style="margin-top:10px" onclick="openEditInsuranceModal('${id}')">Edit insurance</button>
       </div>
     </div>`;
@@ -1418,6 +1417,13 @@ function openEditTenantModal(propId) {
     <button class="btn btn-primary" onclick="saveTenantEdit('${propId}')">Save</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
 }
+
+function savePropAndRefresh(propId) {
+  savePropAndRefresh(propId);
+}
+function savePropOnly(propId) {
+  savePropOnly(propId);
+}
 function saveTenantEdit(propId) {
   const p = getProp(propId);
   if(!p) return;
@@ -1428,7 +1434,7 @@ function saveTenantEdit(propId) {
   p.deposit = document.getElementById('et-deposit').value||'—';
   p.tenantEmail = document.getElementById('et-email').value||'—';
   p.tenantPhone = document.getElementById('et-phone').value||'—';
-  saveState('props'); closeModal(); renderPropDetailContent(propId); renderDashboard();
+  savePropAndRefresh(propId);
 }
 
 function openEditAgentModal(propId) {
@@ -1469,7 +1475,7 @@ function saveAgentEdit(propId) {
   p.agentEmail = document.getElementById('ea-email').value||'—';
   p.mgmtFee = parseFloat(document.getElementById('ea-fee').value)||0;
   p.mgmtFeeVat = parseFloat(document.getElementById('ea-feevat').value)||0;
-  saveState('props'); closeModal(); renderPropDetailContent(propId);
+  savePropOnly(propId);
 }
 
 function uploadTenancyDoc(propId, input) {
@@ -1539,7 +1545,7 @@ function saveRentHistory(propId) {
   saveState('rentHistory'); closeModal(); renderPropDetailContent(propId);
 }
 function deleteRentHistory(rhId, propId) {
-  
+
   state.rentHistory = state.rentHistory.filter(r=>r.id!==rhId);
   saveState('rentHistory'); renderPropDetailContent(propId);
 }
@@ -1667,21 +1673,21 @@ function renderMTD() {
 
   const quarterCards = quarters.map(q => `
     <div class="card" style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="flex-row" style="margin-bottom:10px">
         <div>
-          <div style="font-size:14px;font-weight:500">${q.label}</div>
+          <div class="fw5-14">${q.label}</div>
           <div class="text-sm">Due ${q.due} · ${q.txCount} transactions</div>
         </div>
         <span class="badge ${q.isDue?'badge-amber':q.isPast?'badge-green':'badge-grey'}">${q.isDue?'Current':q.isPast?'Past':'Upcoming'}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
-        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Gross income</div><div style="font-size:15px;font-weight:500;color:var(--green)">${fmtMoney(q.income)}</div></div>
-        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Finance costs</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.finance)}</div></div>
-        <div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Other expenses</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.other)}</div></div>
+        <div><div class="label-xs" style="margin-bottom:3px">Gross income</div><div style="font-size:15px;font-weight:500;color:var(--green)">${fmtMoney(q.income)}</div></div>
+        <div><div class="label-xs" style="margin-bottom:3px">Finance costs</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.finance)}</div></div>
+        <div><div class="label-xs" style="margin-bottom:3px">Other expenses</div><div style="font-size:15px;font-weight:500;color:var(--red)">${fmtMoney(q.other)}</div></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="flex-row">
         <div style="font-size:13px;color:var(--text2)">Net: <strong style="color:${q.total>=0?'var(--green)':'var(--red)'}">${q.total<0?'-':''}${fmtMoney(q.total)}</strong></div>
-        <div style="display:flex;gap:8px">
+        <div class="gap-8">
           <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;width:auto" onclick="exportQuarterCSV(${q.q},${yr})">CSV</button>
           <button class="btn btn-primary" style="padding:6px 12px;font-size:12px;width:auto" onclick="exportQuarterMTD(${q.q},${yr})">MTD summary</button>
         </div>
@@ -1872,7 +1878,7 @@ function markResolved(id) {
 }
 
 function deleteMaintGlobal(id) {
-  
+
   state.maint = state.maint.filter(m=>m.id!==id);
   saveState('maint'); renderMaintenance(); renderDashboard();
 }
@@ -2030,7 +2036,7 @@ function renderDocs() {
     <input type="file" id="doc-upload-input" class="upload-input" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleDocUpload(this)">
     <div id="doc-extract-area"></div>
     <div class="section-label">Manual entry</div>
-    <div style="display:flex;gap:8px">
+    <div class="gap-8">
       <button class="btn btn-secondary" style="flex:1" onclick="openAddTxnModal()">+ Transaction</button>
       <button class="btn btn-secondary" style="flex:1" onclick="openAddCertModal(null)">+ Certificate</button>
     </div>
@@ -2158,9 +2164,8 @@ async function saveDocCopy(filename, propId, category) {
 
 function showExtractedTxn(ex) {
   const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  const catOpts = Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}"${ex.category===v?' selected':''}>${l}</option>`).join(''); // full list for extracted docs
-  const initCat = ex.category || 'other-allowable';
-  const showPeriod = PERIOD_CATS.includes(initCat);
+  const catOpts = Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}"${ex.category===v?' selected':''}>${l}</option>`).join('');
+  const showPeriod = PERIOD_CATS.includes(ex.category||'other-allowable');
   document.getElementById('doc-extract-area').innerHTML = `
     <div class="card" style="margin-top:10px">
       <div class="card-title">Review extracted details</div>
@@ -2343,7 +2348,7 @@ function openAddTxnModal() {
     </div>
     <button class="btn btn-primary" onclick="saveManualTxn()">Save</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-  updatePeriodFields(getCatOpts('income').match(/value="([^"]+)"/)?.[1] || 'rental-income');
+  updatePeriodFields('rental-income');
 }
 
 function updateTxnCats(type) {
@@ -2819,7 +2824,7 @@ function openEditOwnershipModal(propId) {
     </div>
     <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:8px">
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">Manage owners</div>
-      <div style="display:flex;gap:8px">
+      <div class="gap-8">
         <input type="text" id="new-owner-name" placeholder="New owner name" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px">
         <button class="btn btn-secondary" style="width:auto;padding:8px 12px;font-size:13px" onclick="addOwner()">Add</button>
       </div>
@@ -2889,7 +2894,7 @@ function saveOwnership(propId) {
     p.owners = [];
     p.ownershipShare = 100;
     p.numOwners = 1;
-    saveState('props'); closeModal(); renderPropDetailContent(propId); renderAll();
+    savePropAndRefresh(propId); renderAll();
     return;
   }
   p.owners = owners;
