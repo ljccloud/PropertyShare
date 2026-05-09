@@ -503,7 +503,7 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = true;
+const DRIVE_MODE = false;
 
 async function loadState() {
   if(DRIVE_MODE) {
@@ -1419,10 +1419,10 @@ function openEditTenantModal(propId) {
 }
 
 function savePropAndRefresh(propId) {
-  savePropAndRefresh(propId);
+  saveState('props'); closeModal(); renderPropDetailContent(propId); renderDashboard();
 }
 function savePropOnly(propId) {
-  savePropOnly(propId);
+  saveState('props'); closeModal(); renderPropDetailContent(propId);
 }
 function saveTenantEdit(propId) {
   const p = getProp(propId);
@@ -1482,22 +1482,24 @@ function uploadTenancyDoc(propId, input) {
   const file = input.files[0]; if(!file) return;
   const typeEl = document.getElementById('tdoc-type-'+propId);
   const docType = typeEl?.value || 'Other';
+  const p = getProp(propId);
+  if(!p) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const p = getProp(propId);
-    if(!p) return;
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    const mime = file.type || 'application/pdf';
     if(!p.tenancyDocs) p.tenancyDocs = [];
-    p.tenancyDocs.push({
-      id: uid(),
-      name: file.name,
-      type: docType,
-      date: new Date().toISOString().slice(0,10),
-      docData: e.target.result.split(',')[1],
-      docMime: file.type || 'application/pdf',
-    });
+    p.tenancyDocs.push({id:uid(), name:file.name, type:docType, date:new Date().toISOString().slice(0,10), docData:base64, docMime:mime});
     saveState('props');
+    // Save to Drive automatically
+    _lastUploadedBase64 = base64;
+    _lastUploadedMime = mime;
+    const folder = propFirstWord(propId);
+    const filename = buildDocFilename(propId, new Date().toISOString().slice(0,10), docType, '');
+    await saveDocCopy(filename, propId, docType);
     input.value = '';
     renderPropDetailContent(propId);
+    showSync('✓ '+docType+' saved to Drive');
   };
   reader.readAsDataURL(file);
 }
@@ -2184,11 +2186,7 @@ function showExtractedTxn(ex) {
           <div class="form-field"><label>Period end</label><input type="date" id="ex-period-end"></div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
-        <input type="checkbox" id="ex-savecopy" style="width:18px;height:18px;cursor:pointer" checked>
-        <label for="ex-savecopy" style="font-size:13px;color:var(--text);cursor:pointer">Save a renamed copy to my device</label>
-      </div>
-      <button class="btn btn-primary" onclick="saveExtractedTxn()">Save transaction</button>
+      <button class="btn btn-primary" style="margin-top:10px" onclick="saveExtractedTxn()">Save transaction</button>
       <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('doc-extract-area').innerHTML=''">Cancel</button>
     </div>`;
 }
@@ -2213,10 +2211,9 @@ function saveExtractedTxn() {
     periodStart: hasPeriod ? (document.getElementById('ex-period-start')?.value||'') : '',
     periodEnd: hasPeriod ? (document.getElementById('ex-period-end')?.value||'') : '',
   };
-  const saveCopy = document.getElementById('ex-savecopy')?.checked;
   state.txns.push(t); saveState('txns');
-  if(saveCopy) saveDocCopy(buildDocFilename(propId, date, CAT_LABELS[cat]||cat, ''), propId, CAT_LABELS[cat]||cat);
-  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Transaction saved' + (saveCopy?' — copy downloaded':'') + '</div>';
+  saveDocCopy(buildDocFilename(propId, date, CAT_LABELS[cat]||cat, ''), propId, CAT_LABELS[cat]||cat);
+  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Transaction saved — copy saved to Drive</div>';
   setTimeout(()=>{document.getElementById('doc-extract-area').innerHTML='';},2500);
   renderDashboard();
 }
@@ -2241,11 +2238,7 @@ function showExtractedCert(ex) {
       <div class="form-field"><label>Expiry date</label><input type="date" id="ex-cexpiry" value="${ex.expiryDate||''}"></div></div>
       <div class="form-field"><label>Issuer</label><input type="text" id="ex-cissuer" value="${ex.issuer||''}"></div>
       <div class="form-field"><label>Notes</label><input type="text" id="ex-cnotes" value="${ex.notes||''}"></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
-        <input type="checkbox" id="ex-csavecopy" style="width:18px;height:18px;cursor:pointer" checked>
-        <label for="ex-csavecopy" style="font-size:13px;color:var(--text);cursor:pointer">Save a renamed copy to my device</label>
-      </div>
-      <button class="btn btn-primary" onclick="saveExtractedCert()">Save certificate</button>
+      <button class="btn btn-primary" style="margin-top:10px" onclick="saveExtractedCert()">Save certificate</button>
       <button class="btn btn-secondary" style="margin-top:8px" onclick="document.getElementById('doc-extract-area').innerHTML=''">Cancel</button>
     </div>`;
 }
@@ -2257,7 +2250,6 @@ function saveExtractedCert() {
   const propId = document.getElementById('ex-cprop').value;
   const certType = document.getElementById('ex-ctype').value;
   const issueDate = document.getElementById('ex-cissue').value;
-  const saveCopy = document.getElementById('ex-csavecopy')?.checked;
   const epcRating = certType==='EPC' ? (document.getElementById('ex-epc-rating')?.value||'') : '';
   const c = {
     id:uid(), propId, type:certType, issueDate,
@@ -2265,12 +2257,12 @@ function saveExtractedCert() {
     issuer:document.getElementById('ex-cissuer').value,
     notes:document.getElementById('ex-cnotes').value,
     epcRating,
-    docData: _lastUploadedBase64 || '',
-    docMime: _lastUploadedMime || '',
+    docData: _lastUploadedBase64||'',
+    docMime: _lastUploadedMime||'',
   };
   state.certs.push(c); saveState('certs');
-  if(saveCopy) saveDocCopy(buildDocFilename(propId, issueDate, certType, ''), propId, 'Certificates');
-  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Certificate saved' + (saveCopy?' — copy downloaded':'') + '</div>';
+  saveDocCopy(buildDocFilename(propId, issueDate, certType, ''), propId, 'Certificates');
+  document.getElementById('doc-extract-area').innerHTML = '<div class="alert" style="background:var(--green-bg);border-color:var(--green-bg);color:var(--green)">✓ Certificate saved — copy saved to Drive</div>';
   setTimeout(()=>{document.getElementById('doc-extract-area').innerHTML='';},2500);
   renderDashboard();
 }
