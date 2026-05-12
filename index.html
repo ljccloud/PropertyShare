@@ -323,6 +323,7 @@ let state = {
   currentScreen: 'dashboard',
   financeTab: 'all',
   dashPeriod: 'ytd',
+  customPeriod: {start:'', end:''},
   shareMode: false,
   showArchived: false,
 };
@@ -503,7 +504,7 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = true;
+const DRIVE_MODE = false;
 
 async function loadState() {
   if(DRIVE_MODE) {
@@ -733,10 +734,22 @@ function infoRows(pairs) {
   return pairs.map(([l,v])=>infoRow(l,v)).join('');
 }
 
+function propPeriodTotals(propId, start, end) {
+  const txns = txnsInRange(start, end).filter(t=>t.prop===propId);
+  const p = getProp(propId);
+  const amt = t => shareOf(p, apportionedAmount(t, start, end));
+  return {
+    income:    txns.filter(t=>t.type==='income').reduce((s,t)=>s+amt(t),0),
+    agentFees: txns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+amt(t),0),
+    premises:  txns.filter(t=>t.type==='expense'&&t.cat==='premises').reduce((s,t)=>s+amt(t),0),
+    other:     txns.filter(t=>t.type==='expense'&&!['professional','premises'].includes(t.cat)).reduce((s,t)=>s+amt(t),0),
+  };
+}
+
 function txnCatTotals(propId, start, end) {
-  const txns = state.txns.filter(t=>t.prop===propId && t.date && new Date(t.date)>=start && new Date(t.date)<=end);
+  const txns = txnsInRange(start, end).filter(t=>t.prop===propId);
   const totals = Object.fromEntries(Object.keys(CAT_LABELS).map(k=>[k,0]));
-  txns.forEach(t=>{ if(t.cat in totals) totals[t.cat]+=t.amount; });
+  txns.forEach(t=>{ if(t.cat in totals) totals[t.cat]+=apportionedAmount(t,start,end); });
   return totals;
 }
 function certBadgeRow(propId) {
@@ -792,55 +805,139 @@ function certStatusBadgeInline(c) {
   const rating = c.type==='EPC' && c.epcRating ? ` Band ${c.epcRating}` : '';
   return `<span class="badge badge-${st}">${certLabel(c.expiryDate)}${rating}</span>`;
 }
+// ─── PERIOD HELPERS ──────────────────────────────────────────────────────────
+
+function currentTaxYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  return now >= new Date(y,3,6) ? y : y-1;
+}
+
+function taxQuarterBounds(taxY) {
+  // UK tax year quarters: Q1=6Apr–5Jul, Q2=6Jul–5Oct, Q3=6Oct–5Jan, Q4=6Jan–5Apr
+  return [
+    { q:1, start:new Date(taxY,3,6),   end:new Date(taxY,6,5,23,59,59),   label:`6 Apr – 5 Jul` },
+    { q:2, start:new Date(taxY,6,6),   end:new Date(taxY,9,5,23,59,59),   label:`6 Jul – 5 Oct` },
+    { q:3, start:new Date(taxY,9,6),   end:new Date(taxY+1,0,5,23,59,59), label:`6 Oct – 5 Jan` },
+    { q:4, start:new Date(taxY+1,0,6), end:new Date(taxY+1,3,5,23,59,59), label:`6 Jan – 5 Apr` },
+  ];
+}
+
+function currentTaxQuarter() {
+  const now = new Date();
+  const taxY = currentTaxYear();
+  return taxQuarterBounds(taxY).find(q => now >= q.start && now <= q.end) || taxQuarterBounds(taxY)[0];
+}
+
 function getPeriodRange(period) {
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  const today = new Date(y,m,d,23,59,59);
+  const taxY = currentTaxYear();
   let start, end, prevStart, prevEnd, label;
+
   if(period==='ytd') {
-    start = new Date(y,0,1); end = new Date(y,m,d,23,59,59);
+    start = new Date(y,0,1); end = today;
     prevStart = new Date(y-1,0,1); prevEnd = new Date(y-1,m,d,23,59,59);
-    label = 'YTD '+y;
-  } else if(period==='last12') {
-    start = new Date(y-1,m,d+1); end = new Date(y,m,d,23,59,59);
-    prevStart = new Date(y-2,m,d+1); prevEnd = new Date(y-1,m,d,23,59,59);
-    label = 'Last 12 months';
-  } else if(period==='q1') {
-    start = new Date(y,0,1); end = new Date(y,2,31,23,59,59);
-    prevStart = new Date(y-1,0,1); prevEnd = new Date(y-1,2,31,23,59,59);
-    label = 'Q1 '+y;
-  } else if(period==='q2') {
-    start = new Date(y,3,1); end = new Date(y,5,30,23,59,59);
-    prevStart = new Date(y-1,3,1); prevEnd = new Date(y-1,5,30,23,59,59);
-    label = 'Q2 '+y;
-  } else if(period==='q3') {
-    start = new Date(y,6,1); end = new Date(y,8,30,23,59,59);
-    prevStart = new Date(y-1,6,1); prevEnd = new Date(y-1,8,30,23,59,59);
-    label = 'Q3 '+y;
-  } else if(period==='q4') {
-    start = new Date(y,9,1); end = new Date(y,11,31,23,59,59);
-    prevStart = new Date(y-1,9,1); prevEnd = new Date(y-1,11,31,23,59,59);
-    label = 'Q4 '+y;
+    label = `YTD ${y} (1 Jan – today)`;
+
   } else if(period==='tytd') {
-    const taxStart = now >= new Date(y,3,6) ? new Date(y,3,6) : new Date(y-1,3,6);
-    start = taxStart; end = new Date(y,m,d,23,59,59);
-    prevStart = new Date(taxStart.getFullYear()-1,3,6);
-    prevEnd = new Date(taxStart.getFullYear()-1, m, d, 23,59,59);
-    const taxY = taxStart.getFullYear();
-    label = `Tax YTD ${taxY}/${String(taxY+1).slice(2)}`;
+    start = new Date(taxY,3,6); end = today;
+    prevStart = new Date(taxY-1,3,6); prevEnd = new Date(taxY-1,m,d,23,59,59);
+    label = `Tax YTD ${taxY}/${String(taxY+1).slice(2)} (6 Apr – today)`;
+
+  } else if(period==='curtaxq') {
+    const q = currentTaxQuarter();
+    const qEnd = q.end > today ? today : q.end;
+    start = q.start; end = qEnd;
+    // Prev = same quarter last tax year
+    const prevQ = taxQuarterBounds(taxY-1)[q.q-1];
+    prevStart = prevQ.start; prevEnd = prevQ.end;
+    label = `Tax Q${q.q} (${q.label})`;
+
+  } else if(period==='alltime') {
+    const dates = state.txns.map(t=>t.date).filter(Boolean).sort();
+    start = dates.length ? new Date(dates[0]) : new Date(y,0,1);
+    end = today;
+    prevStart = start; prevEnd = start; // no prev for all time
+    label = 'All time';
+
+  } else if(period==='custom') {
+    // Dates set in state.customPeriod
+    const cs = state.customPeriod?.start, ce = state.customPeriod?.end;
+    start = cs ? new Date(cs) : new Date(y,0,1);
+    end = ce ? new Date(ce+'T23:59:59') : today;
+    // Prev = same length shifted back
+    const len = end - start;
+    prevEnd = new Date(start.getTime()-1);
+    prevStart = new Date(prevEnd.getTime()-len);
+    label = `${fmtDate(start.toISOString().slice(0,10))} – ${fmtDate(end.toISOString().slice(0,10))}`;
+
+  } else {
+    // Fallback — YTD
+    start = new Date(y,0,1); end = today;
+    prevStart = new Date(y-1,0,1); prevEnd = new Date(y-1,m,d,23,59,59);
+    label = `YTD ${y}`;
   }
-  return {start,end,prevStart,prevEnd,label};
+
+  return {start, end, prevStart, prevEnd, label};
+}
+
+// Apportion a transaction amount to a period, respecting periodStart/periodEnd
+// If the transaction has no period dates, 100% falls on its date
+// If its coverage period overlaps the target range, prorate accordingly
+function apportionAmount(txn, rangeStart, rangeEnd) {
+  if(!txn.periodStart || !txn.periodEnd) {
+    // No period — full amount if date is in range
+    const d = new Date(txn.date);
+    return (d >= rangeStart && d <= rangeEnd) ? txn.amount : 0;
+  }
+  const ps = new Date(txn.periodStart);
+  const pe = new Date(txn.periodEnd+'T23:59:59');
+  const totalDays = (pe - ps) / 86400000 + 1;
+  if(totalDays <= 0) return 0;
+  // Overlap between [ps,pe] and [rangeStart,rangeEnd]
+  const overlapStart = ps < rangeStart ? rangeStart : ps;
+  const overlapEnd   = pe > rangeEnd   ? rangeEnd   : pe;
+  if(overlapStart > overlapEnd) return 0;
+  const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+  return txn.amount * (overlapDays / totalDays);
 }
 
 function txnsInRange(start, end) {
   const fpIds = state.filterProp ? [state.filterProp] : state.props.map(p=>p.id);
+  // Return all transactions that have ANY overlap with the range
   return state.txns.filter(t=>{
-    if(!t.date) return false;
+    if(!t.date || !fpIds.includes(t.prop)) return false;
+    if(t.periodStart && t.periodEnd) {
+      const ps = new Date(t.periodStart), pe = new Date(t.periodEnd+'T23:59:59');
+      return ps <= end && pe >= start; // overlaps range
+    }
     const d = new Date(t.date);
-    return d>=start && d<=end && fpIds.includes(t.prop);
+    return d >= start && d <= end;
   });
 }
-function sumIncome(txns) { return txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0); }
-function sumExpense(txns) { return txns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t),0); }
+
+function apportionedAmount(txn, rangeStart, rangeEnd) {
+  return apportionAmount(txn, rangeStart, rangeEnd);
+}
+
+function sumIncome(txns, start, end) {
+  return txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t, apportionedAmount(t,start,end)),0);
+}
+function sumExpense(txns, start, end) {
+  return txns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t, apportionedAmount(t,start,end)),0);
+}
+
+// Override txnShare to accept optional pre-computed amount
+const _txnShareOrig = txnShare;
+function txnShare(txn, overrideAmount) {
+  const amt = overrideAmount !== undefined ? overrideAmount : txn.amount;
+  if(!state.shareMode) return amt;
+  const p = getProp(txn.prop);
+  return amt * getOwnerShare(p||{ownershipShare:100});
+}
+
 
 function deltaChip(curr, prev) {
   if(prev===0) return '';
@@ -859,17 +956,17 @@ function renderDashboard() {
 
   const currTxns = txnsInRange(start, end);
   const prevTxns = txnsInRange(prevStart, prevEnd);
-  const income = sumIncome(currTxns);
-  const expense = sumExpense(currTxns);
+  const income = sumIncome(currTxns, start, end);
+  const expense = sumExpense(currTxns, start, end);
   const net = income - expense;
-  const prevIncome = sumIncome(prevTxns);
-  const prevExpense = sumExpense(prevTxns);
+  const prevIncome = sumIncome(prevTxns, prevStart, prevEnd);
+  const prevExpense = sumExpense(prevTxns, prevStart, prevEnd);
   const prevNet = prevIncome - prevExpense;
-  const fullIncome = currTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const fullExpense = currTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const fullIncome = currTxns.filter(t=>t.type==='income').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+  const fullExpense = currTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
   const fullNet = fullIncome - fullExpense;
-  const prevFullIncome = prevTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const prevFullExpense = prevTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const prevFullIncome = prevTxns.filter(t=>t.type==='income').reduce((s,t)=>s+apportionedAmount(t,prevStart,prevEnd),0);
+  const prevFullExpense = prevTxns.filter(t=>t.type==='expense').reduce((s,t)=>s+apportionedAmount(t,prevStart,prevEnd),0);
   const prevFullNet = prevFullIncome - prevFullExpense;
 
   const showShare = state.shareMode && state.selectedOwner;
@@ -889,12 +986,17 @@ function renderDashboard() {
   if(warnCerts.length) certAlerts += `<div class="alert-strip alert-strip-amber">⏱ ${warnCerts.length} certificate${warnCerts.length>1?'s':''} expiring within 60 days</div>`;
 
   const periods = [
-    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},
-    {v:'q1',l:'Q1'},{v:'q2',l:'Q2'},{v:'q3',l:'Q3'},{v:'q4',l:'Q4'}
+    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},{v:'curtaxq',l:'Tax Q'},
+    {v:'alltime',l:'All time'},{v:'custom',l:'Custom'}
   ];
-  const periodBar = `<div class="toggle-bar" style="margin-bottom:12px;overflow-x:auto;flex-wrap:nowrap">
+  const customUI = period==='custom' ? `
+    <div class="gap-8" style="margin-bottom:10px">
+      <div class="form-field" style="margin-bottom:0;flex:1"><label>From</label><input type="date" id="cp-start" value="${state.customPeriod?.start||''}" onchange="setCustomPeriod()"></div>
+      <div class="form-field" style="margin-bottom:0;flex:1"><label>To</label><input type="date" id="cp-end" value="${state.customPeriod?.end||''}" onchange="setCustomPeriod()"></div>
+    </div>` : '';
+  const periodBar = `<div class="toggle-bar" style="margin-bottom:8px;overflow-x:auto;flex-wrap:nowrap">
     ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderDashboard()">${p.l}</button>`).join('')}
-  </div>`;
+  </div>${customUI}`;
 
   const prevYear = prevStart.getFullYear();
 
@@ -1012,17 +1114,36 @@ function renderDashboard() {
     </div>`;
   }).join('');
 
+  // Net income % = (income - professional fees) / income * 100
+  // Profit % = net / income * 100
+  const fullAgentFees = currTxns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+  const netIncomeVal = fullIncome - fullAgentFees;
+  const netIncomePct = fullIncome > 0 ? ((netIncomeVal/fullIncome)*100).toFixed(1) : '—';
+  const profitPct = fullIncome > 0 ? ((fullNet/fullIncome)*100).toFixed(1) : '—';
+
   document.getElementById('screen-dashboard').innerHTML = `
     ${periodBar}
     ${showShare ? `<div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 12px;margin-bottom:10px">Showing full · <strong>${selectedOwnerName}'s share</strong> in blue</div>` : ''}
-    <div class="metrics">
-      ${rentTile()}
+    <div class="metrics" style="grid-template-columns:1fr 1fr 1fr">
       ${metricTile('Income', fullIncome, income, prevFullIncome, prevIncome, 'var(--green)', label)}
       ${metricTile('Expenses', fullExpense, expense, prevFullExpense, prevExpense, 'var(--red)', label)}
       ${metricTile('Net', fullNet, net, prevFullNet, prevNet, fullNet>=0?'var(--green)':'var(--red)', label)}
-      <div class="metric metric-wide" style="padding:12px 14px">
-        <div class="metric-label">Avg gross yield</div>
-        <div style="font-size:22px;font-weight:300;letter-spacing:-.02em;margin:4px 0">${avgYield}${avgYield!=='—'?'%':''}</div>
+    </div>
+    <div class="metrics" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:0">
+      ${rentTile()}
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Net income %</div>
+        <div style="font-size:20px;font-weight:300;color:${netIncomePct!=='—'&&parseFloat(netIncomePct)>=0?'var(--green)':'var(--red)'};letter-spacing:-.02em">${netIncomePct !== '—' ? netIncomePct+'%' : '—'}</div>
+        <div class="text-sm">Income less agent fees</div>
+      </div>
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Profit %</div>
+        <div style="font-size:20px;font-weight:300;color:${profitPct!=='—'&&parseFloat(profitPct)>=0?'var(--green)':'var(--red)'};letter-spacing:-.02em">${profitPct !== '—' ? profitPct+'%' : '—'}</div>
+        <div class="text-sm">Net after all costs</div>
+      </div>
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Avg yield</div>
+        <div style="font-size:20px;font-weight:300;letter-spacing:-.02em">${avgYield}${avgYield!=='—'?'%':''}</div>
         <div class="text-sm">Across ${fps.filter(p=>p.value>0).length} propert${fps.filter(p=>p.value>0).length===1?'y':'ies'}</div>
       </div>
     </div>
@@ -1554,30 +1675,30 @@ function deleteRentHistory(rhId, propId) {
 function renderFinance() {
   const period = state.dashPeriod || 'ytd';
   const {start, end, label} = getPeriodRange(period);
-  const allTxns = state.filterProp
-    ? state.txns.filter(t=>t.prop===state.filterProp)
-    : state.txns;
-  const ftxns = allTxns.filter(t=>{
-    if(!t.date) return false;
-    const d = new Date(t.date);
-    return d >= start && d <= end;
-  }).sort((a,b)=>b.date.localeCompare(a.date));
+  const ftxns = txnsInRange(start, end)
+    .filter(t=>!state.filterProp || t.prop===state.filterProp)
+    .sort((a,b)=>b.date.localeCompare(a.date));
   const typeFilter = state.financeTab;
   const shown = typeFilter==='all' ? ftxns : ftxns.filter(t=>t.type===typeFilter);
-  const income = ftxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
-  const expense = ftxns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t),0);
+  const income = sumIncome(ftxns, start, end);
+  const expense = sumExpense(ftxns, start, end);
   const net = income - expense;
 
   const fmtShort = d => d ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}) : '';
   const dateRange = `${fmtShort(start)} – ${fmtShort(end)}`;
 
   const periods = [
-    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},
-    {v:'q1',l:'Q1'},{v:'q2',l:'Q2'},{v:'q3',l:'Q3'},{v:'q4',l:'Q4'}
+    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},{v:'curtaxq',l:'Tax Q'},
+    {v:'alltime',l:'All time'},{v:'custom',l:'Custom'}
   ];
-  const periodBar = `<div class="toggle-bar" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap">
+  const customUI = period==='custom' ? `
+    <div class="gap-8" style="margin-bottom:10px">
+      <div class="form-field" style="margin-bottom:0;flex:1"><label>From</label><input type="date" id="cp-start" value="${state.customPeriod?.start||''}" onchange="setCustomPeriod()"></div>
+      <div class="form-field" style="margin-bottom:0;flex:1"><label>To</label><input type="date" id="cp-end" value="${state.customPeriod?.end||''}" onchange="setCustomPeriod()"></div>
+    </div>` : '';
+  const periodBar = `<div class="toggle-bar" style="margin-bottom:8px;overflow-x:auto;flex-wrap:nowrap">
     ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderFinance()">${p.l}</button>`).join('')}
-  </div>`;
+  </div>${customUI}`;
 
   document.getElementById('screen-finance').innerHTML = `
     ${periodBar}
@@ -1611,6 +1732,16 @@ function renderFinance() {
     <div class="card">
       ${shown.length ? shown.map(t=>txnRow(t,`deleteTxnGlobal('${t.id}')`,true)).join('') : '<div class="empty">No transactions for this period</div>'}
     </div>`;
+}
+
+function setCustomPeriod() {
+  const s = document.getElementById('cp-start')?.value;
+  const e = document.getElementById('cp-end')?.value;
+  if(s && e) {
+    state.customPeriod = {start:s, end:e};
+    renderDashboard();
+    renderFinance();
+  }
 }
 function setFinTab(t) { state.financeTab=t; renderFinance(); }
 function getTaxYear(date) {
