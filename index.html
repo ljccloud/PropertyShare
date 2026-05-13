@@ -6,7 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Property Portfolio</title>
-<script src="https://accounts.google.com/gsi/client" defer></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://apis.google.com/js/api.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -161,7 +162,7 @@ h3 { font-size: 16px; font-weight: 500; }
 </head>
 <body>
 <!-- Login overlay -->
-<div id="login-screen" style="position:fixed;inset:0;z-index:999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+<div id="login-screen" style="position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <div style="font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:8px;color:var(--text)">Property Portfolio</div>
   <div style="font-size:14px;color:var(--text2);margin-bottom:40px;text-align:center">Sign in to load and sync your data with Google Drive</div>
   <button id="signin-btn" onclick="signIn()" style="display:flex;align-items:center;gap:12px;padding:12px 24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:15px;font-weight:500;color:var(--text)">
@@ -176,13 +177,11 @@ h3 { font-size: 16px; font-weight: 500; }
 <div id="app">
   <div id="header">
     <div id="header-title">Portfolio</div>
-    <select id="prop-select" onchange="setFilterProp(this.value)" style="font-size:12px;font-weight:500;padding:4px 8px;border:1px solid var(--border);border-radius:20px;background:var(--surface2);color:var(--text2);cursor:pointer;flex-shrink:0;max-width:120px;-webkit-appearance:none;appearance:none;text-align:center;outline:none">
-      <option value="">All props</option>
-    </select>
-    <select id="owner-select" onchange="setOwnerMode(this.value)" style="font-size:12px;font-weight:500;padding:4px 8px;border:1px solid var(--border);border-radius:20px;background:var(--surface2);color:var(--text2);cursor:pointer;flex-shrink:0;max-width:120px;-webkit-appearance:none;appearance:none;text-align:center;outline:none">
+    <select id="owner-select" onchange="setOwnerMode(this.value)" style="font-size:12px;font-weight:500;padding:4px 8px;border:1px solid var(--border);border-radius:20px;background:var(--surface2);color:var(--text2);cursor:pointer;flex-shrink:0;max-width:130px;-webkit-appearance:none;appearance:none;text-align:center;outline:none">
       <option value="">All owners</option>
     </select>
-    <button onclick="signOut()" title="Sign out" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)">⏻</button>
+    <button onclick="openOwnerModal()" title="Manage owners" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)" aria-label="Manage owners">✎</button>
+    <button onclick="signOut()" title="Sign out" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text2)">⏻</button>
   </div>
   <div id="content">
     <div id="screen-dashboard" class="screen active"></div>
@@ -350,53 +349,22 @@ function showSync(msg, isError) {
 }
 
 function signIn() {
-  const btn = document.getElementById('signin-btn');
-  if(btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
-
-  function doSignIn() {
-    try {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: async (resp) => {
-          if(btn) { btn.disabled = false; btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google'; }
-          if(resp.error) {
-            const err = document.getElementById('login-error');
-            if(err) { err.textContent = 'Sign-in failed: ' + resp.error; err.style.display='block'; }
-            return;
-          }
-          gAccessToken = resp.access_token;
-          document.getElementById('login-screen').style.display = 'none';
-          showSync('⟳ Loading from Drive…');
-          await initDrive();
-        }
-      });
-      client.requestAccessToken();
-    } catch(e) {
-      const err = document.getElementById('login-error');
-      if(err) { err.textContent = 'Google sign-in not ready. Please wait a moment and try again.'; err.style.display='block'; }
-      if(btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-    }
-  }
-
-  // Wait for google library if not yet loaded
-  if(typeof google !== 'undefined' && google.accounts) {
-    doSignIn();
-  } else {
-    let attempts = 0;
-    const wait = setInterval(() => {
-      attempts++;
-      if(typeof google !== 'undefined' && google.accounts) {
-        clearInterval(wait);
-        doSignIn();
-      } else if(attempts > 20) {
-        clearInterval(wait);
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if(resp.error) {
         const err = document.getElementById('login-error');
-        if(err) { err.textContent = 'Could not load Google sign-in. Check your internet connection.'; err.style.display='block'; }
-        if(btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
+        if(err) { err.textContent = 'Sign-in failed: ' + resp.error; err.style.display='block'; }
+        return;
       }
-    }, 250);
-  }
+      gAccessToken = resp.access_token;
+      document.getElementById('login-screen').style.display = 'none';
+      showSync('⟳ Loading from Drive…');
+      await initDrive();
+    }
+  });
+  client.requestAccessToken();
 }
 
 function signOut() {
@@ -536,12 +504,11 @@ async function uploadFileToDrive(base64Data, mimeType, filename, propName, categ
     return null;
   }
 }
-const DRIVE_MODE = true;
+const DRIVE_MODE = false;
 
 async function loadState() {
   if(DRIVE_MODE) {
-    const ls = document.getElementById('login-screen');
-    if(ls) ls.style.cssText = ls.style.cssText.replace('display:none','display:flex');
+    document.getElementById('login-screen').style.display = 'flex';
     return;
   }
   document.getElementById('login-screen').style.display = 'none';
@@ -554,14 +521,6 @@ async function loadState() {
       } catch(e) {}
     }
     state.txns = state.txns.map(t=>({...t, cat: CAT_LEGACY[t.cat]||t.cat}));
-    // Migrate tenancyDocs -> unified p.docs array
-    state.props.forEach(p=>{
-      if(!p.docs) p.docs = [];
-      (p.tenancyDocs||[]).forEach(d=>{
-        if(!p.docs.find(x=>x.id===d.id))
-          p.docs.push({...d, section:'tenancy', label:d.type||'Tenancy'});
-      });
-    });
   } catch(e) {}
   renderAll();
 }
@@ -612,7 +571,6 @@ function showScreen(name, btn) {
 }
 
 function renderAll() {
-  populatePropSelect();
   populateOwnerSelect();
   renderScreen(state.currentScreen);
 }
@@ -658,27 +616,6 @@ function setOwnerMode(val) {
   populateOwnerSelect();
   renderAll();
 }
-function setFilterProp(id) {
-  state.filterProp = id || null;
-  const sel = document.getElementById('prop-select');
-  if(sel) {
-    sel.style.background = state.filterProp ? 'var(--blue-bg)' : 'var(--surface2)';
-    sel.style.color = state.filterProp ? 'var(--blue)' : 'var(--text2)';
-    sel.style.borderColor = state.filterProp ? '#B5D4F4' : 'var(--border)';
-  }
-  renderAll();
-}
-
-function populatePropSelect() {
-  const sel = document.getElementById('prop-select');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">All props</option>' +
-    state.props.filter(p=>!p.archived).map(p=>`<option value="${p.id}"${p.id===state.filterProp?' selected':''}>${p.name}</option>`).join('');
-  sel.style.background = state.filterProp ? 'var(--blue-bg)' : 'var(--surface2)';
-  sel.style.color = state.filterProp ? 'var(--blue)' : 'var(--text2)';
-  sel.style.borderColor = state.filterProp ? '#B5D4F4' : 'var(--border)';
-}
-
 function populateOwnerSelect() {
   const sel = document.getElementById('owner-select');
   if(!sel) return;
@@ -1517,14 +1454,10 @@ function renderPropDetailContent(id) {
           <div class="cert-info">
             <div class="cert-name">${m.desc}</div>
             <div class="cert-meta">${fmtDate(m.date)}${m.cost?' · '+fmtMoney(m.cost):''}</div>
-            ${m.contractor?'<div class="cert-meta">'+m.contractor+'</div>':''}
             ${m.notes?'<div class="cert-meta" style="color:var(--text3)">'+m.notes+'</div>':''}
-            ${m.status==='resolved'&&m.resolvedDate?'<div class="cert-meta" style="color:var(--green)">✓ Resolved '+fmtDate(m.resolvedDate)+'</div>':''}
-            ${m.resolution?'<div class="cert-meta" style="color:var(--text2)">'+m.resolution+'</div>':''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
             <span class="badge badge-${m.status==='open'?'amber':'green'}">${m.status==='open'?'Open':'Resolved'}</span>
-            ${m.status==='open'?`<button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;width:auto" onclick="markResolved('${m.id}')">Resolve</button>`:''}
             <button class="icon-btn" onclick="deleteMaint('${m.id}','${id}')" title="Delete">✕</button>
           </div>
         </div>`).join('')
@@ -1567,52 +1500,6 @@ function renderPropDetailContent(id) {
       </div>
     </div>`;
 
-  // ── Documents tab ───────────────────────────────────────────────────────────
-  const DOC_SECTIONS = [
-    {key:'tenancy',    label:'Tenancy',      icon:'📋'},
-    {key:'certificate',label:'Certificates', icon:'✅'},
-    {key:'receipt',    label:'Receipts',     icon:'🧾'},
-    {key:'ownership',  label:'Ownership',    icon:'📜'},
-    {key:'other',      label:'Other',        icon:'📁'},
-  ];
-  const allDocs = (p.docs||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-
-  const docsTab = `
-    <div id="dtab-documents" class="dtab-content">
-      ${DOC_SECTIONS.map(sec=>{
-        const secDocs = allDocs.filter(d=>d.section===sec.key);
-        const docList = secDocs.length ? secDocs.map(d=>`
-          <div class="cert-item" style="cursor:pointer" onclick="openPropDoc('${id}','${d.id}')">
-            <div class="cert-info">
-              <div class="cert-name">${d.name}</div>
-              <div class="cert-meta">${d.label||d.type||''} · ${fmtDate(d.date)}</div>
-              <div class="cert-meta" style="color:var(--blue)">📄 Tap to open</div>
-            </div>
-            <button class="icon-btn" onclick="event.stopPropagation();deletePropDoc('${id}','${d.id}')">✕</button>
-          </div>`).join('')
-          : '<div style="font-size:13px;color:var(--text3);padding:4px 0 8px">No documents</div>';
-        return \`<div style="margin-bottom:16px">
-          <div class="section-label">\${sec.icon} \${sec.label}</div>
-          \${docList}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-            <div class="form-field" style="margin-bottom:0">
-              <label>Doc date</label>
-              <input type="date" id="docdate-\${sec.key}-${id}" value="\${new Date().toISOString().slice(0,10)}">
-            </div>
-            <div class="form-field" style="margin-bottom:0">
-              <label>Label (optional)</label>
-              <input type="text" id="doclabel-\${sec.key}-${id}" placeholder="e.g. AST 2025">
-            </div>
-          </div>
-          <div class="upload-zone" style="padding:12px;margin-top:8px" onclick="document.getElementById('docfile-\${sec.key}-${id}').click()">
-            <p style="font-size:13px;margin-bottom:0">Tap to upload \${sec.label.toLowerCase()} document</p>
-          </div>
-          <input type="file" class="upload-input" id="docfile-\${sec.key}-${id}" accept=".pdf,.jpg,.jpeg,.png,.webp"
-            onchange="uploadPropDoc('${id}','\${sec.key}',this)">
-        </div>\`;
-      }).join('')}
-    </div>`;
-
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-tabs">
       <button class="dtab active" onclick="switchDTab('tenant',this,'${id}')">Tenant</button>
@@ -1621,9 +1508,8 @@ function renderPropDetailContent(id) {
       <button class="dtab" onclick="switchDTab('maintenance',this,'${id}')">Maintenance</button>
       <button class="dtab" onclick="switchDTab('contacts',this,'${id}')">Contacts</button>
       <button class="dtab" onclick="switchDTab('transactions',this,'${id}')">Finance log</button>
-      <button class="dtab" onclick="switchDTab('documents',this,'${id}')">Documents</button>
     </div>
-    ${tenantTab}${financialsTab}${certsTab}${maintTab}${contactsTab}${finLogTab}${docsTab}`;
+    ${tenantTab}${financialsTab}${certsTab}${maintTab}${contactsTab}${finLogTab}`;
 }
 function switchDTab(name, btn, propId) {
   document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
@@ -1756,64 +1642,6 @@ function deleteTenancyDoc(propId, docId) {
   const p = getProp(propId);
   if(!p) return;
   p.tenancyDocs = (p.tenancyDocs||[]).filter(d=>d.id!==docId);
-  saveState('props');
-  renderPropDetailContent(propId);
-}
-
-function uploadPropDoc(propId, section, input) {
-  const file = input.files[0]; if(!file) return;
-  const dateEl = document.getElementById('docdate-'+section+'-'+propId);
-  const labelEl = document.getElementById('doclabel-'+section+'-'+propId);
-  const docDate = dateEl?.value || new Date().toISOString().slice(0,10);
-  const docLabel = labelEl?.value?.trim() || '';
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64 = e.target.result.split(',')[1];
-    const mime = file.type || 'application/pdf';
-    const ext = mime.includes('pdf') ? '.pdf' : mime.includes('png') ? '.png' : '.jpg';
-    // Filename: Maple_2504_Tenancy_AST.pdf
-    const roadName = propFirstWord(propId);
-    const d = new Date(docDate);
-    const yymm = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0');
-    const secLabel = section.charAt(0).toUpperCase()+section.slice(1);
-    const labelPart = docLabel ? '_'+docLabel.replace(/[^a-zA-Z0-9]+/g,'-') : '';
-    const filename = `${roadName}_${yymm}_${secLabel}${labelPart}${ext}`;
-    const p = getProp(propId);
-    if(!p) return;
-    if(!p.docs) p.docs = [];
-    p.docs.push({id:uid(), section, name:filename, label:docLabel||secLabel, date:docDate, docData:base64, docMime:mime});
-    saveState('props');
-    // Save to Drive
-    _lastUploadedBase64 = base64;
-    _lastUploadedMime = mime;
-    await saveDocCopy(filename, propId, secLabel);
-    input.value = '';
-    if(labelEl) labelEl.value = '';
-    renderPropDetailContent(propId);
-    showSync('✓ '+filename+' saved');
-  };
-  reader.readAsDataURL(file);
-}
-
-function openPropDoc(propId, docId) {
-  const p = getProp(propId);
-  const doc = (p?.docs||[]).find(d=>d.id===docId);
-  if(!doc?.docData) return;
-  try {
-    const byteChars = atob(doc.docData);
-    const bytes = new Uint8Array(byteChars.length);
-    for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
-    const blob = new Blob([bytes],{type:doc.docMime||'application/pdf'});
-    const url = URL.createObjectURL(blob);
-    window.open(url,'_blank');
-    setTimeout(()=>URL.revokeObjectURL(url),10000);
-  } catch(e) { alert('Could not open document.'); }
-}
-
-function deletePropDoc(propId, docId) {
-  const p = getProp(propId);
-  if(!p) return;
-  p.docs = (p.docs||[]).filter(d=>d.id!==docId);
   saveState('props');
   renderPropDetailContent(propId);
 }
@@ -2135,11 +1963,6 @@ function renderMaintenance() {
     const p = getProp(m.propId);
     const priorityColor = m.priority==='high' ? 'var(--red)' : m.priority==='medium' ? 'var(--amber)' : 'var(--text3)';
     const priorityBg = m.priority==='high' ? 'var(--red-bg)' : m.priority==='medium' ? 'var(--amber-bg)' : 'var(--surface2)';
-    const resolvedSection = m.status==='resolved' ? `
-      <div style="margin-top:8px;padding:8px 10px;background:var(--green-bg);border-radius:var(--radius-sm);border-left:3px solid var(--green)">
-        <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:${m.resolution?'4px':'0'}">✓ Resolved${m.resolvedDate?' '+fmtDate(m.resolvedDate):''}</div>
-        ${m.resolution?`<div style="font-size:13px;color:var(--text2)">${m.resolution}</div>`:''}
-      </div>` : '';
     return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div style="flex:1;min-width:0;padding-right:10px">
@@ -2153,10 +1976,9 @@ function renderMaintenance() {
       </div>
       ${m.contractor?`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Contractor: ${m.contractor}</div>`:''}
       ${m.cost>0?`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">Cost: ${fmtMoney(m.cost)}</div>`:''}
-      ${m.notes?`<div style="font-size:13px;color:var(--text3);margin-bottom:4px;padding:8px;background:var(--surface2);border-radius:var(--radius-sm)">${m.notes}</div>`:''}
-      ${resolvedSection}
+      ${m.notes?`<div style="font-size:13px;color:var(--text3);margin-bottom:8px;padding:8px;background:var(--surface2);border-radius:var(--radius-sm)">${m.notes}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
-        ${m.status==='open'?`<button class="btn btn-secondary" style="flex:1;padding:7px;font-size:13px" onclick="markResolved('${m.id}')">Resolve</button>`:''}
+        ${m.status==='open'?`<button class="btn btn-secondary" style="flex:1;padding:7px;font-size:13px" onclick="markResolved('${m.id}')">Mark resolved</button>`:''}
         <button class="btn btn-secondary" style="flex:1;padding:7px;font-size:13px" onclick="editMaint('${m.id}')">Edit</button>
         <button class="btn" style="flex:1;padding:7px;font-size:13px;background:var(--red-bg);color:var(--red)" onclick="deleteMaintGlobal('${m.id}')">Delete</button>
       </div>
@@ -2184,27 +2006,8 @@ function renderMaintenance() {
 function setMaintFilter(f) { state.maintFilter = f; renderMaintenance(); }
 
 function markResolved(id) {
-  const m = state.maint.find(x=>x.id===id);
-  if(!m) return;
-  openModal(`<div class="modal-title">Resolve issue</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">${m.desc}</p>
-    <div class="form-row">
-      <div class="form-field"><label>Date resolved</label><input type="date" id="res-date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div class="form-field"><label>Final cost (£)</label><input type="number" id="res-cost" value="${m.cost||''}" step="0.01"></div>
-    </div>
-    <div class="form-field"><label>Resolution notes</label><textarea id="res-notes" rows="3" placeholder="What was done to resolve this?">${m.resolution||''}</textarea></div>
-    <button class="btn btn-primary" onclick="saveResolution('${id}')">Mark resolved</button>
-    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-}
-
-function saveResolution(id) {
-  const m = state.maint.find(x=>x.id===id);
-  if(!m) return;
-  m.status = 'resolved';
-  m.resolvedDate = document.getElementById('res-date').value;
-  m.resolution = document.getElementById('res-notes').value;
-  m.cost = parseFloat(document.getElementById('res-cost').value)||m.cost||0;
-  saveState('maint'); closeModal(); renderMaintenance(); renderDashboard();
+  const m = state.maint.find(m=>m.id===id);
+  if(m){ m.status='resolved'; saveState('maint'); renderMaintenance(); renderDashboard(); }
 }
 
 function deleteMaintGlobal(id) {
@@ -2221,28 +2024,17 @@ function editMaint(id) {
     <div class="form-field"><label>Property</label><select id="em-prop">${propOpts}</select></div>
     <div class="form-field"><label>Description</label><input type="text" id="em-desc" value="${m.desc}"></div>
     <div class="form-row">
-      <div class="form-field"><label>Date logged</label><input type="date" id="em-date" value="${m.date||''}"></div>
-      <div class="form-field"><label>Status</label><select id="em-status" onchange="toggleResolvedFields(this.value)"><option value="open"${m.status==='open'?' selected':''}>Open</option><option value="resolved"${m.status==='resolved'?' selected':''}>Resolved</option></select></div>
+      <div class="form-field"><label>Date</label><input type="date" id="em-date" value="${m.date||''}"></div>
+      <div class="form-field"><label>Status</label><select id="em-status"><option value="open"${m.status==='open'?' selected':''}>Open</option><option value="resolved"${m.status==='resolved'?' selected':''}>Resolved</option></select></div>
     </div>
     <div class="form-row">
       <div class="form-field"><label>Priority</label><select id="em-priority"><option value=""${!m.priority?' selected':''}>—</option><option value="low"${m.priority==='low'?' selected':''}>Low</option><option value="medium"${m.priority==='medium'?' selected':''}>Medium</option><option value="high"${m.priority==='high'?' selected':''}>High</option></select></div>
       <div class="form-field"><label>Cost (£)</label><input type="number" id="em-cost" value="${m.cost||''}" step="0.01"></div>
     </div>
     <div class="form-field"><label>Contractor</label><input type="text" id="em-contractor" value="${m.contractor||''}"></div>
-    <div class="form-field"><label>Notes</label><textarea id="em-notes" rows="2">${m.notes||''}</textarea></div>
-    <div id="em-resolved-wrap" style="${m.status==='resolved'?'':'display:none'}">
-      <div class="form-row">
-        <div class="form-field"><label>Date resolved</label><input type="date" id="em-resolved-date" value="${m.resolvedDate||''}"></div>
-      </div>
-      <div class="form-field"><label>Resolution notes</label><textarea id="em-resolution" rows="2">${m.resolution||''}</textarea></div>
-    </div>
+    <div class="form-field"><label>Notes</label><textarea id="em-notes" rows="3">${m.notes||''}</textarea></div>
     <button class="btn btn-primary" onclick="saveEditMaint('${id}')">Save changes</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>`);
-}
-
-function toggleResolvedFields(status) {
-  const wrap = document.getElementById('em-resolved-wrap');
-  if(wrap) wrap.style.display = status==='resolved' ? '' : 'none';
 }
 
 function saveEditMaint(id) {
@@ -2256,10 +2048,6 @@ function saveEditMaint(id) {
   m.cost = parseFloat(document.getElementById('em-cost').value)||0;
   m.contractor = document.getElementById('em-contractor').value;
   m.notes = document.getElementById('em-notes').value;
-  if(m.status==='resolved') {
-    m.resolvedDate = document.getElementById('em-resolved-date')?.value||'';
-    m.resolution = document.getElementById('em-resolution')?.value||'';
-  }
   saveState('maint'); closeModal(); renderMaintenance(); renderDashboard();
 }
 
