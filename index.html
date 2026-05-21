@@ -1083,17 +1083,35 @@ function renderDashboard() {
     </div>`;
   }).join('');
 
+  // Net income % and Profit % calculations
+  const fullAgentFees = currTxns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+  const netIncomeVal = fullIncome - fullAgentFees;
+  const netIncomePct = fullIncome > 0 ? ((netIncomeVal/fullIncome)*100).toFixed(1) : '—';
+  const profitPct = fullIncome > 0 ? ((fullNet/fullIncome)*100).toFixed(1) : '—';
+
   document.getElementById('screen-dashboard').innerHTML = `
     ${periodBar}
     ${showShare ? `<div style="font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:6px 12px;margin-bottom:10px">Showing full · <strong>${selectedOwnerName}'s share</strong> in blue</div>` : ''}
-    <div class="metrics">
-      ${rentTile()}
+    <div class="metrics" style="grid-template-columns:1fr 1fr 1fr">
       ${metricTile('Income', fullIncome, income, prevFullIncome, prevIncome, 'var(--green)', label)}
       ${metricTile('Expenses', fullExpense, expense, prevFullExpense, prevExpense, 'var(--red)', label)}
       ${metricTile('Net', fullNet, net, prevFullNet, prevNet, fullNet>=0?'var(--green)':'var(--red)', label)}
-      <div class="metric metric-wide" style="padding:12px 14px">
-        <div class="metric-label">Avg gross yield</div>
-        <div style="font-size:22px;font-weight:300;letter-spacing:-.02em;margin:4px 0">${avgYield}${avgYield!=='—'?'%':''}</div>
+    </div>
+    <div class="metrics" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:0">
+      ${rentTile()}
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Net income %</div>
+        <div style="font-size:20px;font-weight:300;color:${netIncomePct!=='—'&&parseFloat(netIncomePct)>=0?'var(--green)':'var(--red)'};letter-spacing:-.02em">${netIncomePct!=='—'?netIncomePct+'%':'—'}</div>
+        <div class="text-sm">Income less agent fees</div>
+      </div>
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Profit %</div>
+        <div style="font-size:20px;font-weight:300;color:${profitPct!=='—'&&parseFloat(profitPct)>=0?'var(--green)':'var(--red)'};letter-spacing:-.02em">${profitPct!=='—'?profitPct+'%':'—'}</div>
+        <div class="text-sm">Net after all costs</div>
+      </div>
+      <div class="metric" style="padding:10px 12px">
+        <div class="metric-label" style="margin-bottom:4px">Avg yield</div>
+        <div style="font-size:20px;font-weight:300;letter-spacing:-.02em">${avgYield}${avgYield!=='—'?'%':''}</div>
         <div class="text-sm">Across ${fps.filter(p=>p.value>0).length} propert${fps.filter(p=>p.value>0).length===1?'y':'ies'}</div>
       </div>
     </div>
