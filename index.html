@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Property Portfolio</title>
+<title>Property Portfolio - Complete Edition</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,14 +44,14 @@ body { font-family: 'Inter', sans-serif; color: var(--text); font-size: 15px; -w
 
 /* Header */
 #header { height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; position: sticky; top: 0; z-index: 100; }
-#header-title { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: var(--text); flex: 1; letter-spacing: -0.3px; }
+#header-title { font-size: 18px; font-weight: 600; color: var(--text); flex: 1; letter-spacing: -0.3px; }
 .filter-select { font-size: 12px; font-weight: 500; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface2); color: var(--text2); cursor: pointer; flex-shrink: 0; outline: none; }
 
 /* Content */
 #content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--bg); padding-bottom: calc(var(--nav-h) + 16px); }
 
 /* Navigation */
-#nav { height: var(--nav-h); background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; safe-area-inset-bottom: env(safe-area-inset-bottom); }
+#nav { height: var(--nav-h); background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
 .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: none; cursor: pointer; color: var(--text3); padding: 8px 4px; transition: color .15s; }
 .nav-btn.active { color: var(--text); }
 .nav-icon { font-size: 18px; line-height: 1; }
@@ -136,6 +136,7 @@ body { font-family: 'Inter', sans-serif; color: var(--text); font-size: 15px; -w
 .btn-primary { background: var(--text); color: var(--bg); }
 .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 .btn-danger { background: var(--red-bg); color: var(--red); }
+.btn-sm { padding: 8px 12px; font-size: 13px; width: auto; }
 .icon-btn-sm { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: transform .1s; }
 .icon-btn-sm:active { transform: scale(0.94); }
 
@@ -192,18 +193,22 @@ body { font-family: 'Inter', sans-serif; color: var(--text); font-size: 15px; -w
   <div id="header">
     <div id="header-title">Property Portfolio</div>
     <select id="prop-filter" class="filter-select" onchange="setFilterProp(this.value)"><option value="">All properties</option></select>
+    <select id="owner-filter" class="filter-select" onchange="setOwnerFilter(this.value)"><option value="">All owners</option></select>
     <button class="icon-btn-sm" onclick="showSettings()" style="width: 34px; height: 34px;">⚙️</button>
   </div>
   <div id="content">
     <div id="screen-dashboard" class="screen active"></div>
     <div id="screen-properties" class="screen"></div>
     <div id="screen-finance" class="screen"></div>
+    <div id="screen-mtd" class="screen"></div>
     <div id="screen-maintenance" class="screen"></div>
+    <div id="screen-docs" class="screen"></div>
   </div>
   <div id="nav">
     <button class="nav-btn active" onclick="navigate('dashboard')" data-screen="dashboard"><span class="nav-icon">⌂</span><span class="nav-label">Overview</span></button>
     <button class="nav-btn" onclick="navigate('properties')" data-screen="properties"><span class="nav-icon">⊞</span><span class="nav-label">Properties</span></button>
     <button class="nav-btn" onclick="navigate('finance')" data-screen="finance"><span class="nav-icon">£</span><span class="nav-label">Finance</span></button>
+    <button class="nav-btn" onclick="navigate('mtd')" data-screen="mtd"><span class="nav-icon">📊</span><span class="nav-label">MTD</span></button>
     <button class="nav-btn" onclick="navigate('maintenance')" data-screen="maintenance"><span class="nav-icon">🔧</span><span class="nav-label">Maintenance</span></button>
     <button class="nav-btn" onclick="showQuickActions()"><span class="nav-icon">+</span><span class="nav-label">Add</span></button>
   </div>
@@ -225,6 +230,10 @@ body { font-family: 'Inter', sans-serif; color: var(--text); font-size: 15px; -w
 <div id="sheet-overlay" class="sheet-overlay" onclick="closeSheet()"></div>
 
 <script>
+// ============================================
+// COMPLETE PROPERTY PORTFOLIO APPLICATION
+// ============================================
+
 // ============================================
 // GOOGLE DRIVE SETUP
 // ============================================
@@ -290,23 +299,28 @@ function showToast(msg, isError) {
 }
 
 // ============================================
-// DATA STATE - WITH COMPREHENSIVE REFERENCE FIELDS
+// DATA STATE
 // ============================================
 let state = {
   properties: [
-    { id: 'p1', name: 'Maple Lodge', address: '14 Maple Close, Manchester M20 3RD', status: 'let', color: '#2D5A27', rent: 1450, purchasePrice: 215000, currentValue: 240000, mortgage: 680, lender: 'Nationwide', tenant: 'James Carter', tenantEmail: 'james.carter@email.com', tenantPhone: '07712 345678', leaseStart: '2024-02-01', leaseEnd: '2025-01-31', deposit: 2175, depositScheme: 'DPS', agent: 'Kepler Lettings', agentPhone: '0161 900 1234', agentEmail: 'kepler@example.com', gasEngineer: 'Mike Bowen Gas', gasEngineerPhone: '07891 123456', electrician: 'JS Electrical', electricianPhone: '07700 654321', solicitor: 'Fletcher & Co', insurance: 'Zurich LL', insurancePolicy: 'ZLL29341', insuranceExpiry: '2025-01-15', lastInspection: '2024-01-15', nextInspection: '2024-07-15', createdAt: '2024-01-01', archived: false },
-    { id: 'p2', name: 'Birchwood House', address: '7 Birchwood Ave, Manchester M14 6TZ', status: 'let', color: '#1A3A5C', rent: 1800, purchasePrice: 285000, currentValue: 310000, mortgage: 920, lender: 'Halifax', tenant: 'Sunita Patel', tenantEmail: 's.patel@email.com', tenantPhone: '07834 987654', leaseStart: '2023-09-01', leaseEnd: '2024-08-31', deposit: 2700, depositScheme: 'TDS', agent: 'Direct let', agentPhone: '', agentEmail: '', gasEngineer: 'Greenfield Gas', gasEngineerPhone: '07912 000111', electrician: 'NW Electric', electricianPhone: '07600 111222', solicitor: 'Davies Solicitors', insurance: 'LV=', insurancePolicy: 'LV88712', insuranceExpiry: '2024-12-01', lastInspection: '2024-01-10', nextInspection: '2024-07-10', createdAt: '2023-08-01', archived: false },
-    { id: 'p3', name: 'Thornton House', address: '22 Thornton Rd, Salford M6 8PL', status: 'vacant', color: '#7A4A0A', rent: 1000, purchasePrice: 175000, currentValue: 195000, mortgage: 540, lender: 'Barclays', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: 'Salford Lettings Co', agentPhone: '0161 700 5678', agentEmail: '', gasEngineer: 'City Gas', gasEngineerPhone: '07922 333444', electrician: 'PowerRight', electricianPhone: '07511 222333', solicitor: 'Fletcher & Co', insurance: 'Aviva LL', insurancePolicy: 'AV44210', insuranceExpiry: '2024-11-30', lastInspection: null, nextInspection: null, createdAt: '2023-12-01', archived: false }
+    { id: 'p1', name: 'Maple Lodge', address: '14 Maple Close, Manchester M20 3RD', status: 'let', color: '#2D5A27', rent: 1450, purchasePrice: 215000, currentValue: 240000, mortgage: 680, lender: 'Nationwide', tenant: 'James Carter', tenantEmail: 'james.carter@email.com', tenantPhone: '07712 345678', leaseStart: '2024-02-01', leaseEnd: '2025-01-31', deposit: 2175, depositScheme: 'DPS', agent: 'Kepler Lettings', agentPhone: '0161 900 1234', agentEmail: 'kepler@example.com', gasEngineer: 'Mike Bowen Gas', gasEngineerPhone: '07891 123456', electrician: 'JS Electrical', electricianPhone: '07700 654321', solicitor: 'Fletcher & Co', insurance: 'Zurich LL', insurancePolicy: 'ZLL29341', insuranceExpiry: '2025-01-15', lastInspection: '2024-01-15', nextInspection: '2024-07-15', ownershipShare: 100, createdAt: '2024-01-01', archived: false },
+    { id: 'p2', name: 'Birchwood House', address: '7 Birchwood Ave, Manchester M14 6TZ', status: 'let', color: '#1A3A5C', rent: 1800, purchasePrice: 285000, currentValue: 310000, mortgage: 920, lender: 'Halifax', tenant: 'Sunita Patel', tenantEmail: 's.patel@email.com', tenantPhone: '07834 987654', leaseStart: '2023-09-01', leaseEnd: '2024-08-31', deposit: 2700, depositScheme: 'TDS', agent: 'Direct let', agentPhone: '', agentEmail: '', gasEngineer: 'Greenfield Gas', gasEngineerPhone: '07912 000111', electrician: 'NW Electric', electricianPhone: '07600 111222', solicitor: 'Davies Solicitors', insurance: 'LV=', insurancePolicy: 'LV88712', insuranceExpiry: '2024-12-01', lastInspection: '2024-01-10', nextInspection: '2024-07-10', ownershipShare: 50, createdAt: '2023-08-01', archived: false },
+    { id: 'p3', name: 'Thornton House', address: '22 Thornton Rd, Salford M6 8PL', status: 'vacant', color: '#7A4A0A', rent: 1000, purchasePrice: 175000, currentValue: 195000, mortgage: 540, lender: 'Barclays', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: 'Salford Lettings Co', agentPhone: '0161 700 5678', agentEmail: '', gasEngineer: 'City Gas', gasEngineerPhone: '07922 333444', electrician: 'PowerRight', electricianPhone: '07511 222333', solicitor: 'Fletcher & Co', insurance: 'Aviva LL', insurancePolicy: 'AV44210', insuranceExpiry: '2024-11-30', lastInspection: null, nextInspection: null, ownershipShare: 75, createdAt: '2023-12-01', archived: false }
   ],
   transactions: [
     { id: 't1', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p1', amount: 1450, category: 'rent', periodStart: '2025-04-01', periodEnd: '2025-04-30' },
     { id: 't2', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p2', amount: 1800, category: 'rent', periodStart: '2025-04-01', periodEnd: '2025-04-30' },
     { id: 't3', date: '2025-04-04', type: 'expense', description: 'Leaking tap repair', propertyId: 'p1', amount: 120, category: 'repairs' },
-    { id: 't4', date: '2025-03-25', type: 'expense', description: 'Buildings insurance', propertyId: 'p2', amount: 380, category: 'insurance', periodStart: '2024-12-01', periodEnd: '2025-11-30' }
+    { id: 't4', date: '2025-03-25', type: 'expense', description: 'Buildings insurance', propertyId: 'p2', amount: 380, category: 'insurance', periodStart: '2024-12-01', periodEnd: '2025-11-30' },
+    { id: 't5', date: '2025-03-01', type: 'expense', description: 'Mortgage payment', propertyId: 'p3', amount: 540, category: 'financial', periodStart: '2025-03-01', periodEnd: '2025-03-31' },
+    { id: 't6', date: '2025-03-01', type: 'income', description: 'Monthly rent - March', propertyId: 'p1', amount: 1450, category: 'rent', periodStart: '2025-03-01', periodEnd: '2025-03-31' },
+    { id: 't7', date: '2025-03-01', type: 'income', description: 'Monthly rent - March', propertyId: 'p2', amount: 1800, category: 'rent', periodStart: '2025-03-01', periodEnd: '2025-03-31' }
   ],
   maintenance: [
     { id: 'm1', propertyId: 'p1', description: 'Leaking bathroom tap', date: '2025-04-04', status: 'open', priority: 'medium', cost: 0, notes: 'Plumber booked' },
-    { id: 'm2', propertyId: 'p2', description: 'Damp patch in bedroom', date: '2025-02-20', status: 'open', priority: 'high', cost: 0, notes: 'Investigating cause' }
+    { id: 'm2', propertyId: 'p1', description: 'Boiler pressure drop', date: '2025-03-12', status: 'resolved', cost: 120, notes: 'Repressurised and checked' },
+    { id: 'm3', propertyId: 'p2', description: 'Damp patch in bedroom', date: '2025-02-20', status: 'open', priority: 'high', cost: 0, notes: 'Investigating cause' },
+    { id: 'm4', propertyId: 'p3', description: 'Redecoration void work', date: '2025-04-01', status: 'open', priority: 'low', cost: 0, notes: 'In progress' }
   ],
   certificates: [
     { id: 'c1', propertyId: 'p1', type: 'Gas Safety', issueDate: '2024-01-15', expiryDate: '2025-01-15', issuer: 'Mike Bowen Gas', notes: 'Annual check completed' },
@@ -318,7 +332,14 @@ let state = {
     { id: 'c7', propertyId: 'p3', type: 'Gas Safety', issueDate: '2024-12-01', expiryDate: '2025-12-01', issuer: 'City Gas', notes: '' },
     { id: 'c8', propertyId: 'p3', type: 'EPC', issueDate: '2023-05-10', expiryDate: '2028-05-10', issuer: 'EPC Direct', epcRating: 'D', notes: 'Band D (55)' },
     { id: 'c9', propertyId: 'p3', type: 'EICR', issueDate: '2025-01-15', expiryDate: '2030-01-15', issuer: 'PowerRight', notes: '' }
-  ]
+  ],
+  owners: [],
+  rentHistory: [
+    { id: 'rh1', propId: 'p1', amount: 1300, startDate: '2022-02-01', endDate: '2023-01-31', tenant: 'James Carter', notes: 'Initial tenancy' },
+    { id: 'rh2', propId: 'p1', amount: 1400, startDate: '2023-02-01', endDate: '2024-01-31', tenant: 'James Carter', notes: 'Renewal +7.7%' },
+    { id: 'rh3', propId: 'p1', amount: 1450, startDate: '2024-02-01', endDate: null, tenant: 'James Carter', notes: 'Current' }
+  ],
+  documents: []
 };
 
 function saveState() {
@@ -335,6 +356,9 @@ function loadLocalData() {
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
       if (data.certificates) state.certificates = data.certificates;
+      if (data.owners) state.owners = data.owners;
+      if (data.rentHistory) state.rentHistory = data.rentHistory;
+      if (data.documents) state.documents = data.documents;
     }
   } catch(e) { console.error('Load error:', e); }
 }
@@ -433,6 +457,8 @@ async function initDrive() {
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
       if (data.certificates) state.certificates = data.certificates;
+      if (data.owners) state.owners = data.owners;
+      if (data.rentHistory) state.rentHistory = data.rentHistory;
       showToast('Loaded from Drive');
     } else {
       showToast('New portfolio created');
@@ -447,7 +473,7 @@ async function initDrive() {
 
 async function saveToDrive() {
   if (!gAccessToken) return;
-  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates };
+  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates, owners: state.owners, rentHistory: state.rentHistory };
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   try {
     if (gDriveDataFileId) {
@@ -472,34 +498,24 @@ async function saveToDrive() {
 }
 
 // ============================================
-// UI RENDERING
+// UI VARIABLES
 // ============================================
 let currentScreen = 'dashboard';
 let filterProp = null;
-
-function navigate(screen) {
-  currentScreen = screen;
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`.nav-btn[data-screen="${screen}"]`).classList.add('active');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${screen}`).classList.add('active');
-  if (screen === 'dashboard') renderDashboard();
-  else if (screen === 'properties') renderProperties();
-  else if (screen === 'finance') renderFinance();
-  else if (screen === 'maintenance') renderMaintenance();
-}
-
-function setFilterProp(val) {
-  filterProp = val === '' ? null : val;
-  renderDashboard();
-  renderProperties();
-}
+let ownerFilter = null;
+let shareMode = false;
+let dashPeriod = 'ytd';
+let financeTab = 'all';
+let mtdYear = new Date().getFullYear();
 
 function getFilteredProperties() {
-  return filterProp ? state.properties.filter(p => p.id === filterProp && !p.archived) : state.properties.filter(p => !p.archived);
+  let props = filterProp ? state.properties.filter(p => p.id === filterProp && !p.archived) : state.properties.filter(p => !p.archived);
+  if (ownerFilter && shareMode) {
+    props = props.filter(p => p.ownershipShare && p.ownershipShare > 0);
+  }
+  return props;
 }
 
-// Certificate status helper for property cards
 function getPropertyCertStatus(propertyId, certType) {
   const cert = state.certificates.find(c => c.propertyId === propertyId && c.type === certType);
   if (!cert) return { status: 'missing', text: 'Missing', class: 'cert-missing' };
@@ -507,6 +523,191 @@ function getPropertyCertStatus(propertyId, certType) {
   const text = status === 'valid' ? `Valid: ${formatDate(cert.expiryDate)}` : status === 'warning' ? `${daysUntil(cert.expiryDate)} days left` : `Expired ${formatDate(cert.expiryDate)}`;
   const cls = status === 'valid' ? 'cert-valid' : status === 'warning' ? 'cert-warning' : 'cert-expired';
   return { status, text, class: cls, expiry: cert.expiryDate };
+}
+
+function infoRow(label, value) {
+  return `<div class="info-row"><span class="info-label">${escapeHtml(label)}</span><span class="info-val">${value}</span></div>`;
+}
+
+// ============================================
+// PERIOD FUNCTIONS FOR ADD TRANSACTION
+// ============================================
+function setPeriodToMonth() {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), 1);
+  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const startInput = document.getElementById('new-period-start');
+  const endInput = document.getElementById('new-period-end');
+  if (startInput) startInput.value = start.toISOString().split('T')[0];
+  if (endInput) endInput.value = end.toISOString().split('T')[0];
+  const hint = document.getElementById('period-hint');
+  if (hint) hint.innerHTML = '✓ Set to current month - covers 1st to last day';
+}
+
+function setPeriodToQuarter() {
+  const today = new Date();
+  const quarter = Math.floor(today.getMonth() / 3);
+  const start = new Date(today.getFullYear(), quarter * 3, 1);
+  const end = new Date(today.getFullYear(), (quarter + 1) * 3, 0);
+  const startInput = document.getElementById('new-period-start');
+  const endInput = document.getElementById('new-period-end');
+  if (startInput) startInput.value = start.toISOString().split('T')[0];
+  if (endInput) endInput.value = end.toISOString().split('T')[0];
+  const hint = document.getElementById('period-hint');
+  if (hint) hint.innerHTML = '✓ Set to current quarter (3 months)';
+}
+
+function setPeriodToYear() {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), 0, 1);
+  const end = new Date(today.getFullYear(), 11, 31);
+  const startInput = document.getElementById('new-period-start');
+  const endInput = document.getElementById('new-period-end');
+  if (startInput) startInput.value = start.toISOString().split('T')[0];
+  if (endInput) endInput.value = end.toISOString().split('T')[0];
+  const hint = document.getElementById('period-hint');
+  if (hint) hint.innerHTML = '✓ Set to current calendar year';
+}
+
+function clearPeriod() {
+  const startInput = document.getElementById('new-period-start');
+  const endInput = document.getElementById('new-period-end');
+  if (startInput) startInput.value = '';
+  if (endInput) endInput.value = '';
+  const hint = document.getElementById('period-hint');
+  if (hint) hint.innerHTML = '💡 Period cleared - transaction will use payment date for tax year';
+}
+
+function updateCategoryOptions() {
+  const type = document.getElementById('new-type')?.value;
+  const catSelect = document.getElementById('new-cat');
+  if (!catSelect) return;
+  
+  if (type === 'income') {
+    catSelect.innerHTML = `
+      <optgroup label="Income">
+        <option value="rent">🏠 Rental Income</option>
+        <option value="other_income">💰 Other Income</option>
+      </optgroup>
+    `;
+  } else {
+    catSelect.innerHTML = `
+      <optgroup label="Property Expenses">
+        <option value="repairs">🔧 Repairs & Maintenance</option>
+        <option value="management_fees">📋 Management Fees</option>
+        <option value="insurance">🛡️ Insurance</option>
+        <option value="service_charges">🏢 Service Charges</option>
+        <option value="ground_rent">🌳 Ground Rent</option>
+        <option value="council_tax">🏛️ Council Tax</option>
+        <option value="utilities">💡 Utilities (Gas/Elec/Water)</option>
+      </optgroup>
+      <optgroup label="Financial">
+        <option value="financial">🏦 Mortgage Interest</option>
+        <option value="professional_fees">⚖️ Professional Fees</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option value="other">📝 Other Expenses</option>
+      </optgroup>
+    `;
+  }
+  togglePeriodFields(catSelect.value);
+}
+
+function togglePeriodFields(category) {
+  const periodSection = document.getElementById('period-section');
+  if (!periodSection) return;
+  
+  const needsPeriod = [
+    'rent', 'management_fees', 'insurance', 'financial', 
+    'service_charges', 'ground_rent', 'utilities', 'council_tax',
+    'professional_fees', 'repairs'
+  ];
+  
+  if (needsPeriod.includes(category)) {
+    periodSection.style.display = 'block';
+    autoSetPeriodForCategory(category);
+  } else {
+    periodSection.style.display = 'none';
+  }
+}
+
+function autoSetPeriodForCategory(category) {
+  const startInput = document.getElementById('new-period-start');
+  const endInput = document.getElementById('new-period-end');
+  const dateInput = document.getElementById('new-date');
+  const hint = document.getElementById('period-hint');
+  
+  if (!startInput || !endInput || !dateInput) return;
+  if (startInput.value && endInput.value) return;
+  
+  const paymentDate = new Date(dateInput.value);
+  const year = paymentDate.getFullYear();
+  const month = paymentDate.getMonth();
+  
+  switch(category) {
+    case 'rent':
+    case 'management_fees':
+      startInput.value = new Date(year, month, 1).toISOString().split('T')[0];
+      endInput.value = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      if (hint) hint.innerHTML = '💡 Rental income/management fees - typically covers the calendar month';
+      break;
+    case 'insurance':
+      startInput.value = paymentDate.toISOString().split('T')[0];
+      const endDate = new Date(year + 1, month, paymentDate.getDate() - 1);
+      endInput.value = endDate.toISOString().split('T')[0];
+      if (hint) hint.innerHTML = '💡 Insurance - typically covers 12 months from start date';
+      break;
+    case 'financial':
+      startInput.value = new Date(year, month, 1).toISOString().split('T')[0];
+      endInput.value = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      if (hint) hint.innerHTML = '💡 Mortgage interest - covers the month of payment';
+      break;
+    case 'service_charges':
+    case 'ground_rent':
+      startInput.value = new Date(year, 0, 1).toISOString().split('T')[0];
+      endInput.value = new Date(year, 11, 31).toISOString().split('T')[0];
+      if (hint) hint.innerHTML = '💡 Service charges/ground rent - adjust dates if quarterly or annual';
+      break;
+    default:
+      if (hint) hint.innerHTML = '💡 Select the period this expense relates to for accurate tax apportionment';
+  }
+}
+
+// ============================================
+// RENDER FUNCTIONS
+// ============================================
+function navigate(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-screen="${screen}"]`)?.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${screen}`)?.classList.add('active');
+  
+  if (screen === 'dashboard') renderDashboard();
+  else if (screen === 'properties') renderProperties();
+  else if (screen === 'finance') renderFinance();
+  else if (screen === 'mtd') renderMTD();
+  else if (screen === 'maintenance') renderMaintenance();
+  else if (screen === 'docs') renderDocs();
+}
+
+function setFilterProp(val) {
+  filterProp = val === '' ? null : val;
+  const filterSelect = document.getElementById('prop-filter');
+  if (filterSelect) {
+    filterSelect.style.background = filterProp ? 'var(--blue-bg)' : 'var(--surface2)';
+    filterSelect.style.color = filterProp ? 'var(--blue)' : 'var(--text2)';
+  }
+  renderDashboard();
+  renderProperties();
+}
+
+function setOwnerFilter(val) {
+  ownerFilter = val === '' ? null : val;
+  shareMode = !!ownerFilter;
+  renderDashboard();
+  renderProperties();
+  renderFinance();
 }
 
 function renderDashboard() {
@@ -517,11 +718,18 @@ function renderDashboard() {
   const expenses = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const activeMaint = state.maintenance.filter(m => m.status === 'open').length;
   const avgYield = properties.length ? (properties.reduce((s, p) => s + (p.rent * 12 / p.currentValue * 100), 0) / properties.length).toFixed(1) : 0;
+  const expiredCerts = state.certificates.filter(c => getCertStatus(c.expiryDate) === 'expired').length;
+  const warningCerts = state.certificates.filter(c => getCertStatus(c.expiryDate) === 'warning').length;
   
-  // Update filter select
   const filterSelect = document.getElementById('prop-filter');
   if (filterSelect) {
     filterSelect.innerHTML = '<option value="">All properties</option>' + state.properties.filter(p => !p.archived).map(p => `<option value="${p.id}" ${filterProp === p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  }
+  
+  const ownerSelect = document.getElementById('owner-filter');
+  if (ownerSelect) {
+    ownerSelect.innerHTML = '<option value="">All owners</option>';
+    ownerSelect.style.background = shareMode ? 'var(--blue-bg)' : 'var(--surface2)';
   }
   
   document.getElementById('screen-dashboard').innerHTML = `
@@ -531,6 +739,9 @@ function renderDashboard() {
       <div class="metric"><div class="metric-label">Net profit (YTD)</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
       <div class="metric"><div class="metric-label">Open issues</div><div class="metric-value ${activeMaint > 0 ? 'text-red' : 'text-green'}">${activeMaint}</div></div>
     </div>
+    ${expiredCerts > 0 ? `<div class="card" style="border-left: 4px solid var(--red);"><div class="flex justify-between"><div class="card-title">⚠️ Expired Certificates</div><span class="badge badge-red">${expiredCerts}</span></div><div class="text-secondary" style="font-size: 13px;">${expiredCerts} certificate(s) have expired</div></div>` : ''}
+    ${warningCerts > 0 ? `<div class="card" style="border-left: 4px solid var(--amber);"><div class="flex justify-between"><div class="card-title">⏰ Certificates Expiring Soon</div><span class="badge badge-amber">${warningCerts}</span></div><div class="text-secondary" style="font-size: 13px;">${warningCerts} certificate(s) expire within 60 days</div></div>` : ''}
+    ${activeMaint > 0 ? `<div class="card" style="border-left: 4px solid var(--amber);"><div class="flex justify-between"><div class="card-title">🔧 Active Maintenance</div><span class="badge badge-amber">${activeMaint}</span></div><div class="text-secondary" style="font-size: 13px;">${activeMaint} open issue(s) require attention</div></div>` : ''}
     ${properties.map(p => {
       const gasStatus = getPropertyCertStatus(p.id, 'Gas Safety');
       const eicrStatus = getPropertyCertStatus(p.id, 'EICR');
@@ -551,6 +762,7 @@ function renderDashboard() {
               <span class="cert-status ${gasStatus.class}">Gas: ${gasStatus.text}</span>
               <span class="cert-status ${eicrStatus.class}">EICR: ${eicrStatus.text}</span>
               ${epcCert ? `<span class="cert-status cert-valid">EPC: Band ${epcCert.epcRating || '?'}</span>` : '<span class="cert-status cert-missing">EPC: Missing</span>'}
+              ${p.insuranceExpiry ? `<span class="cert-status ${getCertStatus(p.insuranceExpiry) === 'valid' ? 'cert-valid' : getCertStatus(p.insuranceExpiry) === 'warning' ? 'cert-warning' : 'cert-expired'}">Insurance: ${getCertDisplayText(p.insuranceExpiry)}</span>` : ''}
             </div>
           </div>
         </div>
@@ -567,6 +779,7 @@ function renderProperties() {
     const eicrStatus = getPropertyCertStatus(p.id, 'EICR');
     const epcCert = state.certificates.find(c => c.propertyId === p.id && c.type === 'EPC');
     const yieldVal = (p.rent * 12 / p.currentValue * 100).toFixed(1);
+    const netIncome = p.rent - p.mortgage;
     return `
       <div class="prop-item" onclick="showPropertyDetail('${p.id}')">
         <div class="prop-header">
@@ -577,10 +790,12 @@ function renderProperties() {
         <div class="ref-grid">
           <div class="ref-item"><div class="ref-label">Rent</div><div class="ref-value">${formatMoney(p.rent)}/mo</div></div>
           <div class="ref-item"><div class="ref-label">Yield</div><div class="ref-value">${yieldVal}%</div></div>
+          <div class="ref-item"><div class="ref-label">Net Income</div><div class="ref-value ${netIncome >= 0 ? 'text-green' : 'text-red'}">${formatMoney(netIncome)}/mo</div></div>
           <div class="ref-item"><div class="ref-label">Mortgage</div><div class="ref-value">${formatMoney(p.mortgage)}/mo</div></div>
           <div class="ref-item"><div class="ref-label">Lender</div><div class="ref-value">${escapeHtml(p.lender)}</div></div>
           <div class="ref-item"><div class="ref-label">Tenant</div><div class="ref-value">${escapeHtml(p.tenant)}</div></div>
           <div class="ref-item"><div class="ref-label">Lease</div><div class="ref-value">${p.leaseStart !== '—' ? formatDate(p.leaseStart) : '—'} → ${p.leaseEnd !== '—' ? formatDate(p.leaseEnd) : '—'}</div></div>
+          <div class="ref-item"><div class="ref-label">Deposit</div><div class="ref-value">${p.deposit > 0 ? formatMoney(p.deposit) + ' (' + (p.depositScheme || 'No scheme') + ')' : '—'}</div></div>
         </div>
         <div class="prop-certs">
           <span class="cert-status ${gasStatus.class}">Gas Safety: ${gasStatus.text}</span>
@@ -602,14 +817,24 @@ function renderFinance() {
   const transactions = [...state.transactions].sort((a, b) => b.date.localeCompare(a.date));
   const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const filtered = financeTab === 'all' ? transactions : transactions.filter(t => t.type === financeTab);
+  
   document.getElementById('screen-finance').innerHTML = `
     <div class="metrics">
       <div class="metric"><div class="metric-label">Total income</div><div class="metric-value text-green">${formatMoney(income)}</div></div>
       <div class="metric"><div class="metric-label">Total expenses</div><div class="metric-value text-red">${formatMoney(expenses)}</div></div>
       <div class="metric"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
     </div>
-    <button class="btn btn-primary" style="margin-bottom: 12px" onclick="showAddTransaction()">+ Add transaction</button>
-    ${transactions.map(t => {
+    <div class="flex gap-2" style="margin-bottom: 12px;">
+      <button class="btn btn-secondary" style="flex:1" onclick="showAddTransaction()">+ Add transaction</button>
+      <button class="btn btn-primary" style="flex:1" onclick="navigate('mtd')">MTD Export</button>
+    </div>
+    <div class="flex gap-2" style="margin-bottom: 12px;">
+      <button class="btn ${financeTab === 'all' ? 'btn-primary' : 'btn-secondary'}" style="flex:1" onclick="setFinanceTab('all')">All</button>
+      <button class="btn ${financeTab === 'income' ? 'btn-primary' : 'btn-secondary'}" style="flex:1" onclick="setFinanceTab('income')">Income</button>
+      <button class="btn ${financeTab === 'expense' ? 'btn-primary' : 'btn-secondary'}" style="flex:1" onclick="setFinanceTab('expense')">Expenses</button>
+    </div>
+    ${filtered.map(t => {
       const p = state.properties.find(prop => prop.id === t.propertyId);
       return `
         <div class="txn-row">
@@ -620,12 +845,88 @@ function renderFinance() {
         </div>
       `;
     }).join('')}
+    ${filtered.length === 0 ? '<div class="card text-center">No transactions</div>' : ''}
   `;
 }
 
+function setFinanceTab(tab) { financeTab = tab; renderFinance(); }
+
+function renderMTD() {
+  const currentYear = new Date().getFullYear();
+  const taxYears = [currentYear - 2, currentYear - 1, currentYear];
+  
+  document.getElementById('screen-mtd').innerHTML = `
+    <div class="card"><div class="card-title">Making Tax Digital (MTD) for Income Tax</div>
+      <div class="text-secondary" style="font-size: 13px; margin-bottom: 12px;">Quarterly updates for property income. From April 2026, MTD is mandatory for income over £50,000.</div>
+      <div class="flex gap-2"><select id="mtd-year-select" class="form-select" onchange="setMTDYear(this.value)">${taxYears.map(y => `<option value="${y}" ${mtdYear === y ? 'selected' : ''}>${y}/${y+1} Tax Year</option>`).join('')}</select></div>
+    </div>
+    <div class="card"><div class="card-title">Annual Summary</div><div id="mtd-summary">Loading...</div></div>
+    <div class="card"><div class="card-title">Quarterly Breakdown</div><div id="mtd-quarters">Loading...</div></div>
+    <div class="card" style="background: var(--amber-bg);"><div class="card-title">Important</div><div class="text-secondary" style="font-size: 13px;">These exports are for reference. Use MTD-compatible software for HMRC filing.</div></div>
+  `;
+  updateMTDSummary();
+}
+
+function setMTDYear(year) { mtdYear = parseInt(year); updateMTDSummary(); }
+
+function updateMTDSummary() {
+  const yearStart = new Date(mtdYear, 3, 6);
+  const yearEnd = new Date(mtdYear + 1, 3, 5);
+  const yearTxns = state.transactions.filter(t => {
+    const d = new Date(t.date);
+    return d >= yearStart && d <= yearEnd;
+  });
+  const income = yearTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expenses = yearTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const financeCosts = yearTxns.filter(t => t.type === 'expense' && t.category === 'financial').reduce((s, t) => s + t.amount, 0);
+  
+  document.getElementById('mtd-summary').innerHTML = `
+    <div class="ref-grid"><div class="ref-item"><div class="ref-label">Gross Income</div><div class="ref-value text-green">${formatMoney(income)}</div></div>
+    <div class="ref-item"><div class="ref-label">Total Expenses</div><div class="ref-value text-red">${formatMoney(expenses)}</div></div>
+    <div class="ref-item"><div class="ref-label">Finance Costs</div><div class="ref-value">${formatMoney(financeCosts)}</div></div>
+    <div class="ref-item"><div class="ref-label">Net Profit</div><div class="ref-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div></div>
+    <button class="btn btn-secondary mt-2" onclick="exportMTDData()">Export MTD Data</button>
+  `;
+  
+  const quarters = [
+    { name: 'Q1 (6 Apr - 5 Jul)', start: new Date(mtdYear, 3, 6), end: new Date(mtdYear, 6, 5), due: '7 Aug' },
+    { name: 'Q2 (6 Jul - 5 Oct)', start: new Date(mtdYear, 6, 6), end: new Date(mtdYear, 9, 5), due: '7 Nov' },
+    { name: 'Q3 (6 Oct - 5 Jan)', start: new Date(mtdYear, 9, 6), end: new Date(mtdYear + 1, 0, 5), due: '7 Feb' },
+    { name: 'Q4 (6 Jan - 5 Apr)', start: new Date(mtdYear + 1, 0, 6), end: new Date(mtdYear + 1, 3, 5), due: '7 May' }
+  ];
+  
+  document.getElementById('mtd-quarters').innerHTML = quarters.map((q, i) => {
+    const qTxns = state.transactions.filter(t => {
+      const d = new Date(t.date);
+      return d >= q.start && d <= q.end;
+    });
+    const qIncome = qTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const qExpenses = qTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    return `<div class="card"><div class="flex justify-between"><div class="card-title">${q.name}</div><span class="badge badge-blue">Due ${q.due}</span></div>
+      <div class="ref-grid"><div class="ref-item"><div class="ref-label">Income</div><div class="ref-value text-green">${formatMoney(qIncome)}</div></div>
+      <div class="ref-item"><div class="ref-label">Expenses</div><div class="ref-value text-red">${formatMoney(qExpenses)}</div></div>
+      <div class="ref-item"><div class="ref-label">Net</div><div class="ref-value ${qIncome - qExpenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(qIncome - qExpenses)}</div></div>
+      <div class="ref-item"><div class="ref-label">Transactions</div><div class="ref-value">${qTxns.length}</div></div></div>
+      <button class="btn btn-secondary btn-sm mt-2" onclick="exportQuarterData(${i+1})">Export Q${i+1}</button>
+    </div>`;
+  }).join('');
+}
+
+function exportMTDData() {
+  const data = { taxYear: `${mtdYear}/${mtdYear+1}`, generated: new Date().toISOString(), transactions: state.transactions };
+  downloadJSON(data, `mtd-${mtdYear}-${mtdYear+1}.json`);
+}
+
+function exportQuarterData(quarter) { exportMTDData(); }
+
 function renderMaintenance() {
   const issues = state.maintenance.sort((a, b) => b.date.localeCompare(a.date));
+  const openCount = issues.filter(m => m.status === 'open').length;
+  const resolvedCount = issues.filter(m => m.status === 'resolved').length;
+  
   document.getElementById('screen-maintenance').innerHTML = `
+    <div class="metrics"><div class="metric"><div class="metric-label">Open Issues</div><div class="metric-value ${openCount > 0 ? 'text-red' : 'text-green'}">${openCount}</div></div>
+    <div class="metric"><div class="metric-label">Resolved</div><div class="metric-value text-green">${resolvedCount}</div></div></div>
     <button class="btn btn-primary" style="margin-bottom: 12px" onclick="showAddMaintenance()">+ Log issue</button>
     ${issues.map(m => {
       const p = state.properties.find(prop => prop.id === m.propertyId);
@@ -635,7 +936,7 @@ function renderMaintenance() {
           <div class="flex justify-between items-start"><div><div class="prop-name">${escapeHtml(m.description)}</div><div class="prop-addr">${p ? escapeHtml(p.name) : 'Unknown'} · ${formatDate(m.date)}</div></div><span class="badge ${m.status === 'open' ? 'badge-amber' : 'badge-green'}">${m.status === 'open' ? 'Open' : 'Resolved'}</span></div>
           ${m.priority ? `<div style="margin-top: 8px"><span class="badge" style="background: ${priorityColor}20; color: ${priorityColor}">${m.priority.toUpperCase()}</span></div>` : ''}
           ${m.cost > 0 ? `<div class="mt-2"><span class="metric-label">Cost: ${formatMoney(m.cost)}</span></div>` : ''}
-          ${m.notes ? `<div class="mt-2" style="font-size: 13px; color: var(--text2); background: var(--surface2); padding: 8px; border-radius: var(--radius-sm); margin-top: 8px;">${escapeHtml(m.notes)}</div>` : ''}
+          ${m.notes ? `<div class="mt-2" style="font-size: 13px; color: var(--text2); background: var(--surface2); padding: 8px; border-radius: var(--radius-sm);">${escapeHtml(m.notes)}</div>` : ''}
           <div class="flex gap-2 mt-3"><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="editMaintenance('${m.id}')">Edit</button><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="deleteMaintenance('${m.id}')">Delete</button></div>
         </div>
       `;
@@ -643,8 +944,46 @@ function renderMaintenance() {
   `;
 }
 
+function renderDocs() {
+  document.getElementById('screen-docs').innerHTML = `
+    <div class="card"><div class="card-title">Upload Document</div>
+      <div class="upload-zone" onclick="document.getElementById('doc-file').click()" style="border: 2px dashed var(--border2); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; margin-bottom: 12px;">
+        <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+        <div>Tap to upload a document</div>
+        <div class="text-secondary" style="font-size: 12px;">PDF, JPG or PNG</div>
+      </div>
+      <input type="file" id="doc-file" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadDocument(this)">
+      <div class="form-group"><label class="form-label">Document Name</label><input type="text" id="doc-name" class="form-input" placeholder="e.g., Gas Certificate 2024"></div>
+      <div class="form-group"><label class="form-label">Category</label><select id="doc-cat" class="form-select"><option value="Certificates">Certificates</option><option value="Tenancy">Tenancy</option><option value="Receipts">Receipts</option><option value="Other">Other</option></select></div>
+    </div>
+    <div class="card"><div class="card-title">Documents</div><div id="doc-list">${state.documents.map(d => `<div class="flex justify-between items-center" style="padding: 8px 0;"><span>${escapeHtml(d.name)}</span><span class="badge badge-blue">${d.category}</span><button class="icon-btn-sm" onclick="deleteDocument('${d.id}')">✕</button></div>`).join('')}</div></div>
+  `;
+}
+
+function uploadDocument(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const name = document.getElementById('doc-name').value || file.name;
+  const category = document.getElementById('doc-cat').value;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.documents.push({ id: generateId(), name, category, data: e.target.result, type: file.type, date: new Date().toISOString() });
+    saveState();
+    renderDocs();
+    showToast('Document saved');
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteDocument(id) {
+  state.documents = state.documents.filter(d => d.id !== id);
+  saveState();
+  renderDocs();
+  showToast('Document deleted');
+}
+
 // ============================================
-// DETAIL VIEW WITH REFERENCE INFORMATION
+// PROPERTY DETAIL VIEW
 // ============================================
 function showPropertyDetail(id) {
   const p = state.properties.find(prop => prop.id === id);
@@ -663,6 +1002,7 @@ function renderPropertyDetailContent(id) {
   const certs = state.certificates.filter(c => c.propertyId === id);
   const transactions = state.transactions.filter(t => t.propertyId === id).sort((a, b) => b.date.localeCompare(a.date));
   const maintenance = state.maintenance.filter(m => m.propertyId === id);
+  const rentHistory = (state.rentHistory || []).filter(r => r.propId === id).sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
   const gasCert = certs.find(c => c.type === 'Gas Safety');
   const eicrCert = certs.find(c => c.type === 'EICR');
   const epcCert = certs.find(c => c.type === 'EPC');
@@ -670,10 +1010,12 @@ function renderPropertyDetailContent(id) {
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-tabs">
       <button class="dtab active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="dtab" onclick="switchTab('tenant', this)">Tenant</button>
+      <button class="dtab" onclick="switchTab('financials', this)">Financials</button>
       <button class="dtab" onclick="switchTab('certs', this)">Certificates</button>
-      <button class="dtab" onclick="switchTab('finance', this)">Finance</button>
       <button class="dtab" onclick="switchTab('maintenance', this)">Maintenance</button>
       <button class="dtab" onclick="switchTab('contacts', this)">Contacts</button>
+      <button class="dtab" onclick="switchTab('transactions', this)">Transactions</button>
     </div>
     
     <div id="dt-overview" class="dtab-content active">
@@ -684,8 +1026,11 @@ function renderPropertyDetailContent(id) {
         ${infoRow('Current Value', formatMoney(p.currentValue))}
         ${infoRow('Mortgage', formatMoney(p.mortgage) + '/mo')}
         ${infoRow('Lender', p.lender)}
+        ${infoRow('Ownership Share', p.ownershipShare + '%')}
         ${p.insurance ? infoRow('Insurance', `${p.insurance}${p.insurancePolicy ? ` (${p.insurancePolicy})` : ''}`) : ''}
         ${p.insuranceExpiry ? infoRow('Insurance Renewal', `${formatDate(p.insuranceExpiry)} <span class="cert-status ${getCertStatus(p.insuranceExpiry) === 'valid' ? 'cert-valid' : getCertStatus(p.insuranceExpiry) === 'warning' ? 'cert-warning' : 'cert-expired'}" style="margin-left: 8px;">${getCertDisplayText(p.insuranceExpiry)}</span>`) : ''}
+        ${p.lastInspection ? infoRow('Last Inspection', formatDate(p.lastInspection)) : ''}
+        ${p.nextInspection ? infoRow('Next Inspection Due', formatDate(p.nextInspection)) : ''}
       </div>
       
       <div class="card"><div class="card-title">Tenant Details</div>
@@ -698,9 +1043,9 @@ function renderPropertyDetailContent(id) {
       
       <div class="card"><div class="card-title">Certificates Summary</div>
         <div class="ref-grid">
-          ${gasCert ? `<div class="ref-item"><div class="ref-label">Gas Safety</div><div class="ref-value ${getCertStatus(gasCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(gasCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red'}">${getCertDisplayText(gasCert.expiryDate)}</div></div>` : `<div class="ref-item"><div class="ref-label">Gas Safety</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
-          ${eicrCert ? `<div class="ref-item"><div class="ref-label">EICR</div><div class="ref-value ${getCertStatus(eicrCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(eicrCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red'}">${getCertDisplayText(eicrCert.expiryDate)}</div></div>` : `<div class="ref-item"><div class="ref-label">EICR</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
-          ${epcCert ? `<div class="ref-item"><div class="ref-label">EPC Rating</div><div class="ref-value">Band ${epcCert.epcRating || '?'} (expires ${formatDate(epcCert.expiryDate)})</div></div>` : `<div class="ref-item"><div class="ref-label">EPC</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
+          <div class="ref-item"><div class="ref-label">Gas Safety</div><div class="ref-value ${gasCert ? (getCertStatus(gasCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(gasCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red') : ''}">${gasCert ? getCertDisplayText(gasCert.expiryDate) : 'Not on file'}</div></div>
+          <div class="ref-item"><div class="ref-label">EICR</div><div class="ref-value ${eicrCert ? (getCertStatus(eicrCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(eicrCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red') : ''}">${eicrCert ? getCertDisplayText(eicrCert.expiryDate) : 'Not on file'}</div></div>
+          <div class="ref-item"><div class="ref-label">EPC Rating</div><div class="ref-value">${epcCert ? `Band ${epcCert.epcRating || '?'} (expires ${formatDate(epcCert.expiryDate)})` : 'Not on file'}</div></div>
         </div>
       </div>
       
@@ -708,6 +1053,32 @@ function renderPropertyDetailContent(id) {
         <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit Property</button>
         <button class="btn btn-secondary" onclick="showAddTransactionForProperty('${id}'); closePropDetail();">Add Transaction</button>
       </div>
+    </div>
+    
+    <div id="dt-tenant" class="dtab-content">
+      <div class="card"><div class="card-title">Tenant Information</div>
+        ${infoRow('Tenant Name', p.tenant)}
+        ${p.tenantEmail ? infoRow('Email', `<a href="mailto:${escapeHtml(p.tenantEmail)}" style="color: var(--blue);">${escapeHtml(p.tenantEmail)}</a>`) : ''}
+        ${p.tenantPhone ? infoRow('Phone', p.tenantPhone) : ''}
+        ${infoRow('Lease Start', formatDate(p.leaseStart))}
+        ${infoRow('Lease End', formatDate(p.leaseEnd))}
+        ${infoRow('Deposit', p.deposit > 0 ? formatMoney(p.deposit) + ' (' + (p.depositScheme || 'No scheme') + ')' : '—')}
+      </div>
+      ${rentHistory.length > 0 ? `<div class="card"><div class="card-title">Rent History</div>${rentHistory.map(r => `<div class="info-row"><span>${formatDate(r.startDate)} → ${r.endDate ? formatDate(r.endDate) : 'Present'}</span><span class="text-green">${formatMoney(r.amount)}/mo</span><span class="text-secondary">${escapeHtml(r.notes || '')}</span></div>`).join('')}</div>` : ''}
+      <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit Tenant Details</button>
+    </div>
+    
+    <div id="dt-financials" class="dtab-content">
+      <div class="card"><div class="card-title">Financial Summary</div>
+        ${infoRow('Monthly Rent', formatMoney(p.rent))}
+        ${infoRow('Annual Rent', formatMoney(p.rent * 12))}
+        ${infoRow('Mortgage Payment', formatMoney(p.mortgage) + '/mo')}
+        ${infoRow('Net Monthly', formatMoney(p.rent - p.mortgage))}
+        ${infoRow('Gross Yield', ((p.rent * 12) / p.currentValue * 100).toFixed(1) + '%')}
+        ${infoRow('Purchase Price', formatMoney(p.purchasePrice))}
+        ${infoRow('Current Value', formatMoney(p.currentValue))}
+      </div>
+      <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit Financials</button>
     </div>
     
     <div id="dt-certs" class="dtab-content">
@@ -721,19 +1092,6 @@ function renderPropertyDetailContent(id) {
         </div>
       `).join('')}
       ${certs.length === 0 ? '<div class="card text-center">No certificates added</div>' : ''}
-    </div>
-    
-    <div id="dt-finance" class="dtab-content">
-      ${transactions.map(t => `
-        <div class="txn-row">
-          <div class="txn-icon" style="background: ${t.type === 'income' ? 'var(--green-bg)' : 'var(--red-bg)'}">${t.type === 'income' ? '↓' : '↑'}</div>
-          <div class="txn-body"><div class="txn-desc">${escapeHtml(t.description)}</div><div class="txn-meta">${formatDate(t.date)} · ${escapeHtml(t.category)}${t.periodStart ? ` · ${formatDate(t.periodStart)} to ${formatDate(t.periodEnd)}` : ''}</div></div>
-          <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
-          <button class="icon-btn-sm" onclick="editTransaction('${t.id}')" style="margin-left: 8px;">✎</button>
-        </div>
-      `).join('')}
-      ${transactions.length === 0 ? '<div class="card text-center">No transactions</div>' : ''}
-      <button class="btn btn-secondary" style="margin-top: 12px" onclick="showAddTransactionForProperty('${id}'); closePropDetail();">+ Add Transaction</button>
     </div>
     
     <div id="dt-maintenance" class="dtab-content">
@@ -763,6 +1121,19 @@ function renderPropertyDetailContent(id) {
       </div>
       <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit All Contacts</button>
     </div>
+    
+    <div id="dt-transactions" class="dtab-content">
+      ${transactions.map(t => `
+        <div class="txn-row">
+          <div class="txn-icon" style="background: ${t.type === 'income' ? 'var(--green-bg)' : 'var(--red-bg)'}">${t.type === 'income' ? '↓' : '↑'}</div>
+          <div class="txn-body"><div class="txn-desc">${escapeHtml(t.description)}</div><div class="txn-meta">${formatDate(t.date)} · ${escapeHtml(t.category)}${t.periodStart ? ` · ${formatDate(t.periodStart)} to ${formatDate(t.periodEnd)}` : ''}</div></div>
+          <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
+          <button class="icon-btn-sm" onclick="editTransaction('${t.id}')" style="margin-left: 8px;">✎</button>
+        </div>
+      `).join('')}
+      ${transactions.length === 0 ? '<div class="card text-center">No transactions</div>' : ''}
+      <button class="btn btn-secondary" style="margin-top: 12px" onclick="showAddTransactionForProperty('${id}'); closePropDetail();">+ Add Transaction</button>
+    </div>
   `;
 }
 
@@ -771,10 +1142,6 @@ function switchTab(tabName, btn) {
   document.querySelectorAll('.dtab-content').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(`dt-${tabName}`).classList.add('active');
-}
-
-function infoRow(label, value) {
-  return `<div class="info-row"><span class="info-label">${escapeHtml(label)}</span><span class="info-val">${value}</span></div>`;
 }
 
 // ============================================
@@ -801,6 +1168,7 @@ function editProperty(id) {
     <div class="form-row"><div class="form-group"><label class="form-label">Gas Engineer</label><input type="text" id="edit-gas" class="form-input" value="${escapeHtml(p.gasEngineer || '')}"></div><div class="form-group"><label class="form-label">Gas Engineer Phone</label><input type="text" id="edit-gas-phone" class="form-input" value="${escapeHtml(p.gasEngineerPhone || '')}"></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Electrician</label><input type="text" id="edit-electric" class="form-input" value="${escapeHtml(p.electrician || '')}"></div><div class="form-group"><label class="form-label">Electrician Phone</label><input type="text" id="edit-electric-phone" class="form-input" value="${escapeHtml(p.electricianPhone || '')}"></div></div>
     <div class="form-group"><label class="form-label">Solicitor</label><input type="text" id="edit-solicitor" class="form-input" value="${escapeHtml(p.solicitor || '')}"></div>
+    <div class="flex gap-2 mt-3"><button class="btn btn-danger" onclick="deleteProperty('${id}')">Delete Property</button></div>
   `, () => {
     const index = state.properties.findIndex(prop => prop.id === id);
     if (index !== -1) {
@@ -840,14 +1208,28 @@ function editProperty(id) {
   });
 }
 
+function deleteProperty(id) {
+  if (confirm('⚠️ Delete this property? This will also delete all associated transactions, maintenance, and certificates. This cannot be undone.')) {
+    state.properties = state.properties.filter(p => p.id !== id);
+    state.transactions = state.transactions.filter(t => t.propertyId !== id);
+    state.maintenance = state.maintenance.filter(m => m.propertyId !== id);
+    state.certificates = state.certificates.filter(c => c.propertyId !== id);
+    saveState();
+    showToast('Property deleted');
+    renderDashboard();
+    if (currentScreen === 'properties') renderProperties();
+  }
+}
+
 function editTransaction(id) {
   const t = state.transactions.find(tx => tx.id === id);
   if (!t) return;
   showSheet('Edit Transaction', `
     <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-desc" class="form-input" value="${escapeHtml(t.description)}"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="edit-amount" class="form-input" step="0.01" value="${t.amount}"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-date" class="form-input" value="${t.date}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="edit-type" class="form-select"><option value="income" ${t.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${t.type === 'expense' ? 'selected' : ''}>Expense</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="edit-cat" class="form-select"><option value="rent" ${t.category === 'rent' ? 'selected' : ''}>Rent</option><option value="repairs" ${t.category === 'repairs' ? 'selected' : ''}>Repairs</option><option value="insurance" ${t.category === 'insurance' ? 'selected' : ''}>Insurance</option><option value="utilities" ${t.category === 'utilities' ? 'selected' : ''}>Utilities</option><option value="other" ${t.category === 'other' ? 'selected' : ''}>Other</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="edit-type" class="form-select"><option value="income" ${t.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${t.type === 'expense' ? 'selected' : ''}>Expense</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="edit-cat" class="form-select"><option value="rent" ${t.category === 'rent' ? 'selected' : ''}>Rent</option><option value="repairs" ${t.category === 'repairs' ? 'selected' : ''}>Repairs</option><option value="insurance" ${t.category === 'insurance' ? 'selected' : ''}>Insurance</option><option value="utilities" ${t.category === 'utilities' ? 'selected' : ''}>Utilities</option><option value="financial" ${t.category === 'financial' ? 'selected' : ''}>Financial</option><option value="other" ${t.category === 'other' ? 'selected' : ''}>Other</option></select></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Period Start</label><input type="date" id="edit-period-start" class="form-input" value="${t.periodStart || ''}"></div><div class="form-group"><label class="form-label">Period End</label><input type="date" id="edit-period-end" class="form-input" value="${t.periodEnd || ''}"></div></div>
+    <div class="flex gap-2 mt-3"><button class="btn btn-danger" onclick="deleteTransaction('${id}')">Delete Transaction</button></div>
   `, () => {
     const index = state.transactions.findIndex(tx => tx.id === id);
     if (index !== -1) {
@@ -870,6 +1252,16 @@ function editTransaction(id) {
   });
 }
 
+function deleteTransaction(id) {
+  if (confirm('Delete this transaction?')) {
+    state.transactions = state.transactions.filter(t => t.id !== id);
+    saveState();
+    showToast('Transaction deleted');
+    renderDashboard();
+    if (currentScreen === 'finance') renderFinance();
+  }
+}
+
 function editCertificate(id) {
   const c = state.certificates.find(cert => cert.id === id);
   if (!c) return;
@@ -879,6 +1271,7 @@ function editCertificate(id) {
     <div class="form-group"><label class="form-label">Issuer</label><input type="text" id="edit-issuer" class="form-input" value="${escapeHtml(c.issuer || '')}"></div>
     ${c.type === 'EPC' ? `<div class="form-group"><label class="form-label">EPC Rating</label><select id="edit-rating" class="form-select">${['A','B','C','D','E','F','G'].map(r => `<option value="${r}" ${c.epcRating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>` : ''}
     <div class="form-group"><label class="form-label">Notes</label><textarea id="edit-notes" class="form-textarea" rows="2">${escapeHtml(c.notes || '')}</textarea></div>
+    <div class="flex gap-2 mt-3"><button class="btn btn-danger" onclick="deleteCertificate('${id}')">Delete Certificate</button></div>
   `, () => {
     const index = state.certificates.findIndex(cert => cert.id === id);
     if (index !== -1) {
@@ -916,6 +1309,7 @@ function editMaintenance(id) {
     <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-date" class="form-input" value="${m.date}"></div><div class="form-group"><label class="form-label">Status</label><select id="edit-status" class="form-select"><option value="open" ${m.status === 'open' ? 'selected' : ''}>Open</option><option value="resolved" ${m.status === 'resolved' ? 'selected' : ''}>Resolved</option></select></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="edit-priority" class="form-select"><option value="low" ${m.priority === 'low' ? 'selected' : ''}>Low</option><option value="medium" ${m.priority === 'medium' ? 'selected' : ''}>Medium</option><option value="high" ${m.priority === 'high' ? 'selected' : ''}>High</option></select></div><div class="form-group"><label class="form-label">Cost (£)</label><input type="number" id="edit-cost" class="form-input" step="0.01" value="${m.cost || 0}"></div></div>
     <div class="form-group"><label class="form-label">Notes</label><textarea id="edit-notes" class="form-textarea" rows="2">${escapeHtml(m.notes || '')}</textarea></div>
+    <div class="flex gap-2 mt-3"><button class="btn btn-danger" onclick="deleteMaintenance('${id}')">Delete Issue</button></div>
   `, () => {
     const index = state.maintenance.findIndex(maint => maint.id === id);
     if (index !== -1) {
@@ -976,6 +1370,7 @@ function showAddProperty() {
       tenantEmail: '', tenantPhone: '',
       leaseStart: document.getElementById('new-lease-start').value || '—',
       leaseEnd: '—', deposit: 0, depositScheme: '', agent: '', gasEngineer: '', electrician: '',
+      ownershipShare: 100,
       createdAt: new Date().toISOString().split('T')[0], archived: false
     });
     saveState();
@@ -988,53 +1383,283 @@ function showAddProperty() {
 function showAddTransaction() {
   const props = state.properties.filter(p => !p.archived);
   const propOptions = props.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  
   showSheet('Add Transaction', `
-    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="new-desc" class="form-input"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="new-amount" class="form-input" step="0.01"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="new-type" class="form-select"><option value="expense">Expense</option><option value="income">Income</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="new-cat" class="form-select"><option value="repairs">Repairs</option><option value="rent">Rent</option><option value="insurance">Insurance</option><option value="utilities">Utilities</option><option value="other">Other</option></select></div></div>
+    <div class="form-group">
+      <label class="form-label">Property</label>
+      <select id="new-prop" class="form-select">${propOptions}</select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input type="text" id="new-desc" class="form-input" placeholder="e.g., Monthly rent - April">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Amount (£)</label>
+        <input type="number" id="new-amount" class="form-input" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date (payment/receipt)</label>
+        <input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select id="new-type" class="form-select" onchange="updateCategoryOptions()">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="new-cat" class="form-select" onchange="togglePeriodFields(this.value)">
+          <optgroup label="Income">
+            <option value="rent">🏠 Rental Income</option>
+            <option value="other_income">💰 Other Income</option>
+          </optgroup>
+          <optgroup label="Property Expenses">
+            <option value="repairs">🔧 Repairs & Maintenance</option>
+            <option value="management_fees">📋 Management Fees</option>
+            <option value="insurance">🛡️ Insurance</option>
+            <option value="service_charges">🏢 Service Charges</option>
+            <option value="ground_rent">🌳 Ground Rent</option>
+            <option value="council_tax">🏛️ Council Tax</option>
+            <option value="utilities">💡 Utilities (Gas/Elec/Water)</option>
+          </optgroup>
+          <optgroup label="Financial">
+            <option value="financial">🏦 Mortgage Interest</option>
+            <option value="professional_fees">⚖️ Professional Fees</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="other">📝 Other Expenses</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    
+    <div id="period-section" class="card" style="margin-top: 12px; padding: 12px; background: var(--blue-bg); border-color: #B5D4F4;">
+      <div class="card-title" style="margin-bottom: 8px;">📅 Period Apportionment (MTD)</div>
+      <div class="text-secondary" style="font-size: 12px; margin-bottom: 12px;">For tax compliance, specify the period this income/expense covers</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Period Start Date</label>
+          <input type="date" id="new-period-start" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Period End Date</label>
+          <input type="date" id="new-period-end" class="form-input">
+        </div>
+      </div>
+      
+      <div class="flex gap-2" style="margin-top: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToMonth()">📅 This Month</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToQuarter()">📊 This Quarter</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToYear()">📆 This Year</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="clearPeriod()">✕ Clear</button>
+      </div>
+      
+      <div id="period-hint" class="text-secondary" style="font-size: 11px; margin-top: 10px; padding: 6px; background: var(--surface); border-radius: var(--radius-sm);">
+        💡 For MTD compliance, specify when this income/expense relates to
+      </div>
+    </div>
+    
+    <div class="form-group" style="margin-top: 12px;">
+      <label class="form-label">Supplier / Tenant (optional)</label>
+      <input type="text" id="new-supplier" class="form-input" placeholder="e.g., Tenant name or supplier">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <textarea id="new-notes" class="form-textarea" rows="2" placeholder="Any additional information..."></textarea>
+    </div>
   `, () => {
+    const amount = parseFloat(document.getElementById('new-amount').value);
+    if (isNaN(amount) || amount <= 0) {
+      showToast('Please enter a valid amount', true);
+      return;
+    }
+    
+    const description = document.getElementById('new-desc').value;
+    if (!description || description.trim().length < 2) {
+      showToast('Please enter a description', true);
+      return;
+    }
+    
+    const periodStart = document.getElementById('new-period-start').value;
+    const periodEnd = document.getElementById('new-period-end').value;
+    
+    if (periodStart && periodEnd && new Date(periodStart) > new Date(periodEnd)) {
+      showToast('Period end date must be after start date', true);
+      return;
+    }
+    
     state.transactions.push({
       id: generateId(),
       propertyId: document.getElementById('new-prop').value,
-      description: document.getElementById('new-desc').value,
-      amount: parseFloat(document.getElementById('new-amount').value) || 0,
+      description: description,
+      amount: amount,
       date: document.getElementById('new-date').value,
       type: document.getElementById('new-type').value,
-      category: document.getElementById('new-cat').value
+      category: document.getElementById('new-cat').value,
+      supplier: document.getElementById('new-supplier').value || '',
+      notes: document.getElementById('new-notes').value || '',
+      periodStart: periodStart || undefined,
+      periodEnd: periodEnd || undefined,
+      createdAt: new Date().toISOString()
     });
     saveState();
     closeSheet();
-    showToast('Transaction added');
+    showToast(`${document.getElementById('new-type').value === 'income' ? 'Income' : 'Expense'} added successfully`);
     renderDashboard();
     if (currentScreen === 'finance') renderFinance();
   });
+  
+  setTimeout(() => {
+    updateCategoryOptions();
+    togglePeriodFields('rent');
+  }, 50);
 }
 
 function showAddTransactionForProperty(propertyId) {
   const props = state.properties.filter(p => !p.archived);
   const propOptions = props.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  
   showSheet('Add Transaction', `
-    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="new-desc" class="form-input"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="new-amount" class="form-input" step="0.01"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="new-type" class="form-select"><option value="expense">Expense</option><option value="income">Income</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="new-cat" class="form-select"><option value="repairs">Repairs</option><option value="rent">Rent</option><option value="insurance">Insurance</option><option value="utilities">Utilities</option><option value="other">Other</option></select></div></div>
+    <div class="form-group">
+      <label class="form-label">Property</label>
+      <select id="new-prop" class="form-select">${propOptions}</select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input type="text" id="new-desc" class="form-input" placeholder="e.g., Monthly rent - April">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Amount (£)</label>
+        <input type="number" id="new-amount" class="form-input" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date (payment/receipt)</label>
+        <input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select id="new-type" class="form-select" onchange="updateCategoryOptions()">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="new-cat" class="form-select" onchange="togglePeriodFields(this.value)">
+          <optgroup label="Income">
+            <option value="rent">🏠 Rental Income</option>
+            <option value="other_income">💰 Other Income</option>
+          </optgroup>
+          <optgroup label="Property Expenses">
+            <option value="repairs">🔧 Repairs & Maintenance</option>
+            <option value="management_fees">📋 Management Fees</option>
+            <option value="insurance">🛡️ Insurance</option>
+            <option value="service_charges">🏢 Service Charges</option>
+            <option value="ground_rent">🌳 Ground Rent</option>
+            <option value="council_tax">🏛️ Council Tax</option>
+            <option value="utilities">💡 Utilities (Gas/Elec/Water)</option>
+          </optgroup>
+          <optgroup label="Financial">
+            <option value="financial">🏦 Mortgage Interest</option>
+            <option value="professional_fees">⚖️ Professional Fees</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="other">📝 Other Expenses</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    
+    <div id="period-section" class="card" style="margin-top: 12px; padding: 12px; background: var(--blue-bg); border-color: #B5D4F4;">
+      <div class="card-title" style="margin-bottom: 8px;">📅 Period Apportionment (MTD)</div>
+      <div class="text-secondary" style="font-size: 12px; margin-bottom: 12px;">For tax compliance, specify the period this income/expense covers</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Period Start Date</label>
+          <input type="date" id="new-period-start" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Period End Date</label>
+          <input type="date" id="new-period-end" class="form-input">
+        </div>
+      </div>
+      
+      <div class="flex gap-2" style="margin-top: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToMonth()">📅 This Month</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToQuarter()">📊 This Quarter</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="setPeriodToYear()">📆 This Year</button>
+        <button type="button" class="btn btn-secondary btn-sm" style="flex:1; padding: 6px;" onclick="clearPeriod()">✕ Clear</button>
+      </div>
+      
+      <div id="period-hint" class="text-secondary" style="font-size: 11px; margin-top: 10px; padding: 6px; background: var(--surface); border-radius: var(--radius-sm);">
+        💡 For MTD compliance, specify when this income/expense relates to
+      </div>
+    </div>
+    
+    <div class="form-group" style="margin-top: 12px;">
+      <label class="form-label">Supplier / Tenant (optional)</label>
+      <input type="text" id="new-supplier" class="form-input" placeholder="e.g., Tenant name or supplier">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <textarea id="new-notes" class="form-textarea" rows="2" placeholder="Any additional information..."></textarea>
+    </div>
   `, () => {
+    const amount = parseFloat(document.getElementById('new-amount').value);
+    if (isNaN(amount) || amount <= 0) {
+      showToast('Please enter a valid amount', true);
+      return;
+    }
+    
+    const description = document.getElementById('new-desc').value;
+    if (!description || description.trim().length < 2) {
+      showToast('Please enter a description', true);
+      return;
+    }
+    
+    const periodStart = document.getElementById('new-period-start').value;
+    const periodEnd = document.getElementById('new-period-end').value;
+    
+    if (periodStart && periodEnd && new Date(periodStart) > new Date(periodEnd)) {
+      showToast('Period end date must be after start date', true);
+      return;
+    }
+    
     state.transactions.push({
       id: generateId(),
       propertyId: document.getElementById('new-prop').value,
-      description: document.getElementById('new-desc').value,
-      amount: parseFloat(document.getElementById('new-amount').value) || 0,
+      description: description,
+      amount: amount,
       date: document.getElementById('new-date').value,
       type: document.getElementById('new-type').value,
-      category: document.getElementById('new-cat').value
+      category: document.getElementById('new-cat').value,
+      supplier: document.getElementById('new-supplier').value || '',
+      notes: document.getElementById('new-notes').value || '',
+      periodStart: periodStart || undefined,
+      periodEnd: periodEnd || undefined,
+      createdAt: new Date().toISOString()
     });
     saveState();
     closeSheet();
-    showToast('Transaction added');
+    showToast(`${document.getElementById('new-type').value === 'income' ? 'Income' : 'Expense'} added successfully`);
     renderDashboard();
     if (currentScreen === 'finance') renderFinance();
   });
+  
+  setTimeout(() => {
+    updateCategoryOptions();
+    togglePeriodFields('rent');
+  }, 50);
 }
 
 function showAddMaintenance() {
@@ -1144,6 +1769,7 @@ function showQuickActions() {
     <button class="btn btn-primary mb-2" onclick="showAddProperty(); closeSheet();">🏠 Add Property</button>
     <button class="btn btn-primary mb-2" onclick="showAddTransaction(); closeSheet();">💰 Add Transaction</button>
     <button class="btn btn-primary mb-2" onclick="showAddMaintenance(); closeSheet();">🔧 Log Maintenance</button>
+    <button class="btn btn-primary mb-2" onclick="showAddCertificateForProperty(null); closeSheet();">📋 Add Certificate</button>
     <button class="btn btn-primary" onclick="exportData(); closeSheet();">📤 Export Data</button>
   `);
 }
@@ -1156,6 +1782,10 @@ function showSettings() {
     <div class="card"><div class="card-title">Data Management</div>
       <button class="btn btn-secondary mb-2" onclick="exportData()">📤 Export Data</button>
       <button class="btn btn-danger" onclick="confirmReset()">⚠️ Reset All Data</button>
+    </div>
+    <div class="card"><div class="card-title">About</div>
+      <div class="text-secondary" style="font-size: 13px;">Version 2.0 - Complete Edition</div>
+      <div class="text-secondary" style="font-size: 12px; margin-top: 4px;">Data stored locally and optionally in Google Drive</div>
     </div>
   `);
 }
@@ -1175,7 +1805,7 @@ function performSearch(query) {
 }
 
 function exportData() {
-  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates };
+  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates, owners: state.owners, rentHistory: state.rentHistory };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1184,6 +1814,16 @@ function exportData() {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
   showToast('Data exported');
+}
+
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 function confirmReset() {
@@ -1213,8 +1853,10 @@ window.onload = function() {
   window.editTransaction = editTransaction;
   window.editMaintenance = editMaintenance;
   window.editCertificate = editCertificate;
-  window.deleteCertificate = deleteCertificate;
+  window.deleteProperty = deleteProperty;
+  window.deleteTransaction = deleteTransaction;
   window.deleteMaintenance = deleteMaintenance;
+  window.deleteCertificate = deleteCertificate;
   window.showAddTransactionForProperty = showAddTransactionForProperty;
   window.showAddMaintenanceForProperty = showAddMaintenanceForProperty;
   window.showAddCertificateForProperty = showAddCertificateForProperty;
@@ -1222,11 +1864,22 @@ window.onload = function() {
   window.closePropDetail = closePropDetail;
   window.switchTab = switchTab;
   window.setFilterProp = setFilterProp;
+  window.setOwnerFilter = setOwnerFilter;
+  window.setFinanceTab = setFinanceTab;
+  window.setMTDYear = setMTDYear;
+  window.exportMTDData = exportMTDData;
+  window.exportQuarterData = exportQuarterData;
   window.signIn = signIn;
   window.signOut = signOut;
   window.exportData = exportData;
   window.confirmReset = confirmReset;
   window.performSearch = performSearch;
+  window.setPeriodToMonth = setPeriodToMonth;
+  window.setPeriodToQuarter = setPeriodToQuarter;
+  window.setPeriodToYear = setPeriodToYear;
+  window.clearPeriod = clearPeriod;
+  window.updateCategoryOptions = updateCategoryOptions;
+  window.togglePeriodFields = togglePeriodFields;
 };
 </script>
 
