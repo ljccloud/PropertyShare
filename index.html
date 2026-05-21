@@ -5,29 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Property Portfolio">
-<meta name="theme-color" content="#007AFF">
-<title>Property Portfolio - Google Drive Sync</title>
-<!-- Google API Scripts - Optimized loading -->
+<title>Property Portfolio</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<script src="https://apis.google.com/js/api.js" async></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Optimized CSS with performance improvements */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
   --bg: #F5F5F7;
   --surface: #FFFFFF;
   --surface2: #F2F2F5;
   --border: #E5E5EA;
-  --border2: #D1D1D6;
   --text: #1C1C1E;
   --text2: #6C6C70;
   --text3: #8E8E93;
@@ -41,598 +29,82 @@
   --blue-bg: #E8F0FE;
   --radius-sm: 10px;
   --radius: 14px;
-  --radius-lg: 18px;
   --nav-h: 70px;
 }
-
-/* Optimized rendering */
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-}
-
-.app-header {
-  position: sticky;
-  top: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 0.5px solid var(--border);
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 100;
-}
-
-.app-header h1 {
-  font-size: 22px;
-  font-weight: 640;
-  letter-spacing: -0.3px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.icon-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: var(--surface2);
-  cursor: pointer;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.icon-button:active {
-  transform: scale(0.94);
-}
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 0.5px solid var(--border);
-  display: flex;
-  padding: 8px 16px 20px;
-  gap: 8px;
-  z-index: 100;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 6px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 12px;
-  color: var(--text3);
-  transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  font-weight: 500;
-}
-
-.nav-item:active {
-  transform: scale(0.94);
-  background: var(--surface2);
-}
-
-.nav-item.active {
-  color: var(--blue);
-  background: var(--blue-bg);
-}
-
-.nav-icon {
-  font-size: 24px;
-}
-
-.nav-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-}
-
-.main-content {
-  flex: 1;
-  padding: 16px;
-  padding-bottom: calc(var(--nav-h) + 16px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Performance optimized - use transform instead of position changes */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 14px;
-  border: 0.5px solid var(--border);
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  will-change: transform;
-}
-
-.card:active {
-  transform: scale(0.99);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.metric-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  border: 0.5px solid var(--border);
-}
-
-.metric-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text2);
-  margin-bottom: 6px;
-}
-
-.metric-value {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.quick-action {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.quick-action:active {
-  transform: scale(0.96);
-  background: var(--surface2);
-}
-
-.quick-action-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
-}
-
-.quick-action-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-}
-
-.property-item {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 14px;
-  cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.property-item:active {
-  transform: scale(0.98);
-}
-
-.property-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.property-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px var(--border);
-}
-
-.property-name {
-  flex: 1;
-  font-weight: 640;
-  font-size: 17px;
-  letter-spacing: -0.3px;
-}
-
-.property-status {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-.status-let {
-  background: var(--green-bg);
-  color: var(--green);
-}
-
-.status-vacant {
-  background: var(--amber-bg);
-  color: #856404;
-}
-
-.property-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  padding-top: 14px;
-  border-top: 0.5px solid var(--border);
-}
-
-.property-stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 4px;
-}
-
-.property-stat-value {
-  font-size: 15px;
-  font-weight: 640;
-}
-
-.txn-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.txn-details {
-  flex: 1;
-}
-
-.txn-desc {
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: -0.2px;
-}
-
-.txn-meta {
-  font-size: 12px;
-  color: var(--text2);
-  margin-top: 3px;
-}
-
-.txn-amount {
-  font-weight: 640;
-  font-size: 16px;
-  margin-right: 12px;
-}
-
-.txn-income {
-  color: var(--green);
-}
-
-.txn-expense {
-  color: var(--red);
-}
-
-.txn-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.icon-btn-sm {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 0.5px solid var(--border);
-  background: var(--surface2);
-  cursor: pointer;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.icon-btn-sm:active {
-  transform: scale(0.92);
-}
-
-.bottom-sheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--surface);
-  border-radius: 20px 20px 0 0;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  z-index: 1000;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.bottom-sheet.open {
-  transform: translateY(0);
-}
-
-.sheet-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 999;
-  display: none;
-}
-
-.sheet-overlay.open {
-  display: block;
-}
-
-.sheet-handle {
-  width: 40px;
-  height: 5px;
-  background: var(--border2);
-  border-radius: 3px;
-  margin: 14px auto;
-}
-
-.sheet-content {
-  padding: 8px 20px 32px;
-}
-
-.sheet-title {
-  font-size: 22px;
-  font-weight: 640;
-  margin-bottom: 24px;
-  letter-spacing: -0.3px;
-}
-
-.form-group {
-  margin-bottom: 18px;
-}
-
-.form-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 7px;
-  color: var(--text2);
-  letter-spacing: -0.2px;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 14px;
-  border: 0.5px solid var(--border);
-  border-radius: 12px;
-  font-size: 16px;
-  font-family: inherit;
-  background: var(--surface);
-  color: var(--text);
-  transition: border-color 0.2s ease;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.btn {
-  padding: 15px 20px;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-.btn:active {
-  opacity: 0.7;
-  transform: scale(0.98);
-}
-
-.btn-primary {
-  background: var(--blue);
-  color: white;
-}
-
-.btn-secondary {
-  background: var(--surface2);
-  color: var(--text);
-  border: 0.5px solid var(--border);
-}
-
-.btn-danger {
-  background: var(--red-bg);
-  color: var(--red);
-}
-
-.login-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-}
-
-.login-card {
-  background: var(--surface);
-  border-radius: 24px;
-  padding: 40px 28px;
-  text-align: center;
-  max-width: 340px;
-  width: 100%;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  animation: fadeInUp 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: -0.5px;
-}
-
-.login-subtitle {
-  font-size: 15px;
-  color: var(--text2);
-  margin-bottom: 28px;
-  line-height: 1.4;
-}
-
-.toast {
-  position: fixed;
-  bottom: 85px;
-  left: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: white;
-  padding: 14px 18px;
-  border-radius: 30px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 1500;
-  animation: slideUp 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  pointer-events: none;
-  letter-spacing: -0.2px;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+.app-header { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+.app-header h1 { font-size: 22px; font-weight: 600; }
+.header-actions { display: flex; gap: 12px; }
+.icon-button { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--surface2); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+.icon-button:active { transform: scale(0.94); }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-top: 0.5px solid var(--border); display: flex; padding: 8px 16px 20px; gap: 8px; z-index: 100; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border: none; background: none; cursor: pointer; border-radius: 12px; color: var(--text3); transition: all 0.1s; }
+.nav-item:active { transform: scale(0.94); background: var(--surface2); }
+.nav-item.active { color: var(--blue); background: var(--blue-bg); }
+.nav-icon { font-size: 24px; }
+.nav-label { font-size: 11px; font-weight: 500; }
+.main-content { flex: 1; padding: 16px; padding-bottom: calc(var(--nav-h) + 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border: 0.5px solid var(--border); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.metric-card { background: var(--surface); border-radius: var(--radius); padding: 14px; border: 0.5px solid var(--border); }
+.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.metric-value { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+.quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+.quick-action { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; }
+.quick-action:active { transform: scale(0.96); background: var(--surface2); }
+.quick-action-icon { font-size: 24px; margin-bottom: 4px; }
+.quick-action-label { font-size: 11px; font-weight: 500; }
+.property-item { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; }
+.property-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.property-color { width: 12px; height: 12px; border-radius: 50%; }
+.property-name { flex: 1; font-weight: 600; font-size: 16px; }
+.property-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.status-let { background: var(--green-bg); color: var(--green); }
+.status-vacant { background: var(--amber-bg); color: #856404; }
+.property-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 12px; border-top: 0.5px solid var(--border); }
+.property-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 2px; }
+.property-stat-value { font-size: 14px; font-weight: 600; }
+.txn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+.txn-details { flex: 1; }
+.txn-desc { font-weight: 500; font-size: 14px; }
+.txn-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.txn-amount { font-weight: 600; font-size: 15px; margin-right: 12px; }
+.txn-income { color: var(--green); }
+.txn-expense { color: var(--red); }
+.txn-actions { display: flex; gap: 8px; }
+.icon-btn-sm { width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); z-index: 1000; max-height: 85vh; overflow-y: auto; }
+.bottom-sheet.open { transform: translateY(0); }
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
+.sheet-overlay.open { display: block; }
+.sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto; }
+.sheet-content { padding: 8px 20px 32px; }
+.sheet-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text2); }
+.form-input, .form-select { width: 100%; padding: 14px; border: 0.5px solid var(--border); border-radius: 12px; font-size: 16px; font-family: inherit; background: var(--surface); }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--blue); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn { padding: 14px 20px; border-radius: 12px; font-size: 15px; font-weight: 600; border: none; cursor: pointer; width: 100%; }
+.btn:active { opacity: 0.7; transform: scale(0.98); }
+.btn-primary { background: var(--blue); color: white; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 0.5px solid var(--border); }
+.btn-danger { background: var(--red-bg); color: var(--red); }
+.login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 32px; }
+.login-card { background: var(--surface); border-radius: 24px; padding: 40px 28px; text-align: center; max-width: 320px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+.login-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.login-subtitle { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+.toast { position: fixed; bottom: 80px; left: 16px; right: 16px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); color: white; padding: 12px 16px; border-radius: 30px; text-align: center; font-size: 14px; z-index: 1500; animation: slideUp 0.3s ease; pointer-events: none; }
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .text-green { color: var(--green); }
 .text-red { color: var(--red); }
 .flex { display: flex; }
 .gap-2 { gap: 8px; }
 .mt-2 { margin-top: 8px; }
 .text-center { text-align: center; }
-
-/* Optimized media queries */
-@media (max-width: 480px) {
-  .quick-actions { gap: 6px; }
-  .quick-action-icon { font-size: 20px; }
-  .quick-action-label { font-size: 10px; }
-  .card { padding: 14px; }
-  .property-stat-value { font-size: 13px; }
-  .txn-desc { font-size: 13px; }
-}
-
-@media (min-width: 768px) {
-  .main-content, .bottom-nav { max-width: 800px; margin: 0 auto; width: 100%; }
-  .bottom-nav { left: 0; right: 0; }
-}
-
-/* Safe area support */
-@supports (padding: max(0px)) {
-  .main-content {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-  }
-  .bottom-nav {
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-  }
-  .app-header {
-    padding-left: max(20px, env(safe-area-inset-left));
-    padding-right: max(20px, env(safe-area-inset-right));
-  }
-}
 </style>
 </head>
 <body>
@@ -657,7 +129,7 @@ body {
   <div class="login-card">
     <div class="login-title">Property Portfolio</div>
     <div class="login-subtitle">Sign in to sync your data with Google Drive</div>
-    <button id="signin-btn" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+    <button id="signin-btn" class="btn btn-primary" onclick="signIn()" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Sign in with Google
     </button>
@@ -670,175 +142,94 @@ body {
 
 <script>
 // ============================================
-// OPTIMIZED UTILITIES
+// ORIGINAL WORKING OAuth PATTERN
 // ============================================
-const Utils = {
-  generateId: () => Date.now().toString(36) + Math.random().toString(36).substr(2, 8),
-  
-  formatMoney: (amount) => '£' + Math.abs(amount).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
-  
-  formatDate: (dateStr) => {
-    if (!dateStr || dateStr === '—') return '—';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-GB');
-  },
-  
-  escapeHtml: (str) => {
-    if (!str) return '';
-    return String(str).replace(/[&<>]/g, (m) => {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  },
-  
-  escapeJs: (str) => {
-    if (!str) return '';
-    return String(str).replace(/['"\\]/g, '\\$&').replace(/\n/g, '\\n');
-  },
-  
-  showToast: (msg, isError) => {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    if (isError) toast.style.background = 'rgba(220, 53, 69, 0.9)';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
-  },
-  
-  // Debounce function for performance
-  debounce: (func, wait) => {
-    let timeout;
-    return function executed(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
-};
+const CLIENT_ID = '434046440829-4kr09lbdl6u5eu03h92g5obb12nc72fd.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const DATA_FILENAME = 'portfolio-data.json';
+const DRIVE_FOLDER_NAME = 'Property Portfolio';
 
-// Make globally available
-window.Utils = Utils;
-window.showToast = Utils.showToast;
-
-// ============================================
-// OPTIMIZED GOOGLE DRIVE INTEGRATION
-// ============================================
 let gAccessToken = null;
 let gDriveDataFileId = null;
-let gDriveFolderIds = { root: null };
-let googleInitialized = false;
-let saveTimeout = null;
+let gDriveFolderIds = {};
 
-// Debounced save to Drive (prevents excessive API calls)
-function debouncedSaveToDrive() {
-  if (saveTimeout) clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => {
-    if (gAccessToken) saveToDrive();
-  }, 1000);
+// ============================================
+// UTILITIES
+// ============================================
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 8); }
+function formatMoney(amount) { return '£' + Math.abs(amount).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+function formatDate(dateStr) { if (!dateStr || dateStr === '—') return '—'; const d = new Date(dateStr); return d.toLocaleDateString('en-GB'); }
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function escapeJs(str) { if (!str) return ''; return str.replace(/['"\\]/g, '\\$&'); }
+
+function showToast(msg, isError) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  if (isError) toast.style.background = 'rgba(220,53,69,0.9)';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
 }
 
-function waitForGoogle() {
-  return new Promise((resolve) => {
-    if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-      resolve(true);
-      return;
-    }
-    const checkInterval = setInterval(() => {
-      if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-        clearInterval(checkInterval);
-        resolve(true);
-      }
-    }, 100);
-    setTimeout(() => {
-      clearInterval(checkInterval);
-      resolve(false);
-    }, 5000);
-  });
-}
-
-async function signIn() {
+// ============================================
+// GOOGLE DRIVE FUNCTIONS - ORIGINAL WORKING PATTERN
+// ============================================
+function signIn() {
   const btn = document.getElementById('signin-btn');
   const statusDiv = document.getElementById('login-status');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+  if (statusDiv) statusDiv.textContent = '';
   
-  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
-  if (statusDiv) statusDiv.textContent = 'Loading Google services...';
-  
-  const isReady = await waitForGoogle();
-  
-  if (!isReady) {
-    if (statusDiv) statusDiv.textContent = 'Google services failed to load. Please refresh.';
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+    if (statusDiv) { statusDiv.textContent = 'Google library not loaded. Refresh the page.'; statusDiv.style.color = 'var(--red)'; }
     if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-    Utils.showToast('Google services not loaded. Please refresh the page.', true);
     return;
   }
   
-  if (btn) btn.textContent = 'Signing in...';
-  if (statusDiv) statusDiv.textContent = 'Opening sign-in window...';
-  
-  try {
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: '434046440829-4kr09lbdl6u5eu03h92g5obb12nc72fd.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/drive.file',
-      callback: async (response) => {
-        if (response.error) {
-          if (statusDiv) statusDiv.textContent = 'Error: ' + response.error;
-          if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-          Utils.showToast('Sign in failed: ' + response.error, true);
-          return;
-        }
-        
-        gAccessToken = response.access_token;
-        document.getElementById('login-screen').style.display = 'none';
-        Utils.showToast('✓ Signed in to Google Drive');
-        
-        await loadFromDrive();
-        renderAll();
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) {
+        if (statusDiv) { statusDiv.textContent = 'Error: ' + resp.error; statusDiv.style.color = 'var(--red)'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
+        showToast('Sign in failed: ' + resp.error, true);
+        return;
       }
-    });
-    client.requestAccessToken();
-  } catch (error) {
-    if (statusDiv) statusDiv.textContent = 'Error: ' + error.message;
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-    Utils.showToast('Sign in failed', true);
-  }
+      gAccessToken = resp.access_token;
+      document.getElementById('login-screen').style.display = 'none';
+      showToast('Loading from Drive...');
+      await initDrive();
+      renderAll();
+    }
+  });
+  client.requestAccessToken();
 }
 
 function signOut() {
-  if (gAccessToken && google.accounts) {
-    google.accounts.oauth2.revoke(gAccessToken);
-  }
+  if (gAccessToken && google.accounts) google.accounts.oauth2.revoke(gAccessToken);
   gAccessToken = null;
   gDriveDataFileId = null;
-  gDriveFolderIds = { root: null };
+  gDriveFolderIds = {};
   document.getElementById('login-screen').style.display = 'flex';
-  Utils.showToast('Signed out of Google Drive');
-  renderAll();
+  showToast('Signed out');
 }
 
 async function driveRequest(url, options = {}) {
-  const response = await fetch(url, {
+  const res = await fetch(url, {
     ...options,
     headers: { 'Authorization': 'Bearer ' + gAccessToken, ...(options.headers || {}) }
   });
-  if (!response.ok) throw new Error(`Drive API ${response.status}`);
-  return response.json();
+  if (!res.ok) throw new Error(`Drive API ${res.status}`);
+  return res.json();
 }
 
-async function findOrCreateFolder(name, parentId = 'root') {
-  const query = `name='${name}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
-  const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`);
-  
-  if (result.files && result.files.length > 0) {
-    return result.files[0].id;
-  }
-  
+async function findOrCreateFolder(name, parentId) {
+  const q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
+  const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
+  if (result.files && result.files.length > 0) return result.files[0].id;
   const created = await driveRequest('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -847,59 +238,38 @@ async function findOrCreateFolder(name, parentId = 'root') {
   return created.id;
 }
 
-async function loadFromDrive() {
-  if (!gAccessToken) return;
-  
+async function initDrive() {
   try {
-    Utils.showToast('Loading from Drive...');
-    
-    const rootId = await findOrCreateFolder('Property Portfolio');
+    const rootId = await findOrCreateFolder(DRIVE_FOLDER_NAME, 'root');
     gDriveFolderIds.root = rootId;
-    
-    const query = `name='portfolio-data.json' and '${rootId}' in parents and trashed=false`;
-    const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`);
+    const q = `name='${DATA_FILENAME}' and '${rootId}' in parents and trashed=false`;
+    const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
     
     if (result.files && result.files.length > 0) {
       gDriveDataFileId = result.files[0].id;
-      const fileResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${gDriveDataFileId}?alt=media`, {
+      const data = await fetch(`https://www.googleapis.com/drive/v3/files/${gDriveDataFileId}?alt=media`, {
         headers: { 'Authorization': 'Bearer ' + gAccessToken }
-      });
-      const data = await fileResponse.json();
-      
+      }).then(r => r.json());
       if (data.properties) state.properties = data.properties;
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
-      if (data.certificates) state.certificates = data.certificates;
-      
-      Utils.showToast('✓ Data loaded from Drive');
+      showToast('✓ Loaded from Drive');
     } else {
+      showToast('✓ New portfolio created');
       await saveToDrive();
-      Utils.showToast('✓ New portfolio created in Drive');
     }
-  } catch (error) {
-    console.error('Load error:', error);
-    Utils.showToast('⚠ Could not load from Drive', true);
+  } catch (e) {
+    console.error('Drive init error:', e);
+    showToast('⚠ Drive error — using local data', true);
   }
+  renderAll();
 }
 
 async function saveToDrive() {
   if (!gAccessToken) return;
-  
-  const data = {
-    properties: state.properties,
-    transactions: state.transactions,
-    maintenance: state.maintenance,
-    certificates: state.certificates || []
-  };
-  
-  const jsonData = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonData], { type: 'application/json' });
-  
+  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   try {
-    if (!gDriveFolderIds.root) {
-      gDriveFolderIds.root = await findOrCreateFolder('Property Portfolio');
-    }
-    
     if (gDriveDataFileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gDriveDataFileId}?uploadType=media`, {
         method: 'PATCH',
@@ -907,28 +277,24 @@ async function saveToDrive() {
         body: blob
       });
     } else {
-      const formData = new FormData();
-      formData.append('metadata', new Blob([JSON.stringify({
-        name: 'portfolio-data.json',
-        parents: [gDriveFolderIds.root]
-      })], { type: 'application/json' }));
-      formData.append('file', blob);
-      
-      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({ name: DATA_FILENAME, parents: [gDriveFolderIds.root || 'root'] })], { type: 'application/json' }));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + gAccessToken },
-        body: formData
+        body: form
       });
-      const result = await response.json();
-      gDriveDataFileId = result.id;
+      const created = await res.json();
+      gDriveDataFileId = created.id;
     }
-  } catch (error) {
-    console.error('Save error:', error);
+  } catch (e) {
+    console.error('Drive save error:', e);
   }
 }
 
 // ============================================
-// OPTIMIZED DATA STATE
+// DATA STATE
 // ============================================
 let state = {
   properties: [
@@ -950,52 +316,43 @@ let state = {
 };
 
 function saveState() {
-  // Save to localStorage as backup
-  localStorage.setItem('portfolio_data_backup', JSON.stringify(state));
-  // Debounced save to Drive
-  if (gAccessToken) {
-    debouncedSaveToDrive();
-  }
+  localStorage.setItem('portfolio_data', JSON.stringify(state));
+  if (gAccessToken) saveToDrive();
 }
 
 function loadLocalData() {
   try {
-    const saved = localStorage.getItem('portfolio_data_backup');
+    const saved = localStorage.getItem('portfolio_data');
     if (saved) {
       const data = JSON.parse(saved);
       if (data.properties) state.properties = data.properties;
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
-      if (data.certificates) state.certificates = data.certificates;
     }
   } catch(e) { console.error('Load error:', e); }
 }
 
 // ============================================
-// OPTIMIZED CRUD OPERATIONS
+// EDIT FUNCTIONS
 // ============================================
 function editProperty(propertyId) {
   const property = state.properties.find(p => p.id === propertyId);
   if (!property) return;
   
   showSheet('Edit Property', `
-    <div class="form-group"><label class="form-label">Property Name</label><input type="text" id="edit-prop-name" class="form-input" value="${Utils.escapeHtml(property.name)}"></div>
-    <div class="form-group"><label class="form-label">Address</label><input type="text" id="edit-prop-addr" class="form-input" value="${Utils.escapeHtml(property.address)}"></div>
+    <div class="form-group"><label class="form-label">Property Name</label><input type="text" id="edit-prop-name" class="form-input" value="${escapeHtml(property.name)}"></div>
+    <div class="form-group"><label class="form-label">Address</label><input type="text" id="edit-prop-addr" class="form-input" value="${escapeHtml(property.address)}"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Rent (£/mo)</label><input type="number" id="edit-prop-rent" class="form-input" value="${property.rent}"></div>
     <div class="form-group"><label class="form-label">Status</label><select id="edit-prop-status" class="form-select"><option value="let" ${property.status === 'let' ? 'selected' : ''}>Let</option><option value="vacant" ${property.status === 'vacant' ? 'selected' : ''}>Vacant</option></select></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Purchase Price (£)</label><input type="number" id="edit-prop-purchase" class="form-input" value="${property.purchasePrice}"></div>
     <div class="form-group"><label class="form-label">Current Value (£)</label><input type="number" id="edit-prop-value" class="form-input" value="${property.currentValue}"></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Mortgage (£/mo)</label><input type="number" id="edit-prop-mortgage" class="form-input" value="${property.mortgage}"></div>
-    <div class="form-group"><label class="form-label">Lender</label><input type="text" id="edit-prop-lender" class="form-input" value="${Utils.escapeHtml(property.lender)}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Name</label><input type="text" id="edit-prop-tenant" class="form-input" value="${Utils.escapeHtml(property.tenant)}"></div>
-    <div class="form-group"><label class="form-label">Tenant Email</label><input type="email" id="edit-prop-email" class="form-input" value="${Utils.escapeHtml(property.tenantEmail || '')}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Phone</label><input type="tel" id="edit-prop-phone" class="form-input" value="${Utils.escapeHtml(property.tenantPhone || '')}"></div>
-    <div class="form-group"><label class="form-label">Lease Start</label><input type="date" id="edit-prop-lease-start" class="form-input" value="${property.leaseStart !== '—' ? property.leaseStart : ''}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Lease End</label><input type="date" id="edit-prop-lease-end" class="form-input" value="${property.leaseEnd !== '—' ? property.leaseEnd : ''}"></div>
-    <div class="form-group"><label class="form-label">Deposit (£)</label><input type="number" id="edit-prop-deposit" class="form-input" value="${property.deposit || 0}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Deposit Scheme</label><select id="edit-prop-deposit-scheme" class="form-select"><option value="">None</option><option value="DPS" ${property.depositScheme === 'DPS' ? 'selected' : ''}>DPS</option><option value="TDS" ${property.depositScheme === 'TDS' ? 'selected' : ''}>TDS</option><option value="MyDeposits" ${property.depositScheme === 'MyDeposits' ? 'selected' : ''}>MyDeposits</option></select></div>
-    <div class="form-group"><label class="form-label">Letting Agent</label><input type="text" id="edit-prop-agent" class="form-input" value="${Utils.escapeHtml(property.agent || '')}"></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteProperty('${Utils.escapeJs(propertyId)}')">Delete Property</button></div>
+    <div class="form-group"><label class="form-label">Lender</label><input type="text" id="edit-prop-lender" class="form-input" value="${escapeHtml(property.lender)}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Name</label><input type="text" id="edit-prop-tenant" class="form-input" value="${escapeHtml(property.tenant)}"></div>
+    <div class="form-group"><label class="form-label">Tenant Email</label><input type="email" id="edit-prop-email" class="form-input" value="${escapeHtml(property.tenantEmail || '')}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Lease Start</label><input type="date" id="edit-prop-lease-start" class="form-input" value="${property.leaseStart !== '—' ? property.leaseStart : ''}"></div>
+    <div class="form-group"><label class="form-label">Lease End</label><input type="date" id="edit-prop-lease-end" class="form-input" value="${property.leaseEnd !== '—' ? property.leaseEnd : ''}"></div></div>
+    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteProperty('${escapeJs(propertyId)}')">Delete Property</button></div>
   `, () => {
     const updatedProperty = {
       ...property,
@@ -1009,19 +366,15 @@ function editProperty(propertyId) {
       lender: document.getElementById('edit-prop-lender').value,
       tenant: document.getElementById('edit-prop-tenant').value || '—',
       tenantEmail: document.getElementById('edit-prop-email').value,
-      tenantPhone: document.getElementById('edit-prop-phone').value,
       leaseStart: document.getElementById('edit-prop-lease-start').value || '—',
-      leaseEnd: document.getElementById('edit-prop-lease-end').value || '—',
-      deposit: parseFloat(document.getElementById('edit-prop-deposit').value) || 0,
-      depositScheme: document.getElementById('edit-prop-deposit-scheme').value,
-      agent: document.getElementById('edit-prop-agent').value
+      leaseEnd: document.getElementById('edit-prop-lease-end').value || '—'
     };
     
     const index = state.properties.findIndex(p => p.id === propertyId);
     if (index !== -1) state.properties[index] = updatedProperty;
     saveState();
     closeSheet();
-    Utils.showToast('Property updated');
+    showToast('Property updated');
     renderAll();
   });
 }
@@ -1029,12 +382,12 @@ function editProperty(propertyId) {
 function deleteProperty(propertyId) {
   closeSheet();
   setTimeout(() => {
-    if (confirm('⚠️ Delete this property?\n\nThis will also delete all associated transactions and maintenance records.\n\nThis action cannot be undone.')) {
+    if (confirm('⚠️ Delete this property? This will also delete all associated transactions. This cannot be undone.')) {
       state.properties = state.properties.filter(p => p.id !== propertyId);
       state.transactions = state.transactions.filter(t => t.propertyId !== propertyId);
       state.maintenance = state.maintenance.filter(m => m.propertyId !== propertyId);
       saveState();
-      Utils.showToast('Property deleted');
+      showToast('Property deleted');
       renderAll();
     }
   }, 100);
@@ -1044,16 +397,16 @@ function editTransaction(transactionId) {
   const transaction = state.transactions.find(t => t.id === transactionId);
   if (!transaction) return;
   const properties = state.properties.filter(p => !p.archived);
-  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === transaction.propertyId ? 'selected' : ''}>${Utils.escapeHtml(p.name)}</option>`).join('');
+  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === transaction.propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
   
   showSheet('Edit Transaction', `
     <div class="form-group"><label class="form-label">Type</label><select id="edit-txn-type" class="form-select"><option value="income" ${transaction.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${transaction.type === 'expense' ? 'selected' : ''}>Expense</option></select></div>
     <div class="form-group"><label class="form-label">Property</label><select id="edit-txn-prop" class="form-select">${propOptions}</select></div>
     <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="edit-txn-amount" class="form-input" step="0.01" value="${transaction.amount}"></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-txn-desc" class="form-input" value="${Utils.escapeHtml(transaction.description)}"></div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-txn-desc" class="form-input" value="${escapeHtml(transaction.description)}"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-txn-date" class="form-input" value="${transaction.date}"></div>
     <div class="form-group"><label class="form-label">Category</label><select id="edit-txn-cat" class="form-select"><option value="rent" ${transaction.category === 'rent' ? 'selected' : ''}>Rent</option><option value="repairs" ${transaction.category === 'repairs' ? 'selected' : ''}>Repairs</option><option value="insurance" ${transaction.category === 'insurance' ? 'selected' : ''}>Insurance</option><option value="other" ${transaction.category === 'other' ? 'selected' : ''}>Other</option></select></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteTransaction('${Utils.escapeJs(transactionId)}')">Delete Transaction</button></div>
+    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteTransaction('${escapeJs(transactionId)}')">Delete Transaction</button></div>
   `, () => {
     const updatedTransaction = {
       ...transaction,
@@ -1069,7 +422,7 @@ function editTransaction(transactionId) {
     if (index !== -1) state.transactions[index] = updatedTransaction;
     saveState();
     closeSheet();
-    Utils.showToast('Transaction updated');
+    showToast('Transaction updated');
     renderAll();
   });
 }
@@ -1080,7 +433,7 @@ function deleteTransaction(transactionId) {
     if (confirm('Delete this transaction?')) {
       state.transactions = state.transactions.filter(t => t.id !== transactionId);
       saveState();
-      Utils.showToast('Transaction deleted');
+      showToast('Transaction deleted');
       renderAll();
     }
   }, 100);
@@ -1090,16 +443,16 @@ function editMaintenance(maintenanceId) {
   const issue = state.maintenance.find(m => m.id === maintenanceId);
   if (!issue) return;
   const properties = state.properties.filter(p => !p.archived);
-  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === issue.propertyId ? 'selected' : ''}>${Utils.escapeHtml(p.name)}</option>`).join('');
+  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === issue.propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
   
   showSheet('Edit Maintenance Issue', `
     <div class="form-group"><label class="form-label">Property</label><select id="edit-maint-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-maint-desc" class="form-input" value="${Utils.escapeHtml(issue.description)}"></div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-maint-desc" class="form-input" value="${escapeHtml(issue.description)}"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-maint-date" class="form-input" value="${issue.date}"></div>
     <div class="form-group"><label class="form-label">Status</label><select id="edit-maint-status" class="form-select"><option value="open" ${issue.status === 'open' ? 'selected' : ''}>Open</option><option value="resolved" ${issue.status === 'resolved' ? 'selected' : ''}>Resolved</option></select></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="edit-maint-priority" class="form-select"><option value="low" ${issue.priority === 'low' ? 'selected' : ''}>Low</option><option value="medium" ${issue.priority === 'medium' ? 'selected' : ''}>Medium</option><option value="high" ${issue.priority === 'high' ? 'selected' : ''}>High</option></select></div>
     <div class="form-group"><label class="form-label">Cost (£)</label><input type="number" id="edit-maint-cost" class="form-input" step="0.01" value="${issue.cost || 0}"></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteMaintenance('${Utils.escapeJs(maintenanceId)}')">Delete Issue</button></div>
+    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteMaintenance('${escapeJs(maintenanceId)}')">Delete Issue</button></div>
   `, () => {
     const updatedIssue = {
       ...issue,
@@ -1115,7 +468,7 @@ function editMaintenance(maintenanceId) {
     if (index !== -1) state.maintenance[index] = updatedIssue;
     saveState();
     closeSheet();
-    Utils.showToast('Maintenance issue updated');
+    showToast('Maintenance issue updated');
     renderAll();
   });
 }
@@ -1126,14 +479,14 @@ function deleteMaintenance(maintenanceId) {
     if (confirm('Delete this maintenance issue?')) {
       state.maintenance = state.maintenance.filter(m => m.id !== maintenanceId);
       saveState();
-      Utils.showToast('Maintenance issue deleted');
+      showToast('Maintenance issue deleted');
       renderAll();
     }
   }, 100);
 }
 
 // ============================================
-// OPTIMIZED UI RENDERER
+// UI RENDERER
 // ============================================
 let currentScreen = 'overview';
 
@@ -1159,12 +512,12 @@ function renderOverview() {
       <div class="quick-action" onclick="showAddProperty()"><div class="quick-action-icon">🏠</div><div class="quick-action-label">Property</div></div>
     </div>
     <div class="metrics-grid">
-      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${Utils.formatMoney(totalRent)}</div><div class="metric-label">${properties.filter(p=>p.status==='let').length}/${properties.length} let</div></div>
-      <div class="metric-card"><div class="metric-label">Portfolio value</div><div class="metric-value">${Utils.formatMoney(totalValue)}</div></div>
-      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${Utils.formatMoney(income - expenses)}</div></div>
+      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${formatMoney(totalRent)}</div><div class="metric-label">${properties.filter(p=>p.status==='let').length}/${properties.length} let</div></div>
+      <div class="metric-card"><div class="metric-label">Portfolio value</div><div class="metric-value">${formatMoney(totalValue)}</div></div>
+      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
       <div class="metric-card"><div class="metric-label">Active issues</div><div class="metric-value ${activeMaintenance > 0 ? 'text-red' : 'text-green'}">${activeMaintenance}</div></div>
     </div>
-    <div class="card-header"><div class="card-title">Properties</div><button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="navigate('properties')">View all →</button></div>
+    <div class="card-header"><div class="card-title">Properties</div><button class="btn btn-secondary" style="width: auto; padding: 6px 12px;" onclick="navigate('properties')">View all →</button></div>
     ${properties.slice(0, 3).map(p => renderPropertyCard(p)).join('')}
   `;
 }
@@ -1175,14 +528,14 @@ function renderPropertyCard(property) {
     <div class="property-item">
       <div class="property-header">
         <div class="property-color" style="background: ${property.color}"></div>
-        <div class="property-name" onclick="showPropertyDetail('${Utils.escapeJs(property.id)}')">${Utils.escapeHtml(property.name)}</div>
+        <div class="property-name" onclick="showPropertyDetail('${escapeJs(property.id)}')">${escapeHtml(property.name)}</div>
         <span class="property-status status-${property.status}">${property.status === 'let' ? 'Let' : 'Vacant'}</span>
-        <button class="icon-btn-sm" onclick="event.stopPropagation(); editProperty('${Utils.escapeJs(property.id)}')" title="Edit">✎</button>
+        <button class="icon-btn-sm" onclick="event.stopPropagation(); editProperty('${escapeJs(property.id)}')" title="Edit">✎</button>
       </div>
-      <div class="property-stats" onclick="showPropertyDetail('${Utils.escapeJs(property.id)}')">
-        <div><div class="property-stat-label">Rent</div><div class="property-stat-value">${Utils.formatMoney(property.rent)}</div></div>
+      <div class="property-stats" onclick="showPropertyDetail('${escapeJs(property.id)}')">
+        <div><div class="property-stat-label">Rent</div><div class="property-stat-value">${formatMoney(property.rent)}</div></div>
         <div><div class="property-stat-label">Yield</div><div class="property-stat-value">${yieldVal}%</div></div>
-        <div><div class="property-stat-label">Net</div><div class="property-stat-value">${Utils.formatMoney(property.rent - (property.mortgage || 0))}</div></div>
+        <div><div class="property-stat-label">Net</div><div class="property-stat-value">${formatMoney(property.rent - (property.mortgage || 0))}</div></div>
       </div>
     </div>
   `;
@@ -1191,7 +544,7 @@ function renderPropertyCard(property) {
 function renderProperties() {
   const properties = state.properties.filter(p => !p.archived);
   document.getElementById('main-content').innerHTML = `
-    <div style="margin-bottom: 16px;"><button class="btn btn-primary" onclick="showAddProperty()">+ Add Property</button></div>
+    <div style="margin-bottom: 12px;"><button class="btn btn-primary" onclick="showAddProperty()">+ Add Property</button></div>
     ${properties.map(p => renderPropertyCard(p)).join('')}
   `;
 }
@@ -1203,37 +556,37 @@ function renderFinance() {
   
   document.getElementById('main-content').innerHTML = `
     <div class="metrics-grid">
-      <div class="metric-card"><div class="metric-label">Total income</div><div class="metric-value text-green">${Utils.formatMoney(income)}</div></div>
-      <div class="metric-card"><div class="metric-label">Total expenses</div><div class="metric-value text-red">${Utils.formatMoney(expenses)}</div></div>
-      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${Utils.formatMoney(income - expenses)}</div></div>
+      <div class="metric-card"><div class="metric-label">Total income</div><div class="metric-value text-green">${formatMoney(income)}</div></div>
+      <div class="metric-card"><div class="metric-label">Total expenses</div><div class="metric-value text-red">${formatMoney(expenses)}</div></div>
+      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Transactions</div><button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="showAddTransaction()">+ Add</button></div>
+      <div class="card-header"><div class="card-title">Transactions</div><button class="btn btn-secondary" style="width: auto; padding: 6px 12px;" onclick="showAddTransaction()">+ Add</button></div>
       ${transactions.map(t => renderTransactionRow(t)).join('')}
-      ${transactions.length === 0 ? '<div class="text-center" style="padding: 30px;">No transactions yet</div>' : ''}
+      ${transactions.length === 0 ? '<div class="text-center" style="padding: 20px;">No transactions yet</div>' : ''}
     </div>
   `;
 }
 
-function renderTransactionRow(transaction) {
-  const property = state.properties.find(p => p.id === transaction.propertyId);
+function renderTransactionRow(t) {
+  const property = state.properties.find(p => p.id === t.propertyId);
   return `
     <div class="txn-item">
       <div class="txn-details">
-        <div class="txn-desc">${Utils.escapeHtml(transaction.description)}</div>
-        <div class="txn-meta">${Utils.formatDate(transaction.date)} • ${property ? Utils.escapeHtml(property.name) : 'Unknown'} • ${Utils.escapeHtml(transaction.category)}</div>
+        <div class="txn-desc">${escapeHtml(t.description)}</div>
+        <div class="txn-meta">${formatDate(t.date)} • ${property ? escapeHtml(property.name) : 'Unknown'} • ${escapeHtml(t.category)}</div>
       </div>
-      <div class="txn-amount ${transaction.type === 'income' ? 'txn-income' : 'txn-expense'}">${transaction.type === 'expense' ? '-' : ''}${Utils.formatMoney(transaction.amount)}</div>
+      <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
       <div class="txn-actions">
-        <button class="icon-btn-sm" onclick="editTransaction('${Utils.escapeJs(transaction.id)}')" title="Edit">✎</button>
-        <button class="icon-btn-sm" onclick="deleteTransaction('${Utils.escapeJs(transaction.id)}')" title="Delete">✕</button>
+        <button class="icon-btn-sm" onclick="editTransaction('${escapeJs(t.id)}')">✎</button>
+        <button class="icon-btn-sm" onclick="deleteTransaction('${escapeJs(t.id)}')">✕</button>
       </div>
     </div>
   `;
 }
 
 // ============================================
-// OPTIMIZED MODAL & ACTIONS
+// MODAL & ACTIONS
 // ============================================
 function showSheet(title, contentHtml, onConfirm = null) {
   const sheet = document.getElementById('bottom-sheet');
@@ -1241,7 +594,7 @@ function showSheet(title, contentHtml, onConfirm = null) {
   const sheetContent = document.getElementById('sheet-content');
   if (!sheet || !overlay || !sheetContent) return;
   
-  sheetContent.innerHTML = `<div class="sheet-title">${Utils.escapeHtml(title)}</div>${contentHtml}<div class="flex gap-2" style="margin-top: 20px;"><button class="btn btn-secondary" onclick="closeSheet()">Cancel</button>${onConfirm ? `<button class="btn btn-primary" id="sheet-confirm-btn">Confirm</button>` : ''}</div>`;
+  sheetContent.innerHTML = `<div class="sheet-title">${escapeHtml(title)}</div>${contentHtml}<div class="flex gap-2" style="margin-top: 20px;"><button class="btn btn-secondary" onclick="closeSheet()">Cancel</button>${onConfirm ? `<button class="btn btn-primary" id="sheet-confirm-btn">Confirm</button>` : ''}</div>`;
   sheet.classList.add('open');
   overlay.classList.add('open');
   if (onConfirm) {
@@ -1267,7 +620,7 @@ function navigate(screen) {
 }
 
 function showQuickExpense() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${Utils.escapeHtml(p.name)}</option>`).join('');
+  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
   showSheet('Add Expense', `
     <div class="form-group"><label class="form-label">Property</label><select id="expense-prop" class="form-select">${propOptions}</select></div>
     <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="expense-amount" class="form-input" step="0.01"></div>
@@ -1277,17 +630,17 @@ function showQuickExpense() {
   `, () => {
     const amount = parseFloat(document.getElementById('expense-amount').value);
     const description = document.getElementById('expense-desc').value;
-    if (!amount || !description) { Utils.showToast('Fill all fields', true); return; }
-    state.transactions.push({ id: Utils.generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId: document.getElementById('expense-prop').value, amount, category: document.getElementById('expense-cat').value });
+    if (!amount || !description) { showToast('Fill all fields', true); return; }
+    state.transactions.push({ id: generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId: document.getElementById('expense-prop').value, amount, category: document.getElementById('expense-cat').value });
     saveState();
     closeSheet();
-    Utils.showToast('Expense added');
+    showToast('Expense added');
     renderAll();
   });
 }
 
 function showQuickIncome() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${Utils.escapeHtml(p.name)}</option>`).join('');
+  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
   showSheet('Add Income', `
     <div class="form-group"><label class="form-label">Property</label><select id="income-prop" class="form-select">${propOptions}</select></div>
     <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="income-amount" class="form-input" step="0.01"></div>
@@ -1296,28 +649,28 @@ function showQuickIncome() {
   `, () => {
     const amount = parseFloat(document.getElementById('income-amount').value);
     const description = document.getElementById('income-desc').value;
-    if (!amount || !description) { Utils.showToast('Fill all fields', true); return; }
-    state.transactions.push({ id: Utils.generateId(), date: document.getElementById('income-date').value, type: 'income', description, propertyId: document.getElementById('income-prop').value, amount, category: 'rent' });
+    if (!amount || !description) { showToast('Fill all fields', true); return; }
+    state.transactions.push({ id: generateId(), date: document.getElementById('income-date').value, type: 'income', description, propertyId: document.getElementById('income-prop').value, amount, category: 'rent' });
     saveState();
     closeSheet();
-    Utils.showToast('Income added');
+    showToast('Income added');
     renderAll();
   });
 }
 
 function showQuickMaintenance() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${Utils.escapeHtml(p.name)}</option>`).join('');
+  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
   showSheet('Log Maintenance', `
     <div class="form-group"><label class="form-label">Property</label><select id="maint-prop" class="form-select">${propOptions}</select></div>
     <div class="form-group"><label class="form-label">Issue</label><input type="text" id="maint-desc" class="form-input"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="maint-priority" class="form-select"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
     <div class="form-group"><label class="form-label">Date</label><input type="date" id="maint-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
   `, () => {
-    if (!document.getElementById('maint-desc').value) { Utils.showToast('Describe the issue', true); return; }
-    state.maintenance.push({ id: Utils.generateId(), propertyId: document.getElementById('maint-prop').value, description: document.getElementById('maint-desc').value, date: document.getElementById('maint-date').value, status: 'open', priority: document.getElementById('maint-priority').value, cost: 0 });
+    if (!document.getElementById('maint-desc').value) { showToast('Describe the issue', true); return; }
+    state.maintenance.push({ id: generateId(), propertyId: document.getElementById('maint-prop').value, description: document.getElementById('maint-desc').value, date: document.getElementById('maint-date').value, status: 'open', priority: document.getElementById('maint-priority').value, cost: 0 });
     saveState();
     closeSheet();
-    Utils.showToast('Maintenance logged');
+    showToast('Maintenance logged');
     renderAll();
   });
 }
@@ -1331,12 +684,12 @@ function showAddProperty() {
     <div class="form-row"><div class="form-group"><label class="form-label">Status</label><select id="prop-status" class="form-select"><option value="let">Let</option><option value="vacant">Vacant</option></select></div></div>
   `, () => {
     const name = document.getElementById('prop-name').value;
-    if (!name) { Utils.showToast('Enter property name', true); return; }
+    if (!name) { showToast('Enter property name', true); return; }
     const colors = ['#28A745', '#007AFF', '#FFC107', '#5856D6', '#FF3B30'];
-    state.properties.push({ id: Utils.generateId(), name, address: document.getElementById('prop-addr').value || '—', status: document.getElementById('prop-status').value, color: colors[Math.floor(Math.random() * colors.length)], rent: parseFloat(document.getElementById('prop-rent').value) || 0, purchasePrice: parseFloat(document.getElementById('prop-purchase').value) || 0, currentValue: parseFloat(document.getElementById('prop-purchase').value) || 0, mortgage: 0, lender: '—', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: '', gasEngineer: '', electrician: '', createdAt: new Date().toISOString().split('T')[0], archived: false });
+    state.properties.push({ id: generateId(), name, address: document.getElementById('prop-addr').value || '—', status: document.getElementById('prop-status').value, color: colors[Math.floor(Math.random() * colors.length)], rent: parseFloat(document.getElementById('prop-rent').value) || 0, purchasePrice: parseFloat(document.getElementById('prop-purchase').value) || 0, currentValue: parseFloat(document.getElementById('prop-purchase').value) || 0, mortgage: 0, lender: '—', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: '', gasEngineer: '', electrician: '', createdAt: new Date().toISOString().split('T')[0], archived: false });
     saveState();
     closeSheet();
-    Utils.showToast('Property added');
+    showToast('Property added');
     renderAll();
   });
 }
@@ -1352,25 +705,25 @@ function showPropertyDetail(id) {
   
   showSheet(p.name, `
     <div class="metrics-grid" style="grid-template-columns: 1fr 1fr;">
-      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${Utils.formatMoney(p.rent)}</div></div>
-      <div class="metric-card"><div class="metric-label">Net income</div><div class="metric-value ${summary >= 0 ? 'text-green' : 'text-red'}">${Utils.formatMoney(summary)}</div></div>
+      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${formatMoney(p.rent)}</div></div>
+      <div class="metric-card"><div class="metric-label">Net income</div><div class="metric-value ${summary >= 0 ? 'text-green' : 'text-red'}">${formatMoney(summary)}</div></div>
     </div>
     <div class="card"><div class="card-title">Details</div>
-      <div><strong>Address:</strong> ${Utils.escapeHtml(p.address)}</div>
-      <div><strong>Tenant:</strong> ${Utils.escapeHtml(p.tenant)}</div>
+      <div><strong>Address:</strong> ${escapeHtml(p.address)}</div>
+      <div><strong>Tenant:</strong> ${escapeHtml(p.tenant)}</div>
       <div><strong>Lease:</strong> ${p.leaseStart} → ${p.leaseEnd}</div>
-      <div><strong>Lender:</strong> ${Utils.escapeHtml(p.lender)}</div>
-      <div><strong>Mortgage:</strong> ${Utils.formatMoney(p.mortgage)}/mo</div>
-      ${p.deposit > 0 ? `<div><strong>Deposit:</strong> ${Utils.formatMoney(p.deposit)} (${p.depositScheme || 'No scheme'})</div>` : ''}
+      <div><strong>Lender:</strong> ${escapeHtml(p.lender)}</div>
+      <div><strong>Mortgage:</strong> ${formatMoney(p.mortgage)}/mo</div>
+      ${p.deposit > 0 ? `<div><strong>Deposit:</strong> ${formatMoney(p.deposit)} (${p.depositScheme || 'No scheme'})</div>` : ''}
     </div>
-    ${maintenance.length > 0 ? `<div class="card"><div class="card-title">🔧 Open issues</div>${maintenance.map(m => `<div class="txn-item"><div>${Utils.escapeHtml(m.description)}</div><div class="txn-amount">${m.priority}</div></div>`).join('')}</div>` : ''}
-    <div class="flex gap-2"><button class="btn btn-secondary" onclick="editProperty('${Utils.escapeJs(id)}'); closeSheet();">Edit Property</button><button class="btn btn-secondary" onclick="showQuickExpenseForProperty('${Utils.escapeJs(id)}'); closeSheet();">Add Expense</button></div>
+    ${maintenance.length > 0 ? `<div class="card"><div class="card-title">🔧 Open issues</div>${maintenance.map(m => `<div class="txn-item"><div>${escapeHtml(m.description)}</div><div class="txn-amount">${m.priority}</div></div>`).join('')}</div>` : ''}
+    <div class="flex gap-2"><button class="btn btn-secondary" onclick="editProperty('${escapeJs(id)}'); closeSheet();">Edit Property</button><button class="btn btn-secondary" onclick="showQuickExpenseForProperty('${escapeJs(id)}'); closeSheet();">Add Expense</button></div>
   `);
 }
 
 function showQuickExpenseForProperty(propertyId) {
   setTimeout(() => {
-    const propOptions = state.properties.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${Utils.escapeHtml(p.name)}</option>`).join('');
+    const propOptions = state.properties.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
     showSheet('Add Expense', `
       <div class="form-group"><label class="form-label">Property</label><select id="expense-prop" class="form-select">${propOptions}</select></div>
       <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="expense-amount" class="form-input" step="0.01"></div>
@@ -1380,26 +733,21 @@ function showQuickExpenseForProperty(propertyId) {
     `, () => {
       const amount = parseFloat(document.getElementById('expense-amount').value);
       const description = document.getElementById('expense-desc').value;
-      if (!amount || !description) { Utils.showToast('Fill all fields', true); return; }
-      state.transactions.push({ id: Utils.generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId, amount, category: document.getElementById('expense-cat').value });
+      if (!amount || !description) { showToast('Fill all fields', true); return; }
+      state.transactions.push({ id: generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId, amount, category: document.getElementById('expense-cat').value });
       saveState();
       closeSheet();
-      Utils.showToast('Expense added');
+      showToast('Expense added');
       renderAll();
     });
   }, 100);
 }
 
-// Debounced search for performance
-const debouncedSearch = Utils.debounce((query) => {
-  performSearch(query);
-}, 300);
-
 function showSearch() {
   const properties = state.properties;
   showSheet('Search', `
-    <div class="form-group"><input type="text" id="searchInput" class="form-input" placeholder="Search properties..." oninput="debouncedSearch(this.value)"></div>
-    <div id="searchResults">${properties.slice(0, 5).map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${Utils.escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${Utils.escapeHtml(p.name)}</div><div class="metric-label">${Utils.escapeHtml(p.address)}</div></div></div>`).join('')}</div>
+    <div class="form-group"><input type="text" id="searchInput" class="form-input" placeholder="Search properties..." oninput="performSearch(this.value)"></div>
+    <div id="searchResults">${properties.slice(0, 5).map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${escapeHtml(p.name)}</div><div class="metric-label">${escapeHtml(p.address)}</div></div></div>`).join('')}</div>
   `);
 }
 
@@ -1408,7 +756,7 @@ function performSearch(query) {
   const results = state.properties.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.address.toLowerCase().includes(query.toLowerCase()));
   const resultsDiv = document.getElementById('searchResults');
   if (resultsDiv) {
-    resultsDiv.innerHTML = results.map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${Utils.escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${Utils.escapeHtml(p.name)}</div><div class="metric-label">${Utils.escapeHtml(p.address)}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No results found</div>';
+    resultsDiv.innerHTML = results.map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${escapeHtml(p.name)}</div><div class="metric-label">${escapeHtml(p.address)}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No results found</div>';
   }
 }
 
@@ -1444,18 +792,15 @@ function exportData() {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 100);
-  Utils.showToast('Data exported');
+  showToast('Data exported');
 }
 
 function confirmReset() {
   closeSheet();
   setTimeout(() => {
-    if (confirm('⚠️ WARNING: This will delete ALL your data.\n\nProperties, transactions, maintenance records, and all other data will be permanently deleted.\n\nThis action cannot be undone. Are you absolutely sure?')) {
-      localStorage.removeItem('portfolio_data_backup');
-      if (gAccessToken && gDriveDataFileId) {
-        // Optionally delete from Drive too
-      }
-      Utils.showToast('Data reset. Refreshing...');
+    if (confirm('⚠️ WARNING: This will delete ALL your data.\n\nThis action cannot be undone. Are you absolutely sure?')) {
+      localStorage.clear();
+      showToast('Data reset. Refreshing...');
       setTimeout(() => location.reload(), 1000);
     }
   }, 100);
@@ -1468,7 +813,6 @@ window.onload = function() {
   loadLocalData();
   renderAll();
   
-  // Expose functions globally
   window.navigate = navigate;
   window.closeSheet = closeSheet;
   window.showQuickExpense = showQuickExpense;
@@ -1491,7 +835,7 @@ window.onload = function() {
   window.deleteTransaction = deleteTransaction;
   window.deleteMaintenance = deleteMaintenance;
   window.showQuickExpenseForProperty = showQuickExpenseForProperty;
-  window.debouncedSearch = debouncedSearch;
+  window.performSearch = performSearch;
 };
 </script>
 </body>
