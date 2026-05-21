@@ -5,187 +5,170 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#007AFF">
-<title>Property Portfolio Pro - Complete Edition</title>
+<title>Property Portfolio</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>
+<script src="https://apis.google.com/js/api.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 <style>
-/* ============================================
-   COMPLETE CSS - All features included
-   ============================================ */
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
 :root {
-  --bg: #F5F5F7;
+  --bg: #F7F5F0;
   --surface: #FFFFFF;
-  --surface2: #F2F2F5;
-  --border: #E5E5EA;
-  --border2: #D1D1D6;
-  --text: #1C1C1E;
-  --text2: #6C6C70;
-  --text3: #8E8E93;
-  --green: #28A745;
-  --green-bg: #E8F5E9;
-  --red: #DC3545;
-  --red-bg: #FEE8E9;
-  --amber: #FFC107;
-  --amber-bg: #FFF8E1;
-  --blue: #007AFF;
-  --blue-bg: #E8F0FE;
-  --purple: #5856D6;
-  --purple-bg: #EEEEFF;
-  --radius-sm: 8px;
+  --surface2: #F0EDE6;
+  --border: #E2DDD4;
+  --border2: #CEC9BE;
+  --text: #1A1916;
+  --text2: #6B6760;
+  --text3: #A09D98;
+  --green: #2D5A27;
+  --green-bg: #EAF2E8;
+  --red: #8B2020;
+  --red-bg: #F5EAEA;
+  --amber: #7A4A0A;
+  --amber-bg: #FAF0E0;
+  --blue: #1A3A5C;
+  --blue-bg: #E8F0F8;
+  --purple: #3D2B6B;
+  --purple-bg: #EEEAF5;
+  --teal: #1A4A40;
+  --teal-bg: #E6F2F0;
   --radius: 12px;
-  --radius-lg: 16px;
-  --nav-h: 64px;
+  --radius-sm: 8px;
+  --nav-h: 60px;
+  --header-h: 56px;
 }
-
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
-#app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: 'Inter', sans-serif; color: var(--text); font-size: 15px; -webkit-font-smoothing: antialiased; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 
 /* Header */
-.app-header { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
-.app-header h1 { font-size: 20px; font-weight: 600; }
-.header-actions { display: flex; gap: 8px; }
-.icon-button { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--surface2); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
-.icon-button:active { transform: scale(0.95); }
+#header { height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; position: sticky; top: 0; z-index: 100; }
+#header-title { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: var(--text); flex: 1; letter-spacing: -0.3px; }
+.filter-select { font-size: 12px; font-weight: 500; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface2); color: var(--text2); cursor: pointer; flex-shrink: 0; outline: none; }
 
-/* Bottom Navigation */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-top: 0.5px solid var(--border); display: flex; padding: 8px 12px 20px; gap: 4px; z-index: 100; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: none; background: none; cursor: pointer; border-radius: var(--radius-sm); color: var(--text3); transition: all 0.1s; }
-.nav-item:active { transform: scale(0.95); }
-.nav-item.active { color: var(--blue); background: var(--blue-bg); }
-.nav-icon { font-size: 22px; }
-.nav-label { font-size: 11px; font-weight: 500; }
+/* Content */
+#content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--bg); padding-bottom: calc(var(--nav-h) + 16px); }
 
-/* Main Content */
-.main-content { flex: 1; padding: 16px; padding-bottom: calc(var(--nav-h) + 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* Navigation */
+#nav { height: var(--nav-h); background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; safe-area-inset-bottom: env(safe-area-inset-bottom); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: none; cursor: pointer; color: var(--text3); padding: 8px 4px; transition: color .15s; }
+.nav-btn.active { color: var(--text); }
+.nav-icon { font-size: 18px; line-height: 1; }
+.nav-label { font-size: 9px; font-weight: 500; letter-spacing: .02em; }
+
+/* Screens */
+.screen { display: none; padding: 16px; }
+.screen.active { display: block; }
 
 /* Cards */
-.card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border: 0.5px solid var(--border); transition: transform 0.1s; }
-.card:active { transform: scale(0.99); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px; }
+.section-label { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 12px; }
 
-/* Metrics Grid */
-.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.metric-card { background: var(--surface); border-radius: var(--radius); padding: 14px; border: 0.5px solid var(--border); }
-.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
-.metric-value { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+/* Metrics */
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.metric-value { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
 
-/* Quick Actions */
-.quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-.quick-action { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; transition: transform 0.1s; }
-.quick-action:active { transform: scale(0.96); background: var(--surface2); }
-.quick-action-icon { font-size: 24px; margin-bottom: 4px; }
-.quick-action-label { font-size: 11px; font-weight: 500; }
+/* Badges */
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-purple { background: var(--purple-bg); color: var(--purple); }
+.badge-teal { background: var(--teal-bg); color: var(--teal); }
+.badge-grey { background: var(--surface2); color: var(--text2); }
+
+/* Info Rows */
+.info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 13px; color: var(--text2); flex-shrink: 0; }
+.info-val { font-size: 14px; text-align: right; font-weight: 500; }
 
 /* Property Items */
-.property-item { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.1s; }
-.property-item:active { transform: scale(0.99); background: var(--surface2); }
-.property-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.property-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.property-name { flex: 1; font-weight: 600; font-size: 16px; }
-.property-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.prop-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color .15s; }
+.prop-item:hover, .prop-item:active { border-color: var(--border2); }
+.prop-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.prop-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.prop-info { flex: 1; }
+.prop-name { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+.prop-addr { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.prop-status { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
 .status-let { background: var(--green-bg); color: var(--green); }
-.status-vacant { background: var(--amber-bg); color: #856404; }
-.property-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 12px; border-top: 0.5px solid var(--border); }
-.property-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 2px; }
-.property-stat-value { font-size: 14px; font-weight: 600; }
+.status-vacant { background: var(--amber-bg); color: var(--amber); }
+.prop-certs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 
-/* Transaction Items */
-.txn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
-.txn-details { flex: 1; }
-.txn-desc { font-weight: 500; font-size: 14px; }
+/* Certificate Status */
+.cert-status { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; display: inline-block; }
+.cert-valid { background: var(--green-bg); color: var(--green); }
+.cert-warning { background: var(--amber-bg); color: var(--amber); }
+.cert-expired { background: var(--red-bg); color: var(--red); }
+.cert-missing { background: var(--surface2); color: var(--text3); }
+
+/* Reference Grid */
+.ref-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
+.ref-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+.ref-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+.ref-value { font-size: 13px; font-weight: 500; }
+
+/* Transaction Rows */
+.txn-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.txn-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.txn-body { flex: 1; min-width: 0; }
+.txn-desc { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .txn-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.txn-amount { font-weight: 600; font-size: 15px; margin-right: 12px; }
+.txn-amount { font-size: 15px; font-weight: 600; flex-shrink: 0; }
 .txn-income { color: var(--green); }
 .txn-expense { color: var(--red); }
-.txn-actions { display: flex; gap: 8px; }
-.icon-btn-sm { width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
-.icon-btn-sm:active { transform: scale(0.95); }
-
-/* Compliance Items */
-.compliance-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
-.compliance-status { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-.compliance-status.ok { background: var(--green-bg); color: var(--green); }
-.compliance-status.warning { background: var(--amber-bg); color: #856404; }
-.compliance-status.missing { background: var(--red-bg); color: var(--red); }
-.compliance-details { flex: 1; }
-.compliance-name { font-weight: 500; font-size: 14px; }
-.compliance-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.compliance-due { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
-.due-urgent { background: var(--red-bg); color: var(--red); }
-.due-soon { background: var(--amber-bg); color: #856404; }
-.due-ok { background: var(--green-bg); color: var(--green); }
-
-/* Calendar */
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 16px; }
-.calendar-day { text-align: center; padding: 8px; font-size: 12px; font-weight: 600; color: var(--text2); }
-.calendar-date { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 13px; background: var(--surface); transition: all 0.1s; }
-.calendar-date:active { transform: scale(0.9); }
-.calendar-date.has-event { background: var(--blue); color: white; }
-.calendar-date.today { border: 2px solid var(--blue); font-weight: 600; }
-
-/* Comparison Table */
-.comparison-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-.comparison-table th, .comparison-table td { padding: 10px 8px; text-align: left; border-bottom: 0.5px solid var(--border); }
-.comparison-table th { font-weight: 600; color: var(--text2); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-.comparison-table td { font-weight: 500; }
-.comparison-table tr:active { background: var(--surface2); }
-
-/* Tenant Portal */
-.tenant-section { margin-bottom: 16px; }
-.tenant-section-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--blue); }
-.tenant-contact { display: flex; gap: 12px; padding: 8px 0; }
-.tenant-contact-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 20px; }
-.tenant-contact-details { flex: 1; }
-.tenant-contact-name { font-weight: 500; font-size: 14px; }
-.tenant-contact-value { font-size: 13px; color: var(--text2); }
-
-/* Bottom Sheet */
-.bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); z-index: 1000; max-height: 85vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); }
-.bottom-sheet.open { transform: translateY(0); }
-.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
-.sheet-overlay.open { display: block; }
-.sheet-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto; }
-.sheet-content { padding: 8px 20px 32px; }
-.sheet-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
 
 /* Forms */
-.form-group { margin-bottom: 16px; }
-.form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text2); }
-.form-input, .form-select, .form-textarea { width: 100%; padding: 12px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; background: var(--surface); transition: border-color 0.1s; }
-.form-input:focus, .form-select:focus { outline: none; border-color: var(--blue); }
+.form-field { margin-bottom: 14px; }
+.form-field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+.form-field input, .form-field select, .form-field textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: inherit; font-size: 14px; -webkit-appearance: none; appearance: none; outline: none; }
+.form-field input:focus, .form-field select:focus { border-color: var(--border2); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 /* Buttons */
-.btn { padding: 12px 20px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; border: none; cursor: pointer; width: 100%; transition: opacity 0.1s; }
-.btn:active { opacity: 0.7; transform: scale(0.98); }
-.btn-primary { background: var(--blue); color: white; }
-.btn-secondary { background: var(--surface2); color: var(--text); border: 0.5px solid var(--border); }
+.btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; cursor: pointer; border: none; margin-top: 4px; transition: opacity .1s; }
+.btn-primary { background: var(--text); color: var(--bg); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 .btn-danger { background: var(--red-bg); color: var(--red); }
-.btn-sm { padding: 8px 12px; font-size: 13px; width: auto; }
+.icon-btn-sm { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: transform .1s; }
+.icon-btn-sm:active { transform: scale(0.94); }
 
-/* Export Buttons */
-.export-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+/* Bottom Sheet */
+.bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); z-index: 1000; max-height: 85vh; overflow-y: auto; }
+.bottom-sheet.open { transform: translateY(0); }
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; display: none; }
+.sheet-overlay.open { display: block; }
+.sheet-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto; }
+.sheet-content { padding: 8px 20px 32px; }
+.sheet-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; letter-spacing: -0.3px; }
+
+/* Detail Tabs */
+.detail-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 16px; scrollbar-width: none; }
+.detail-tabs::-webkit-scrollbar { display: none; }
+.dtab { font-size: 13px; font-weight: 500; padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+.dtab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.dtab-content { display: none; }
+.dtab-content.active { display: block; }
 
 /* Login Screen */
-.login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 32px; }
-.login-card { background: var(--surface); border-radius: 24px; padding: 40px 28px; text-align: center; max-width: 320px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
-.login-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
-.login-subtitle { font-size: 14px; color: var(--text2); margin-bottom: 28px; line-height: 1.4; }
+.login-screen { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
+.login-screen.visible { display: flex; }
+.login-card { background: var(--surface); border-radius: 20px; padding: 32px 24px; text-align: center; max-width: 320px; width: 100%; }
 
 /* Toast */
-.toast { position: fixed; bottom: 80px; left: 16px; right: 16px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); color: white; padding: 12px 16px; border-radius: 30px; text-align: center; font-size: 14px; font-weight: 500; z-index: 1500; animation: slideUp 0.3s ease; pointer-events: none; }
+.toast { position: fixed; bottom: 80px; left: 16px; right: 16px; background: var(--text); color: white; padding: 12px 16px; border-radius: 30px; text-align: center; font-size: 14px; font-weight: 500; z-index: 1500; animation: slideUp 0.3s ease; pointer-events: none; }
 @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* Utility Classes */
+/* Utilities */
 .text-green { color: var(--green); }
 .text-red { color: var(--red); }
-.text-blue { color: var(--blue); }
+.text-amber { color: var(--amber); }
 .flex { display: flex; }
 .justify-between { justify-content: space-between; }
 .items-center { align-items: center; }
@@ -194,48 +177,43 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
 .mb-2 { margin-bottom: 8px; }
-.mb-3 { margin-bottom: 12px; }
 .text-center { text-align: center; }
 .w-100 { width: 100%; }
 
-/* Responsive */
-@media (min-width: 768px) {
-  .main-content, .bottom-nav { max-width: 700px; margin: 0 auto; }
-  .bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; }
-}
-
-/* Safe area support */
-@supports (padding: max(0px)) {
-  .main-content { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-  .bottom-nav { padding-bottom: max(20px, env(safe-area-inset-bottom)); padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-  .app-header { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+@media (min-width: 600px) {
+  #content, #nav { max-width: 680px; margin: 0 auto; }
+  .metrics { grid-template-columns: repeat(4, 1fr); }
+  .ref-grid { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="app-header">
-    <h1>Portfolio Pro</h1>
-    <div class="header-actions">
-      <button class="icon-button" onclick="window.showSearch()">🔍</button>
-      <button class="icon-button" onclick="window.showSettings()">⚙️</button>
-    </div>
+  <div id="header">
+    <div id="header-title">Property Portfolio</div>
+    <select id="prop-filter" class="filter-select" onchange="setFilterProp(this.value)"><option value="">All properties</option></select>
+    <button class="icon-btn-sm" onclick="showSettings()" style="width: 34px; height: 34px;">⚙️</button>
   </div>
-  <div class="main-content" id="main-content"><div class="text-center" style="padding: 40px;"><div style="display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.6s linear infinite;"></div> Loading...</div></div>
-  <div class="bottom-nav">
-    <button class="nav-item active" data-nav="overview" onclick="window.navigate('overview')"><span class="nav-icon">📊</span><span class="nav-label">Overview</span></button>
-    <button class="nav-item" data-nav="properties" onclick="window.navigate('properties')"><span class="nav-icon">🏠</span><span class="nav-label">Properties</span></button>
-    <button class="nav-item" data-nav="compliance" onclick="window.navigate('compliance')"><span class="nav-icon">✓</span><span class="nav-label">Compliance</span></button>
-    <button class="nav-item" data-nav="calendar" onclick="window.navigate('calendar')"><span class="nav-icon">📅</span><span class="nav-label">Calendar</span></button>
-    <button class="nav-item" data-nav="actions" onclick="window.showQuickActions()"><span class="nav-icon">➕</span><span class="nav-label">Add</span></button>
+  <div id="content">
+    <div id="screen-dashboard" class="screen active"></div>
+    <div id="screen-properties" class="screen"></div>
+    <div id="screen-finance" class="screen"></div>
+    <div id="screen-maintenance" class="screen"></div>
+  </div>
+  <div id="nav">
+    <button class="nav-btn active" onclick="navigate('dashboard')" data-screen="dashboard"><span class="nav-icon">⌂</span><span class="nav-label">Overview</span></button>
+    <button class="nav-btn" onclick="navigate('properties')" data-screen="properties"><span class="nav-icon">⊞</span><span class="nav-label">Properties</span></button>
+    <button class="nav-btn" onclick="navigate('finance')" data-screen="finance"><span class="nav-icon">£</span><span class="nav-label">Finance</span></button>
+    <button class="nav-btn" onclick="navigate('maintenance')" data-screen="maintenance"><span class="nav-icon">🔧</span><span class="nav-label">Maintenance</span></button>
+    <button class="nav-btn" onclick="showQuickActions()"><span class="nav-icon">+</span><span class="nav-label">Add</span></button>
   </div>
 </div>
 
-<div id="login-screen" class="login-screen">
+<div id="login-screen" class="login-screen visible">
   <div class="login-card">
-    <div class="login-title">Property Portfolio Pro</div>
-    <div class="login-subtitle">Sign in to sync your data with Google Drive</div>
-    <button id="signin-btn" class="btn btn-primary" onclick="signIn()" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+    <div style="font-size: 26px; font-weight: 700; margin-bottom: 8px;">Property Portfolio</div>
+    <div style="font-size: 14px; color: var(--text2); margin-bottom: 28px;">Sign in to sync your data with Google Drive</div>
+    <button id="signin-btn" onclick="signIn()" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); cursor: pointer; font-size: 15px; font-weight: 500;">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Sign in with Google
     </button>
@@ -246,15 +224,9 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 <div id="bottom-sheet" class="bottom-sheet"><div class="sheet-handle"></div><div class="sheet-content" id="sheet-content"></div></div>
 <div id="sheet-overlay" class="sheet-overlay" onclick="closeSheet()"></div>
 
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-
 <script>
 // ============================================
-// COMPLETE PROPERTY PORTFOLIO APPLICATION
-// ============================================
-
-// ============================================
-// GOOGLE DRIVE CONFIGURATION
+// GOOGLE DRIVE SETUP
 // ============================================
 const CLIENT_ID = '434046440829-4kr09lbdl6u5eu03h92g5obb12nc72fd.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -272,8 +244,39 @@ let googleReady = false;
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 8); }
 function formatMoney(amount) { return '£' + Math.abs(amount).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
 function formatDate(dateStr) { if (!dateStr || dateStr === '—') return '—'; const d = new Date(dateStr); return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-GB'); }
-function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-function escapeJs(str) { if (!str) return ''; return String(str).replace(/['"\\]/g, '\\$&').replace(/\n/g, '\\n'); }
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function escapeJs(str) { if (!str) return ''; return str.replace(/['"\\]/g, '\\$&'); }
+
+function daysUntil(date) {
+  if (!date) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(date); due.setHours(0,0,0,0);
+  return Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+}
+
+function getCertStatus(expiryDate) {
+  if (!expiryDate) return 'missing';
+  const days = daysUntil(expiryDate);
+  if (days < 0) return 'expired';
+  if (days < 60) return 'warning';
+  return 'valid';
+}
+
+function getCertBadgeClass(expiryDate) {
+  const status = getCertStatus(expiryDate);
+  if (status === 'valid') return 'cert-valid';
+  if (status === 'warning') return 'cert-warning';
+  if (status === 'expired') return 'cert-expired';
+  return 'cert-missing';
+}
+
+function getCertDisplayText(expiryDate) {
+  if (!expiryDate) return 'Not set';
+  const days = daysUntil(expiryDate);
+  if (days < 0) return `Expired ${formatDate(expiryDate)}`;
+  if (days < 60) return `${days} days left (${formatDate(expiryDate)})`;
+  return `Valid until ${formatDate(expiryDate)}`;
+}
 
 function showToast(msg, isError) {
   const existing = document.querySelector('.toast');
@@ -281,47 +284,46 @@ function showToast(msg, isError) {
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.textContent = msg;
-  if (isError) toast.style.background = 'rgba(220,53,69,0.9)';
+  if (isError) toast.style.background = 'rgba(139,32,32,0.9)';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2500);
 }
 
 // ============================================
-// FULL DATA STATE
+// DATA STATE - WITH COMPREHENSIVE REFERENCE FIELDS
 // ============================================
 let state = {
   properties: [
-    { id: 'p1', name: 'Maple Lodge', address: '14 Maple Close, Manchester', status: 'let', color: '#28A745', rent: 1450, purchasePrice: 215000, currentValue: 240000, mortgage: 680, lender: 'Nationwide', tenant: 'James Carter', tenantEmail: 'james@example.com', tenantPhone: '07891 123456', leaseStart: '2024-02-01', leaseEnd: '2025-01-31', deposit: 2175, depositScheme: 'DPS', agent: 'Kepler Lettings', agentPhone: '0161 900 1234', gasEngineer: 'Mike Bowen Gas', electrician: 'JS Electrical', lastInspection: '2024-01-15', howToRentSent: true, rightToRentChecked: true, rightToRentExpiry: '2025-01-15', alarmsTested: true, alarmsLastTested: '2024-01-15', createdAt: '2024-01-01', archived: false },
-    { id: 'p2', name: 'Birchwood House', address: '7 Birchwood Ave, Manchester', status: 'let', color: '#007AFF', rent: 1800, purchasePrice: 285000, currentValue: 310000, mortgage: 920, lender: 'Halifax', tenant: 'Sunita Patel', tenantEmail: 'sunita@example.com', tenantPhone: '07834 987654', leaseStart: '2023-09-01', leaseEnd: '2024-08-31', deposit: 2700, depositScheme: 'TDS', agent: 'Direct let', agentPhone: '', gasEngineer: 'Greenfield Gas', electrician: 'NW Electric', lastInspection: '2024-01-10', howToRentSent: true, rightToRentChecked: true, rightToRentExpiry: '2024-09-01', alarmsTested: true, alarmsLastTested: '2024-01-10', createdAt: '2023-08-01', archived: false },
-    { id: 'p3', name: 'Thornton House', address: '22 Thornton Rd, Salford', status: 'vacant', color: '#FFC107', rent: 1000, purchasePrice: 175000, currentValue: 195000, mortgage: 540, lender: 'Barclays', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: 'Salford Lettings Co', agentPhone: '0161 700 5678', gasEngineer: 'City Gas', electrician: 'PowerRight', lastInspection: null, howToRentSent: false, rightToRentChecked: false, alarmsTested: false, createdAt: '2023-12-01', archived: false }
+    { id: 'p1', name: 'Maple Lodge', address: '14 Maple Close, Manchester M20 3RD', status: 'let', color: '#2D5A27', rent: 1450, purchasePrice: 215000, currentValue: 240000, mortgage: 680, lender: 'Nationwide', tenant: 'James Carter', tenantEmail: 'james.carter@email.com', tenantPhone: '07712 345678', leaseStart: '2024-02-01', leaseEnd: '2025-01-31', deposit: 2175, depositScheme: 'DPS', agent: 'Kepler Lettings', agentPhone: '0161 900 1234', agentEmail: 'kepler@example.com', gasEngineer: 'Mike Bowen Gas', gasEngineerPhone: '07891 123456', electrician: 'JS Electrical', electricianPhone: '07700 654321', solicitor: 'Fletcher & Co', insurance: 'Zurich LL', insurancePolicy: 'ZLL29341', insuranceExpiry: '2025-01-15', lastInspection: '2024-01-15', nextInspection: '2024-07-15', createdAt: '2024-01-01', archived: false },
+    { id: 'p2', name: 'Birchwood House', address: '7 Birchwood Ave, Manchester M14 6TZ', status: 'let', color: '#1A3A5C', rent: 1800, purchasePrice: 285000, currentValue: 310000, mortgage: 920, lender: 'Halifax', tenant: 'Sunita Patel', tenantEmail: 's.patel@email.com', tenantPhone: '07834 987654', leaseStart: '2023-09-01', leaseEnd: '2024-08-31', deposit: 2700, depositScheme: 'TDS', agent: 'Direct let', agentPhone: '', agentEmail: '', gasEngineer: 'Greenfield Gas', gasEngineerPhone: '07912 000111', electrician: 'NW Electric', electricianPhone: '07600 111222', solicitor: 'Davies Solicitors', insurance: 'LV=', insurancePolicy: 'LV88712', insuranceExpiry: '2024-12-01', lastInspection: '2024-01-10', nextInspection: '2024-07-10', createdAt: '2023-08-01', archived: false },
+    { id: 'p3', name: 'Thornton House', address: '22 Thornton Rd, Salford M6 8PL', status: 'vacant', color: '#7A4A0A', rent: 1000, purchasePrice: 175000, currentValue: 195000, mortgage: 540, lender: 'Barclays', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: 'Salford Lettings Co', agentPhone: '0161 700 5678', agentEmail: '', gasEngineer: 'City Gas', gasEngineerPhone: '07922 333444', electrician: 'PowerRight', electricianPhone: '07511 222333', solicitor: 'Fletcher & Co', insurance: 'Aviva LL', insurancePolicy: 'AV44210', insuranceExpiry: '2024-11-30', lastInspection: null, nextInspection: null, createdAt: '2023-12-01', archived: false }
   ],
   transactions: [
-    { id: 't1', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p1', amount: 1450, category: 'rent' },
-    { id: 't2', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p2', amount: 1800, category: 'rent' },
+    { id: 't1', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p1', amount: 1450, category: 'rent', periodStart: '2025-04-01', periodEnd: '2025-04-30' },
+    { id: 't2', date: '2025-04-01', type: 'income', description: 'Monthly rent - April', propertyId: 'p2', amount: 1800, category: 'rent', periodStart: '2025-04-01', periodEnd: '2025-04-30' },
     { id: 't3', date: '2025-04-04', type: 'expense', description: 'Leaking tap repair', propertyId: 'p1', amount: 120, category: 'repairs' },
-    { id: 't4', date: '2025-03-25', type: 'expense', description: 'Buildings insurance', propertyId: 'p2', amount: 380, category: 'insurance' }
+    { id: 't4', date: '2025-03-25', type: 'expense', description: 'Buildings insurance', propertyId: 'p2', amount: 380, category: 'insurance', periodStart: '2024-12-01', periodEnd: '2025-11-30' }
   ],
   maintenance: [
-    { id: 'm1', propertyId: 'p1', description: 'Leaking bathroom tap', date: '2025-04-04', status: 'open', priority: 'medium', cost: 0 },
-    { id: 'm2', propertyId: 'p2', description: 'Damp patch in bedroom', date: '2025-02-20', status: 'open', priority: 'high', cost: 0 }
+    { id: 'm1', propertyId: 'p1', description: 'Leaking bathroom tap', date: '2025-04-04', status: 'open', priority: 'medium', cost: 0, notes: 'Plumber booked' },
+    { id: 'm2', propertyId: 'p2', description: 'Damp patch in bedroom', date: '2025-02-20', status: 'open', priority: 'high', cost: 0, notes: 'Investigating cause' }
   ],
   certificates: [
-    { id: 'c1', propertyId: 'p1', type: 'Gas Safety', issueDate: '2024-01-15', expiryDate: '2025-01-15', issuer: 'Mike Bowen Gas' },
-    { id: 'c2', propertyId: 'p1', type: 'EPC', issueDate: '2022-06-10', expiryDate: '2025-08-10', epcRating: 'C' },
-    { id: 'c3', propertyId: 'p1', type: 'EICR', issueDate: '2024-03-20', expiryDate: '2029-03-20' }
-  ],
-  documents: [],
-  backups: []
+    { id: 'c1', propertyId: 'p1', type: 'Gas Safety', issueDate: '2024-01-15', expiryDate: '2025-01-15', issuer: 'Mike Bowen Gas', notes: 'Annual check completed' },
+    { id: 'c2', propertyId: 'p1', type: 'EPC', issueDate: '2022-06-10', expiryDate: '2025-08-10', issuer: 'Greenfield Surveys', epcRating: 'C', notes: 'Band C (72)' },
+    { id: 'c3', propertyId: 'p1', type: 'EICR', issueDate: '2024-03-20', expiryDate: '2029-03-20', issuer: 'JS Electrical', notes: 'Satisfactory' },
+    { id: 'c4', propertyId: 'p2', type: 'Gas Safety', issueDate: '2024-09-01', expiryDate: '2025-09-01', issuer: 'Greenfield Gas', notes: '' },
+    { id: 'c5', propertyId: 'p2', type: 'EPC', issueDate: '2022-11-15', expiryDate: '2027-11-15', issuer: 'EPC Direct', epcRating: 'B', notes: 'Band B (84)' },
+    { id: 'c6', propertyId: 'p2', type: 'EICR', issueDate: '2020-06-01', expiryDate: '2025-06-01', issuer: 'NW Electric', notes: 'Due for renewal' },
+    { id: 'c7', propertyId: 'p3', type: 'Gas Safety', issueDate: '2024-12-01', expiryDate: '2025-12-01', issuer: 'City Gas', notes: '' },
+    { id: 'c8', propertyId: 'p3', type: 'EPC', issueDate: '2023-05-10', expiryDate: '2028-05-10', issuer: 'EPC Direct', epcRating: 'D', notes: 'Band D (55)' },
+    { id: 'c9', propertyId: 'p3', type: 'EICR', issueDate: '2025-01-15', expiryDate: '2030-01-15', issuer: 'PowerRight', notes: '' }
+  ]
 };
 
-// ============================================
-// DATA PERSISTENCE
-// ============================================
 function saveState() {
-  try {
-    localStorage.setItem('portfolio_data', JSON.stringify(state));
-    if (gAccessToken) saveToDrive();
-  } catch(e) { console.error('Save error:', e); }
+  localStorage.setItem('portfolio_data', JSON.stringify(state));
+  if (gAccessToken) saveToDrive();
 }
 
 function loadLocalData() {
@@ -333,8 +335,6 @@ function loadLocalData() {
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
       if (data.certificates) state.certificates = data.certificates;
-      if (data.documents) state.documents = data.documents;
-      if (data.backups) state.backups = data.backups;
     }
   } catch(e) { console.error('Load error:', e); }
 }
@@ -347,25 +347,22 @@ function checkGoogleReady() {
     googleReady = true;
     const btn = document.getElementById('signin-btn');
     if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-    const statusDiv = document.getElementById('login-status');
-    if (statusDiv) statusDiv.textContent = '';
   } else {
     setTimeout(checkGoogleReady, 200);
   }
 }
 
-async function signIn() {
+function signIn() {
   const btn = document.getElementById('signin-btn');
   const statusDiv = document.getElementById('login-status');
   
   if (!googleReady) {
-    if (statusDiv) statusDiv.textContent = 'Google services loading, please wait...';
+    if (statusDiv) statusDiv.textContent = 'Google services loading...';
     setTimeout(signIn, 500);
     return;
   }
   
   if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
-  if (statusDiv) statusDiv.textContent = 'Opening Google sign-in...';
   
   try {
     const client = google.accounts.oauth2.initTokenClient({
@@ -373,23 +370,20 @@ async function signIn() {
       scope: SCOPES,
       callback: async (response) => {
         if (response.error) {
-          if (statusDiv) { statusDiv.textContent = 'Error: ' + response.error; statusDiv.style.color = 'var(--red)'; }
+          if (statusDiv) statusDiv.textContent = 'Error: ' + response.error;
           if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-          showToast('Sign in failed: ' + response.error, true);
           return;
         }
         gAccessToken = response.access_token;
-        document.getElementById('login-screen').style.display = 'none';
-        showToast('✓ Signed in to Google Drive');
+        document.getElementById('login-screen').classList.remove('visible');
+        showToast('Loading from Drive...');
         await initDrive();
-        renderAll();
+        renderDashboard();
       }
     });
     client.requestAccessToken();
   } catch (err) {
-    if (statusDiv) statusDiv.textContent = 'Error: ' + err.message;
     if (btn) { btn.disabled = false; btn.textContent = 'Sign in with Google'; }
-    showToast('Sign in failed', true);
   }
 }
 
@@ -398,7 +392,7 @@ function signOut() {
   gAccessToken = null;
   gDriveDataFileId = null;
   gDriveFolderIds = {};
-  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-screen').classList.add('visible');
   showToast('Signed out');
 }
 
@@ -411,7 +405,7 @@ async function driveRequest(url, options = {}) {
   return res.json();
 }
 
-async function findOrCreateFolder(name, parentId = 'root') {
+async function findOrCreateFolder(name, parentId) {
   const q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`;
   const result = await driveRequest(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
   if (result.files && result.files.length > 0) return result.files[0].id;
@@ -439,16 +433,16 @@ async function initDrive() {
       if (data.transactions) state.transactions = data.transactions;
       if (data.maintenance) state.maintenance = data.maintenance;
       if (data.certificates) state.certificates = data.certificates;
-      showToast('✓ Loaded from Drive');
+      showToast('Loaded from Drive');
     } else {
-      showToast('✓ New portfolio created');
+      showToast('New portfolio created');
       await saveToDrive();
     }
   } catch (e) {
     console.error('Drive init error:', e);
-    showToast('⚠ Drive error — using local data', true);
+    showToast('Drive error - using local data', true);
   }
-  renderAll();
+  renderDashboard();
 }
 
 async function saveToDrive() {
@@ -477,692 +471,681 @@ async function saveToDrive() {
   } catch (e) { console.error('Drive save error:', e); }
 }
 
-async function uploadDocumentToDrive(file, propertyName, category = 'Documents') {
-  if (!gAccessToken) return null;
-  try {
-    if (!gDriveFolderIds.root) gDriveFolderIds.root = await findOrCreateFolder(DRIVE_FOLDER_NAME, 'root');
-    const propKey = propertyName || 'General';
-    if (!gDriveFolderIds[propKey]) gDriveFolderIds[propKey] = await findOrCreateFolder(propKey, gDriveFolderIds.root);
-    const catKey = propKey + '_' + category;
-    if (!gDriveFolderIds[catKey]) gDriveFolderIds[catKey] = await findOrCreateFolder(category, gDriveFolderIds[propKey]);
-    
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const cleanProperty = propertyName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const cleanCategory = category.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const extension = file.name.split('.').pop();
-    const fileName = `${cleanProperty}_${cleanCategory}_${timestamp}.${extension}`;
-    
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify({ name: fileName, parents: [gDriveFolderIds[catKey]] })], { type: 'application/json' }));
-    formData.append('file', file);
-    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + gAccessToken },
-      body: formData
-    });
-    const result = await response.json();
-    return result.webViewLink || `https://drive.google.com/file/d/${result.id}/view`;
-  } catch (error) {
-    console.error('Upload error:', error);
-    showToast('Upload failed', true);
-    return null;
-  }
-}
-
 // ============================================
-// CRUD OPERATIONS - FULL EDIT CAPABILITIES
+// UI RENDERING
 // ============================================
-function editProperty(propertyId) {
-  const property = state.properties.find(p => p.id === propertyId);
-  if (!property) return;
-  
-  showSheet('Edit Property', `
-    <div class="form-group"><label class="form-label">Property Name</label><input type="text" id="edit-prop-name" class="form-input" value="${escapeHtml(property.name)}"></div>
-    <div class="form-group"><label class="form-label">Address</label><input type="text" id="edit-prop-addr" class="form-input" value="${escapeHtml(property.address)}"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Rent (£/mo)</label><input type="number" id="edit-prop-rent" class="form-input" value="${property.rent}"></div>
-    <div class="form-group"><label class="form-label">Status</label><select id="edit-prop-status" class="form-select"><option value="let" ${property.status === 'let' ? 'selected' : ''}>Let</option><option value="vacant" ${property.status === 'vacant' ? 'selected' : ''}>Vacant</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Purchase Price (£)</label><input type="number" id="edit-prop-purchase" class="form-input" value="${property.purchasePrice}"></div>
-    <div class="form-group"><label class="form-label">Current Value (£)</label><input type="number" id="edit-prop-value" class="form-input" value="${property.currentValue}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Mortgage (£/mo)</label><input type="number" id="edit-prop-mortgage" class="form-input" value="${property.mortgage}"></div>
-    <div class="form-group"><label class="form-label">Lender</label><input type="text" id="edit-prop-lender" class="form-input" value="${escapeHtml(property.lender)}"></div></div>
-    <div class="card-title mt-2">Tenant Details</div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Name</label><input type="text" id="edit-prop-tenant" class="form-input" value="${escapeHtml(property.tenant)}"></div>
-    <div class="form-group"><label class="form-label">Tenant Email</label><input type="email" id="edit-prop-email" class="form-input" value="${escapeHtml(property.tenantEmail || '')}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Phone</label><input type="tel" id="edit-prop-phone" class="form-input" value="${escapeHtml(property.tenantPhone || '')}"></div>
-    <div class="form-group"><label class="form-label">Lease Start</label><input type="date" id="edit-prop-lease-start" class="form-input" value="${property.leaseStart !== '—' ? property.leaseStart : ''}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Lease End</label><input type="date" id="edit-prop-lease-end" class="form-input" value="${property.leaseEnd !== '—' ? property.leaseEnd : ''}"></div>
-    <div class="form-group"><label class="form-label">Deposit (£)</label><input type="number" id="edit-prop-deposit" class="form-input" value="${property.deposit || 0}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Deposit Scheme</label><select id="edit-prop-deposit-scheme" class="form-select"><option value="">None</option><option value="DPS" ${property.depositScheme === 'DPS' ? 'selected' : ''}>DPS</option><option value="TDS" ${property.depositScheme === 'TDS' ? 'selected' : ''}>TDS</option><option value="MyDeposits" ${property.depositScheme === 'MyDeposits' ? 'selected' : ''}>MyDeposits</option></select></div>
-    <div class="form-group"><label class="form-label">Letting Agent</label><input type="text" id="edit-prop-agent" class="form-input" value="${escapeHtml(property.agent || '')}"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Gas Engineer</label><input type="text" id="edit-prop-gas" class="form-input" value="${escapeHtml(property.gasEngineer || '')}"></div>
-    <div class="form-group"><label class="form-label">Electrician</label><input type="text" id="edit-prop-electric" class="form-input" value="${escapeHtml(property.electrician || '')}"></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteProperty('${escapeJs(propertyId)}')">Delete Property</button></div>
-  `, () => {
-    const updatedProperty = {
-      ...property,
-      name: document.getElementById('edit-prop-name').value,
-      address: document.getElementById('edit-prop-addr').value,
-      rent: parseFloat(document.getElementById('edit-prop-rent').value) || 0,
-      status: document.getElementById('edit-prop-status').value,
-      purchasePrice: parseFloat(document.getElementById('edit-prop-purchase').value) || 0,
-      currentValue: parseFloat(document.getElementById('edit-prop-value').value) || 0,
-      mortgage: parseFloat(document.getElementById('edit-prop-mortgage').value) || 0,
-      lender: document.getElementById('edit-prop-lender').value,
-      tenant: document.getElementById('edit-prop-tenant').value || '—',
-      tenantEmail: document.getElementById('edit-prop-email').value,
-      tenantPhone: document.getElementById('edit-prop-phone').value,
-      leaseStart: document.getElementById('edit-prop-lease-start').value || '—',
-      leaseEnd: document.getElementById('edit-prop-lease-end').value || '—',
-      deposit: parseFloat(document.getElementById('edit-prop-deposit').value) || 0,
-      depositScheme: document.getElementById('edit-prop-deposit-scheme').value,
-      agent: document.getElementById('edit-prop-agent').value,
-      gasEngineer: document.getElementById('edit-prop-gas').value,
-      electrician: document.getElementById('edit-prop-electric').value
-    };
-    const index = state.properties.findIndex(p => p.id === propertyId);
-    if (index !== -1) state.properties[index] = updatedProperty;
-    saveState();
-    closeSheet();
-    showToast('Property updated');
-    renderAll();
-  });
+let currentScreen = 'dashboard';
+let filterProp = null;
+
+function navigate(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-screen="${screen}"]`).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${screen}`).classList.add('active');
+  if (screen === 'dashboard') renderDashboard();
+  else if (screen === 'properties') renderProperties();
+  else if (screen === 'finance') renderFinance();
+  else if (screen === 'maintenance') renderMaintenance();
 }
 
-function deleteProperty(propertyId) {
-  closeSheet();
-  setTimeout(() => {
-    if (confirm('⚠️ Delete this property? This will also delete all associated transactions, maintenance, and certificates. This action cannot be undone.')) {
-      state.properties = state.properties.filter(p => p.id !== propertyId);
-      state.transactions = state.transactions.filter(t => t.propertyId !== propertyId);
-      state.maintenance = state.maintenance.filter(m => m.propertyId !== propertyId);
-      state.certificates = state.certificates.filter(c => c.propertyId !== propertyId);
-      saveState();
-      showToast('Property deleted');
-      renderAll();
-    }
-  }, 100);
+function setFilterProp(val) {
+  filterProp = val === '' ? null : val;
+  renderDashboard();
+  renderProperties();
 }
 
-function editTransaction(transactionId) {
-  const transaction = state.transactions.find(t => t.id === transactionId);
-  if (!transaction) return;
-  const properties = state.properties.filter(p => !p.archived);
-  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === transaction.propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
-  
-  showSheet('Edit Transaction', `
-    <div class="form-group"><label class="form-label">Type</label><select id="edit-txn-type" class="form-select"><option value="income" ${transaction.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${transaction.type === 'expense' ? 'selected' : ''}>Expense</option></select></div>
-    <div class="form-group"><label class="form-label">Property</label><select id="edit-txn-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="edit-txn-amount" class="form-input" step="0.01" value="${transaction.amount}"></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-txn-desc" class="form-input" value="${escapeHtml(transaction.description)}"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-txn-date" class="form-input" value="${transaction.date}"></div>
-    <div class="form-group"><label class="form-label">Category</label><select id="edit-txn-cat" class="form-select"><option value="rent" ${transaction.category === 'rent' ? 'selected' : ''}>Rent</option><option value="repairs" ${transaction.category === 'repairs' ? 'selected' : ''}>Repairs</option><option value="insurance" ${transaction.category === 'insurance' ? 'selected' : ''}>Insurance</option><option value="utilities" ${transaction.category === 'utilities' ? 'selected' : ''}>Utilities</option><option value="other" ${transaction.category === 'other' ? 'selected' : ''}>Other</option></select></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteTransaction('${escapeJs(transactionId)}')">Delete Transaction</button></div>
-  `, () => {
-    const updatedTransaction = {
-      ...transaction,
-      type: document.getElementById('edit-txn-type').value,
-      propertyId: document.getElementById('edit-txn-prop').value,
-      amount: parseFloat(document.getElementById('edit-txn-amount').value) || 0,
-      description: document.getElementById('edit-txn-desc').value,
-      date: document.getElementById('edit-txn-date').value,
-      category: document.getElementById('edit-txn-cat').value
-    };
-    const index = state.transactions.findIndex(t => t.id === transactionId);
-    if (index !== -1) state.transactions[index] = updatedTransaction;
-    saveState();
-    closeSheet();
-    showToast('Transaction updated');
-    renderAll();
-  });
+function getFilteredProperties() {
+  return filterProp ? state.properties.filter(p => p.id === filterProp && !p.archived) : state.properties.filter(p => !p.archived);
 }
 
-function deleteTransaction(transactionId) {
-  closeSheet();
-  setTimeout(() => {
-    if (confirm('Delete this transaction?')) {
-      state.transactions = state.transactions.filter(t => t.id !== transactionId);
-      saveState();
-      showToast('Transaction deleted');
-      renderAll();
-    }
-  }, 100);
+// Certificate status helper for property cards
+function getPropertyCertStatus(propertyId, certType) {
+  const cert = state.certificates.find(c => c.propertyId === propertyId && c.type === certType);
+  if (!cert) return { status: 'missing', text: 'Missing', class: 'cert-missing' };
+  const status = getCertStatus(cert.expiryDate);
+  const text = status === 'valid' ? `Valid: ${formatDate(cert.expiryDate)}` : status === 'warning' ? `${daysUntil(cert.expiryDate)} days left` : `Expired ${formatDate(cert.expiryDate)}`;
+  const cls = status === 'valid' ? 'cert-valid' : status === 'warning' ? 'cert-warning' : 'cert-expired';
+  return { status, text, class: cls, expiry: cert.expiryDate };
 }
 
-function editMaintenance(maintenanceId) {
-  const issue = state.maintenance.find(m => m.id === maintenanceId);
-  if (!issue) return;
-  const properties = state.properties.filter(p => !p.archived);
-  const propOptions = properties.map(p => `<option value="${p.id}" ${p.id === issue.propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
-  
-  showSheet('Edit Maintenance Issue', `
-    <div class="form-group"><label class="form-label">Property</label><select id="edit-maint-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-maint-desc" class="form-input" value="${escapeHtml(issue.description)}"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-maint-date" class="form-input" value="${issue.date}"></div>
-    <div class="form-group"><label class="form-label">Status</label><select id="edit-maint-status" class="form-select"><option value="open" ${issue.status === 'open' ? 'selected' : ''}>Open</option><option value="resolved" ${issue.status === 'resolved' ? 'selected' : ''}>Resolved</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="edit-maint-priority" class="form-select"><option value="low" ${issue.priority === 'low' ? 'selected' : ''}>Low</option><option value="medium" ${issue.priority === 'medium' ? 'selected' : ''}>Medium</option><option value="high" ${issue.priority === 'high' ? 'selected' : ''}>High</option></select></div>
-    <div class="form-group"><label class="form-label">Cost (£)</label><input type="number" id="edit-maint-cost" class="form-input" step="0.01" value="${issue.cost || 0}"></div></div>
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteMaintenance('${escapeJs(maintenanceId)}')">Delete Issue</button></div>
-  `, () => {
-    const updatedIssue = {
-      ...issue,
-      propertyId: document.getElementById('edit-maint-prop').value,
-      description: document.getElementById('edit-maint-desc').value,
-      date: document.getElementById('edit-maint-date').value,
-      status: document.getElementById('edit-maint-status').value,
-      priority: document.getElementById('edit-maint-priority').value,
-      cost: parseFloat(document.getElementById('edit-maint-cost').value) || 0
-    };
-    const index = state.maintenance.findIndex(m => m.id === maintenanceId);
-    if (index !== -1) state.maintenance[index] = updatedIssue;
-    saveState();
-    closeSheet();
-    showToast('Maintenance issue updated');
-    renderAll();
-  });
-}
-
-function deleteMaintenance(maintenanceId) {
-  closeSheet();
-  setTimeout(() => {
-    if (confirm('Delete this maintenance issue?')) {
-      state.maintenance = state.maintenance.filter(m => m.id !== maintenanceId);
-      saveState();
-      showToast('Maintenance issue deleted');
-      renderAll();
-    }
-  }, 100);
-}
-
-function editCertificate(certificateId) {
-  const cert = state.certificates.find(c => c.id === certificateId);
-  if (!cert) return;
-  
-  showSheet('Edit Certificate', `
-    <div class="form-group"><label class="form-label">Certificate Type</label><select id="edit-cert-type" class="form-select"><option value="Gas Safety" ${cert.type === 'Gas Safety' ? 'selected' : ''}>Gas Safety</option><option value="EPC" ${cert.type === 'EPC' ? 'selected' : ''}>EPC</option><option value="EICR" ${cert.type === 'EICR' ? 'selected' : ''}>EICR</option><option value="PAT Testing" ${cert.type === 'PAT Testing' ? 'selected' : ''}>PAT Testing</option><option value="Legionella" ${cert.type === 'Legionella' ? 'selected' : ''}>Legionella</option><option value="Other" ${cert.type === 'Other' ? 'selected' : ''}>Other</option></select></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Issue Date</label><input type="date" id="edit-cert-issue" class="form-input" value="${cert.issueDate}"></div>
-    <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" id="edit-cert-expiry" class="form-input" value="${cert.expiryDate}"></div></div>
-    <div class="form-group"><label class="form-label">Issuer</label><input type="text" id="edit-cert-issuer" class="form-input" value="${escapeHtml(cert.issuer || '')}"></div>
-    ${cert.type === 'EPC' ? `<div class="form-group"><label class="form-label">EPC Rating</label><select id="edit-cert-rating" class="form-select"><option value="">— Select —</option>${['A','B','C','D','E','F','G'].map(r => `<option value="${r}" ${cert.epcRating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>` : ''}
-    <div class="flex gap-2 mt-2"><button class="btn btn-danger" onclick="deleteCertificate('${escapeJs(certificateId)}')">Delete Certificate</button></div>
-  `, () => {
-    const updatedCert = {
-      ...cert,
-      type: document.getElementById('edit-cert-type').value,
-      issueDate: document.getElementById('edit-cert-issue').value,
-      expiryDate: document.getElementById('edit-cert-expiry').value,
-      issuer: document.getElementById('edit-cert-issuer').value,
-      epcRating: cert.type === 'EPC' ? document.getElementById('edit-cert-rating')?.value : undefined
-    };
-    const index = state.certificates.findIndex(c => c.id === certificateId);
-    if (index !== -1) state.certificates[index] = updatedCert;
-    saveState();
-    closeSheet();
-    showToast('Certificate updated');
-    renderAll();
-  });
-}
-
-function deleteCertificate(certificateId) {
-  closeSheet();
-  setTimeout(() => {
-    if (confirm('Delete this certificate?')) {
-      state.certificates = state.certificates.filter(c => c.id !== certificateId);
-      saveState();
-      showToast('Certificate deleted');
-      renderAll();
-    }
-  }, 100);
-}
-
-// ============================================
-// UI RENDERER - COMPLETE
-// ============================================
-let currentScreen = 'overview';
-let currentCalendarYear = new Date().getFullYear();
-let currentCalendarMonth = new Date().getMonth();
-
-function renderAll() {
-  if (currentScreen === 'overview') renderOverview();
-  else if (currentScreen === 'properties') renderProperties();
-  else if (currentScreen === 'compliance') renderCompliance();
-  else if (currentScreen === 'calendar') renderCalendar();
-  else if (currentScreen === 'finance') renderFinance();
-}
-
-function renderOverview() {
-  const properties = state.properties.filter(p => !p.archived);
+function renderDashboard() {
+  const properties = getFilteredProperties();
   const totalRent = properties.reduce((s, p) => s + p.rent, 0);
   const totalValue = properties.reduce((s, p) => s + p.currentValue, 0);
   const income = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expenses = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const activeMaintenance = state.maintenance.filter(m => m.status === 'open').length;
-  const expiringCertificates = state.certificates.filter(c => {
-    const daysLeft = Math.ceil((new Date(c.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-    return daysLeft <= 60 && daysLeft > 0;
-  }).length;
+  const activeMaint = state.maintenance.filter(m => m.status === 'open').length;
+  const avgYield = properties.length ? (properties.reduce((s, p) => s + (p.rent * 12 / p.currentValue * 100), 0) / properties.length).toFixed(1) : 0;
   
-  // Calculate average yield
-  const avgYield = properties.length ? properties.reduce((s, p) => s + (p.rent * 12 / p.currentValue * 100), 0) / properties.length : 0;
+  // Update filter select
+  const filterSelect = document.getElementById('prop-filter');
+  if (filterSelect) {
+    filterSelect.innerHTML = '<option value="">All properties</option>' + state.properties.filter(p => !p.archived).map(p => `<option value="${p.id}" ${filterProp === p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  }
   
-  document.getElementById('main-content').innerHTML = `
-    <div class="quick-actions">
-      <div class="quick-action" onclick="showQuickExpense()"><div class="quick-action-icon">💰</div><div class="quick-action-label">Expense</div></div>
-      <div class="quick-action" onclick="showQuickIncome()"><div class="quick-action-icon">📈</div><div class="quick-action-label">Income</div></div>
-      <div class="quick-action" onclick="showQuickMaintenance()"><div class="quick-action-icon">🔧</div><div class="quick-action-label">Maintenance</div></div>
-      <div class="quick-action" onclick="showAddProperty()"><div class="quick-action-icon">🏠</div><div class="quick-action-label">Property</div></div>
+  document.getElementById('screen-dashboard').innerHTML = `
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Monthly rent</div><div class="metric-value">${formatMoney(totalRent)}</div><div class="metric-label">${properties.filter(p=>p.status==='let').length}/${properties.length} let</div></div>
+      <div class="metric"><div class="metric-label">Portfolio value</div><div class="metric-value">${formatMoney(totalValue)}</div><div class="metric-label">Avg yield ${avgYield}%</div></div>
+      <div class="metric"><div class="metric-label">Net profit (YTD)</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
+      <div class="metric"><div class="metric-label">Open issues</div><div class="metric-value ${activeMaint > 0 ? 'text-red' : 'text-green'}">${activeMaint}</div></div>
     </div>
-    <div class="metrics-grid">
-      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${formatMoney(totalRent)}</div><div class="metric-label">${properties.filter(p=>p.status==='let').length}/${properties.length} let</div></div>
-      <div class="metric-card"><div class="metric-label">Portfolio value</div><div class="metric-value">${formatMoney(totalValue)}</div><div class="metric-label">Avg yield ${avgYield.toFixed(1)}%</div></div>
-      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div><div class="metric-label">Year to date</div></div>
-      <div class="metric-card"><div class="metric-label">Alerts</div><div class="metric-value ${activeMaintenance + expiringCertificates > 0 ? 'text-red' : 'text-green'}">${activeMaintenance + expiringCertificates}</div><div class="metric-label">Need attention</div></div>
-    </div>
-    ${activeMaintenance > 0 ? `<div class="card" style="border-left: 4px solid var(--amber);"><div class="flex justify-between items-center"><div class="card-title">🔧 Active Maintenance (${activeMaintenance})</div><button class="btn btn-secondary btn-sm" onclick="navigate('maintenance')">View</button></div><div class="mt-2 text-secondary" style="font-size: 13px;">${activeMaintenance} open issue${activeMaintenance !== 1 ? 's' : ''} require attention</div></div>` : ''}
-    ${expiringCertificates > 0 ? `<div class="card" style="border-left: 4px solid var(--amber);"><div class="flex justify-between items-center"><div class="card-title">📋 Expiring Certificates (${expiringCertificates})</div><button class="btn btn-secondary btn-sm" onclick="navigate('compliance')">View</button></div><div class="mt-2 text-secondary" style="font-size: 13px;">${expiringCertificates} certificate${expiringCertificates !== 1 ? 's' : ''} expire within 60 days</div></div>` : ''}
-    <div class="card-header"><div class="card-title">Properties</div><button class="btn btn-secondary btn-sm" onclick="navigate('properties')">View all →</button></div>
-    ${properties.slice(0, 3).map(p => renderPropertyCard(p)).join('')}
-  `;
-}
-
-function renderPropertyCard(property) {
-  const yieldVal = property.currentValue ? (property.rent * 12 / property.currentValue * 100).toFixed(1) : 0;
-  const summary = state.transactions.filter(t => t.propertyId === property.id).reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
-  return `
-    <div class="property-item">
-      <div class="property-header">
-        <div class="property-color" style="background: ${property.color}"></div>
-        <div class="property-name" onclick="showPropertyDetail('${escapeJs(property.id)}')">${escapeHtml(property.name)}</div>
-        <span class="property-status status-${property.status}">${property.status === 'let' ? 'Let' : 'Vacant'}</span>
-        <button class="icon-btn-sm" onclick="event.stopPropagation(); editProperty('${escapeJs(property.id)}')" title="Edit">✎</button>
-      </div>
-      <div class="property-stats" onclick="showPropertyDetail('${escapeJs(property.id)}')">
-        <div><div class="property-stat-label">Rent</div><div class="property-stat-value">${formatMoney(property.rent)}</div></div>
-        <div><div class="property-stat-label">Yield</div><div class="property-stat-value">${yieldVal}%</div></div>
-        <div><div class="property-stat-label">Net</div><div class="property-stat-value ${summary >= 0 ? 'text-green' : 'text-red'}">${formatMoney(summary)}</div></div>
-      </div>
-    </div>
+    ${properties.map(p => {
+      const gasStatus = getPropertyCertStatus(p.id, 'Gas Safety');
+      const eicrStatus = getPropertyCertStatus(p.id, 'EICR');
+      const epcCert = state.certificates.find(c => c.propertyId === p.id && c.type === 'EPC');
+      const yieldVal = (p.rent * 12 / p.currentValue * 100).toFixed(1);
+      return `
+        <div class="prop-item" onclick="showPropertyDetail('${p.id}')">
+          <div class="prop-dot" style="background: ${p.color}"></div>
+          <div style="flex:1">
+            <div class="flex justify-between items-center"><div class="prop-name">${escapeHtml(p.name)}</div><span class="prop-status status-${p.status}">${p.status === 'let' ? 'Let' : 'Vacant'}</span></div>
+            <div class="prop-addr">${escapeHtml(p.address)}</div>
+            <div class="ref-grid" style="margin-top: 12px; grid-template-columns: repeat(3,1fr)">
+              <div><div class="metric-label">Rent</div><div class="prop-stat-value">${formatMoney(p.rent)}</div></div>
+              <div><div class="metric-label">Yield</div><div class="prop-stat-value">${yieldVal}%</div></div>
+              <div><div class="metric-label">Net</div><div class="prop-stat-value ${p.rent - p.mortgage >= 0 ? 'text-green' : 'text-red'}">${formatMoney(p.rent - p.mortgage)}</div></div>
+            </div>
+            <div class="prop-certs">
+              <span class="cert-status ${gasStatus.class}">Gas: ${gasStatus.text}</span>
+              <span class="cert-status ${eicrStatus.class}">EICR: ${eicrStatus.text}</span>
+              ${epcCert ? `<span class="cert-status cert-valid">EPC: Band ${epcCert.epcRating || '?'}</span>` : '<span class="cert-status cert-missing">EPC: Missing</span>'}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+    <button class="btn btn-secondary" style="margin-top: 8px" onclick="showAddProperty()">+ Add property</button>
   `;
 }
 
 function renderProperties() {
-  const properties = state.properties.filter(p => !p.archived);
-  // Property comparison table
-  const comparisonData = properties.map(p => ({
-    name: p.name,
-    rent: p.rent,
-    yield: (p.rent * 12 / p.currentValue * 100).toFixed(1),
-    roi: (state.transactions.filter(t => t.propertyId === p.id && t.type === 'income').reduce((s, t) => s + t.amount, 0) / p.purchasePrice * 100).toFixed(1),
-    cashflow: p.rent - (p.mortgage || 0)
-  })).sort((a, b) => parseFloat(b.yield) - parseFloat(a.yield));
-  
-  document.getElementById('main-content').innerHTML = `
-    <div style="margin-bottom: 12px;"><button class="btn btn-primary" onclick="showAddProperty()">+ Add Property</button></div>
-    <div class="card"><div class="card-title">📊 Property Comparison</div><div style="overflow-x: auto;">
-      <table class="comparison-table">
-        <thead><tr><th>Property</th><th>Rent</th><th>Yield</th><th>ROI</th><th>Cashflow</th></tr></thead>
-        <tbody>${comparisonData.map(p => `<tr onclick="showPropertyDetailByIndex('${p.name}')"><td>${escapeHtml(p.name)}</td><td>${formatMoney(p.rent)}</td><td class="text-green">${p.yield}%</td><td>${p.roi}%</td><td class="${p.cashflow >= 0 ? 'text-green' : 'text-red'}">${formatMoney(p.cashflow)}</td></tr>`).join('')}</tbody>
-      </table>
-    </div></div>
-    ${properties.map(p => renderPropertyCard(p)).join('')}
-  `;
-}
-
-function showPropertyDetailByIndex(name) {
-  const property = state.properties.find(p => p.name === name);
-  if (property) showPropertyDetail(property.id);
-}
-
-function renderCompliance() {
-  const properties = state.properties.filter(p => !p.archived);
-  const certs = state.certificates;
-  
-  const complianceItems = properties.map(property => {
-    const propertyCerts = certs.filter(c => c.propertyId === property.id);
-    const gasSafe = propertyCerts.some(c => c.type === 'Gas Safety' && new Date(c.expiryDate) > new Date());
-    const eicr = propertyCerts.some(c => c.type === 'EICR' && new Date(c.expiryDate) > new Date());
-    const epc = propertyCerts.some(c => c.type === 'EPC');
-    const depositProtected = property.deposit > 0 && property.depositScheme;
-    const rightToRent = property.rightToRentChecked || false;
-    const howToRent = property.howToRentSent || false;
-    const alarms = property.alarmsTested || false;
-    
-    const completed = [gasSafe, eicr, epc, depositProtected, rightToRent, howToRent, alarms].filter(Boolean).length;
-    const score = (completed / 7) * 100;
-    return { property, score, completed, gasSafe, eicr, epc, depositProtected, rightToRent, howToRent, alarms };
-  });
-  
-  document.getElementById('main-content').innerHTML = `
-    <div class="metrics-grid">
-      <div class="metric-card"><div class="metric-label">Overall Compliance</div><div class="metric-value">${(complianceItems.reduce((s, c) => s + c.score, 0) / complianceItems.length || 0).toFixed(0)}%</div><div class="metric-label">Portfolio average</div></div>
-      <div class="metric-card"><div class="metric-label">Fully Compliant</div><div class="metric-value text-green">${complianceItems.filter(c => c.score === 100).length}</div><div class="metric-label">properties</div></div>
-      <div class="metric-card"><div class="metric-label">Certificates</div><div class="metric-value">${certs.length}</div><div class="metric-label">total</div></div>
-    </div>
-    <div class="card-header"><div class="card-title">Certificates</div><button class="btn btn-secondary btn-sm" onclick="showAddCertificate()">+ Add Certificate</button></div>
-    ${certs.map(cert => {
-      const property = state.properties.find(p => p.id === cert.propertyId);
-      const daysLeft = Math.ceil((new Date(cert.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-      const statusClass = daysLeft < 0 ? 'due-urgent' : daysLeft < 60 ? 'due-soon' : 'due-ok';
-      const statusText = daysLeft < 0 ? 'Expired' : daysLeft < 60 ? `${daysLeft} days left` : 'Valid';
-      return `
-        <div class="compliance-item">
-          <div class="compliance-status ${daysLeft > 0 ? 'ok' : 'missing'}">${daysLeft > 0 ? '✓' : '⚠'}</div>
-          <div class="compliance-details">
-            <div class="compliance-name">${escapeHtml(cert.type)} - ${property ? escapeHtml(property.name) : 'Unknown'}</div>
-            <div class="compliance-meta">Issued: ${formatDate(cert.issueDate)} • Expires: ${formatDate(cert.expiryDate)} • ${escapeHtml(cert.issuer || '')}</div>
-          </div>
-          <div class="compliance-due ${statusClass}">${statusText}</div>
-          <button class="icon-btn-sm" onclick="editCertificate('${escapeJs(cert.id)}')" title="Edit">✎</button>
-          <button class="icon-btn-sm" onclick="deleteCertificate('${escapeJs(cert.id)}')" title="Delete">✕</button>
+  const properties = getFilteredProperties();
+  document.getElementById('screen-properties').innerHTML = properties.map(p => {
+    const gasStatus = getPropertyCertStatus(p.id, 'Gas Safety');
+    const eicrStatus = getPropertyCertStatus(p.id, 'EICR');
+    const epcCert = state.certificates.find(c => c.propertyId === p.id && c.type === 'EPC');
+    const yieldVal = (p.rent * 12 / p.currentValue * 100).toFixed(1);
+    return `
+      <div class="prop-item" onclick="showPropertyDetail('${p.id}')">
+        <div class="prop-header">
+          <div class="prop-dot" style="background: ${p.color}"></div>
+          <div class="prop-info"><div class="prop-name">${escapeHtml(p.name)}</div><div class="prop-addr">${escapeHtml(p.address)}</div></div>
+          <span class="prop-status status-${p.status}">${p.status === 'let' ? 'Let' : 'Vacant'}</span>
         </div>
-      `;
-    }).join('')}
-    ${certs.length === 0 ? '<div class="text-center" style="padding: 20px;">No certificates added yet</div>' : ''}
-    <div class="card-header mt-3"><div class="card-title">Property Compliance</div></div>
-    ${complianceItems.map(({property, score, completed, gasSafe, eicr, epc, depositProtected, rightToRent, howToRent, alarms}) => `
-      <div class="card">
-        <div class="flex justify-between items-center mb-2">
-          <div class="card-title">${escapeHtml(property.name)}</div>
-          <div class="compliance-due ${score === 100 ? 'due-ok' : score >= 50 ? 'due-soon' : 'due-urgent'}">${score.toFixed(0)}%</div>
+        <div class="ref-grid">
+          <div class="ref-item"><div class="ref-label">Rent</div><div class="ref-value">${formatMoney(p.rent)}/mo</div></div>
+          <div class="ref-item"><div class="ref-label">Yield</div><div class="ref-value">${yieldVal}%</div></div>
+          <div class="ref-item"><div class="ref-label">Mortgage</div><div class="ref-value">${formatMoney(p.mortgage)}/mo</div></div>
+          <div class="ref-item"><div class="ref-label">Lender</div><div class="ref-value">${escapeHtml(p.lender)}</div></div>
+          <div class="ref-item"><div class="ref-label">Tenant</div><div class="ref-value">${escapeHtml(p.tenant)}</div></div>
+          <div class="ref-item"><div class="ref-label">Lease</div><div class="ref-value">${p.leaseStart !== '—' ? formatDate(p.leaseStart) : '—'} → ${p.leaseEnd !== '—' ? formatDate(p.leaseEnd) : '—'}</div></div>
         </div>
-        <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 12px;"><div style="width: ${score}%; height: 100%; background: ${score === 100 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)'}; transition: width 0.3s;"></div></div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px;">
-          <div class="flex items-center gap-2"><div class="compliance-status ${gasSafe ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${gasSafe ? '✓' : '✗'}</div><span style="font-size: 13px;">Gas Safety</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${eicr ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${eicr ? '✓' : '✗'}</div><span style="font-size: 13px;">EICR</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${epc ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${epc ? '✓' : '✗'}</div><span style="font-size: 13px;">EPC</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${depositProtected ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${depositProtected ? '✓' : '✗'}</div><span style="font-size: 13px;">Deposit</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${rightToRent ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${rightToRent ? '✓' : '✗'}</div><span style="font-size: 13px;">Right to Rent</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${howToRent ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${howToRent ? '✓' : '✗'}</div><span style="font-size: 13px;">How to Rent</span></div>
-          <div class="flex items-center gap-2"><div class="compliance-status ${alarms ? 'ok' : 'missing'}" style="width: 24px; height: 24px; font-size: 12px;">${alarms ? '✓' : '✗'}</div><span style="font-size: 13px;">Smoke Alarms</span></div>
+        <div class="prop-certs">
+          <span class="cert-status ${gasStatus.class}">Gas Safety: ${gasStatus.text}</span>
+          <span class="cert-status ${eicrStatus.class}">EICR: ${eicrStatus.text}</span>
+          ${epcCert ? `<span class="cert-status cert-valid">EPC: Band ${epcCert.epcRating || '?'} (expires ${formatDate(epcCert.expiryDate)})</span>` : '<span class="cert-status cert-missing">EPC: Not on file</span>'}
+          ${p.insuranceExpiry ? `<span class="cert-status ${getCertStatus(p.insuranceExpiry) === 'valid' ? 'cert-valid' : getCertStatus(p.insuranceExpiry) === 'warning' ? 'cert-warning' : 'cert-expired'}">Insurance: ${getCertDisplayText(p.insuranceExpiry)}</span>` : ''}
+        </div>
+        <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 12px;">
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="event.stopPropagation(); editProperty('${p.id}')">Edit</button>
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="event.stopPropagation(); showAddTransactionForProperty('${p.id}')">Add Transaction</button>
         </div>
       </div>
-    `).join('')}
-  `;
+    `;
+  }).join('');
+  if (!properties.length) document.getElementById('screen-properties').innerHTML = '<div class="card text-center">No properties. Tap + to add one.</div>';
 }
-
-function renderCalendar() {
-  const today = new Date();
-  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
-  const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
-  const startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-  const daysInMonth = lastDay.getDate();
-  
-  const events = [];
-  state.certificates.forEach(cert => {
-    if (cert.expiryDate) events.push({ date: cert.expiryDate, title: `${cert.type} expires`, property: state.properties.find(p => p.id === cert.propertyId)?.name });
-  });
-  state.properties.forEach(p => {
-    if (p.leaseEnd && p.leaseEnd !== '—') events.push({ date: p.leaseEnd, title: 'Lease ends', property: p.name });
-    if (p.lastInspection) {
-      const next = new Date(p.lastInspection);
-      next.setMonth(next.getMonth() + 6);
-      events.push({ date: next.toISOString().split('T')[0], title: 'Inspection due', property: p.name });
-    }
-  });
-  
-  const days = [];
-  for (let i = 0; i < startOffset; i++) days.push(null);
-  for (let i = 1; i <= daysInMonth; i++) {
-    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-    days.push({ date: i, dateStr, hasEvent: events.some(e => e.date === dateStr) });
-  }
-  
-  document.getElementById('main-content').innerHTML = `
-    <div class="card">
-      <div class="flex justify-between items-center mb-3">
-        <div class="card-title" style="font-size: 18px; text-transform: none;">${new Date(currentCalendarYear, currentCalendarMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}</div>
-        <div class="flex gap-2"><button class="btn btn-secondary btn-sm" onclick="prevMonth()">←</button><button class="btn btn-secondary btn-sm" onclick="nextMonth()">→</button></div>
-      </div>
-      <div class="calendar-grid">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div class="calendar-day">${d}</div>`).join('')}</div>
-      <div class="calendar-grid">${days.map(day => day ? `<div class="calendar-date ${day.hasEvent ? 'has-event' : ''} ${day.date === today.getDate() && currentCalendarMonth === today.getMonth() && currentCalendarYear === today.getFullYear() ? 'today' : ''}" onclick="showDayEvents('${day.dateStr}')">${day.date}</div>` : `<div></div>`).join('')}</div>
-    </div>
-    <div class="card"><div class="card-title">Upcoming Events</div>${events.filter(e => new Date(e.date) >= new Date()).slice(0, 5).map(e => `<div class="compliance-item"><div class="compliance-status warning">📅</div><div class="compliance-details"><div class="compliance-name">${escapeHtml(e.title)}</div><div class="compliance-meta">${escapeHtml(e.property || '')} • ${formatDate(e.date)}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No upcoming events</div>'}</div>
-  `;
-}
-
-function showDayEvents(dateStr) {
-  const events = [];
-  state.certificates.forEach(cert => { if (cert.expiryDate === dateStr) events.push({ title: `${cert.type} expires`, property: state.properties.find(p => p.id === cert.propertyId)?.name }); });
-  state.properties.forEach(p => { if (p.leaseEnd === dateStr) events.push({ title: 'Lease ends', property: p.name }); });
-  showSheet(`Events for ${formatDate(dateStr)}`, events.map(e => `<div class="compliance-item"><div class="compliance-status warning">📅</div><div class="compliance-details"><div class="compliance-name">${escapeHtml(e.title)}</div><div class="compliance-meta">${escapeHtml(e.property || '')}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No events</div>');
-}
-
-function prevMonth() { currentCalendarMonth--; if (currentCalendarMonth < 0) { currentCalendarMonth = 11; currentCalendarYear--; } renderAll(); }
-function nextMonth() { currentCalendarMonth++; if (currentCalendarMonth > 11) { currentCalendarMonth = 0; currentCalendarYear++; } renderAll(); }
 
 function renderFinance() {
   const transactions = [...state.transactions].sort((a, b) => b.date.localeCompare(a.date));
   const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  
-  document.getElementById('main-content').innerHTML = `
-    <div class="metrics-grid">
-      <div class="metric-card"><div class="metric-label">Total income</div><div class="metric-value text-green">${formatMoney(income)}</div></div>
-      <div class="metric-card"><div class="metric-label">Total expenses</div><div class="metric-value text-red">${formatMoney(expenses)}</div></div>
-      <div class="metric-card"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
+  document.getElementById('screen-finance').innerHTML = `
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Total income</div><div class="metric-value text-green">${formatMoney(income)}</div></div>
+      <div class="metric"><div class="metric-label">Total expenses</div><div class="metric-value text-red">${formatMoney(expenses)}</div></div>
+      <div class="metric"><div class="metric-label">Net profit</div><div class="metric-value ${income - expenses >= 0 ? 'text-green' : 'text-red'}">${formatMoney(income - expenses)}</div></div>
     </div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">Transactions</div><button class="btn btn-secondary btn-sm" onclick="showAddTransaction()">+ Add</button></div>
-      ${transactions.map(t => renderTransactionRow(t)).join('')}
-      ${transactions.length === 0 ? '<div class="text-center" style="padding: 20px;">No transactions yet</div>' : ''}
-    </div>
+    <button class="btn btn-primary" style="margin-bottom: 12px" onclick="showAddTransaction()">+ Add transaction</button>
+    ${transactions.map(t => {
+      const p = state.properties.find(prop => prop.id === t.propertyId);
+      return `
+        <div class="txn-row">
+          <div class="txn-icon" style="background: ${t.type === 'income' ? 'var(--green-bg)' : 'var(--red-bg)'}">${t.type === 'income' ? '↓' : '↑'}</div>
+          <div class="txn-body"><div class="txn-desc">${escapeHtml(t.description)}</div><div class="txn-meta">${formatDate(t.date)} · ${p ? escapeHtml(p.name) : 'Unknown'} · ${escapeHtml(t.category)}${t.periodStart ? ` · ${formatDate(t.periodStart)} to ${formatDate(t.periodEnd)}` : ''}</div></div>
+          <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
+          <button class="icon-btn-sm" onclick="editTransaction('${t.id}')" style="margin-left: 8px;">✎</button>
+        </div>
+      `;
+    }).join('')}
   `;
 }
 
-function renderTransactionRow(t) {
-  const property = state.properties.find(p => p.id === t.propertyId);
-  return `
-    <div class="txn-item">
-      <div class="txn-details">
-        <div class="txn-desc">${escapeHtml(t.description)}</div>
-        <div class="txn-meta">${formatDate(t.date)} • ${property ? escapeHtml(property.name) : 'Unknown'} • ${escapeHtml(t.category)}</div>
-      </div>
-      <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
-      <div class="txn-actions">
-        <button class="icon-btn-sm" onclick="editTransaction('${escapeJs(t.id)}')" title="Edit">✎</button>
-        <button class="icon-btn-sm" onclick="deleteTransaction('${escapeJs(t.id)}')" title="Delete">✕</button>
-      </div>
-    </div>
+function renderMaintenance() {
+  const issues = state.maintenance.sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('screen-maintenance').innerHTML = `
+    <button class="btn btn-primary" style="margin-bottom: 12px" onclick="showAddMaintenance()">+ Log issue</button>
+    ${issues.map(m => {
+      const p = state.properties.find(prop => prop.id === m.propertyId);
+      const priorityColor = m.priority === 'high' ? 'var(--red)' : m.priority === 'medium' ? 'var(--amber)' : 'var(--text3)';
+      return `
+        <div class="card">
+          <div class="flex justify-between items-start"><div><div class="prop-name">${escapeHtml(m.description)}</div><div class="prop-addr">${p ? escapeHtml(p.name) : 'Unknown'} · ${formatDate(m.date)}</div></div><span class="badge ${m.status === 'open' ? 'badge-amber' : 'badge-green'}">${m.status === 'open' ? 'Open' : 'Resolved'}</span></div>
+          ${m.priority ? `<div style="margin-top: 8px"><span class="badge" style="background: ${priorityColor}20; color: ${priorityColor}">${m.priority.toUpperCase()}</span></div>` : ''}
+          ${m.cost > 0 ? `<div class="mt-2"><span class="metric-label">Cost: ${formatMoney(m.cost)}</span></div>` : ''}
+          ${m.notes ? `<div class="mt-2" style="font-size: 13px; color: var(--text2); background: var(--surface2); padding: 8px; border-radius: var(--radius-sm); margin-top: 8px;">${escapeHtml(m.notes)}</div>` : ''}
+          <div class="flex gap-2 mt-3"><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="editMaintenance('${m.id}')">Edit</button><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="deleteMaintenance('${m.id}')">Delete</button></div>
+        </div>
+      `;
+    }).join('')}
   `;
 }
 
 // ============================================
-// MODAL & ACTIONS
+// DETAIL VIEW WITH REFERENCE INFORMATION
+// ============================================
+function showPropertyDetail(id) {
+  const p = state.properties.find(prop => prop.id === id);
+  if (!p) return;
+  document.getElementById('detail-prop-name').textContent = p.name;
+  document.getElementById('prop-detail').classList.add('open');
+  renderPropertyDetailContent(id);
+}
+
+function closePropDetail() {
+  document.getElementById('prop-detail').classList.remove('open');
+}
+
+function renderPropertyDetailContent(id) {
+  const p = state.properties.find(prop => prop.id === id);
+  const certs = state.certificates.filter(c => c.propertyId === id);
+  const transactions = state.transactions.filter(t => t.propertyId === id).sort((a, b) => b.date.localeCompare(a.date));
+  const maintenance = state.maintenance.filter(m => m.propertyId === id);
+  const gasCert = certs.find(c => c.type === 'Gas Safety');
+  const eicrCert = certs.find(c => c.type === 'EICR');
+  const epcCert = certs.find(c => c.type === 'EPC');
+  
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-tabs">
+      <button class="dtab active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="dtab" onclick="switchTab('certs', this)">Certificates</button>
+      <button class="dtab" onclick="switchTab('finance', this)">Finance</button>
+      <button class="dtab" onclick="switchTab('maintenance', this)">Maintenance</button>
+      <button class="dtab" onclick="switchTab('contacts', this)">Contacts</button>
+    </div>
+    
+    <div id="dt-overview" class="dtab-content active">
+      <div class="card"><div class="card-title">Property Information</div>
+        ${infoRow('Address', p.address)}
+        ${infoRow('Status', p.status === 'let' ? '<span class="badge badge-green">Let</span>' : '<span class="badge badge-amber">Vacant</span>')}
+        ${infoRow('Purchase Price', formatMoney(p.purchasePrice))}
+        ${infoRow('Current Value', formatMoney(p.currentValue))}
+        ${infoRow('Mortgage', formatMoney(p.mortgage) + '/mo')}
+        ${infoRow('Lender', p.lender)}
+        ${p.insurance ? infoRow('Insurance', `${p.insurance}${p.insurancePolicy ? ` (${p.insurancePolicy})` : ''}`) : ''}
+        ${p.insuranceExpiry ? infoRow('Insurance Renewal', `${formatDate(p.insuranceExpiry)} <span class="cert-status ${getCertStatus(p.insuranceExpiry) === 'valid' ? 'cert-valid' : getCertStatus(p.insuranceExpiry) === 'warning' ? 'cert-warning' : 'cert-expired'}" style="margin-left: 8px;">${getCertDisplayText(p.insuranceExpiry)}</span>`) : ''}
+      </div>
+      
+      <div class="card"><div class="card-title">Tenant Details</div>
+        ${infoRow('Name', p.tenant)}
+        ${p.tenantEmail ? infoRow('Email', `<a href="mailto:${escapeHtml(p.tenantEmail)}" style="color: var(--blue); text-decoration: none;">${escapeHtml(p.tenantEmail)}</a>`) : ''}
+        ${p.tenantPhone ? infoRow('Phone', p.tenantPhone) : ''}
+        ${infoRow('Lease', `${p.leaseStart !== '—' ? formatDate(p.leaseStart) : '—'} → ${p.leaseEnd !== '—' ? formatDate(p.leaseEnd) : '—'}`)}
+        ${p.deposit > 0 ? infoRow('Deposit', `${formatMoney(p.deposit)} (${p.depositScheme || 'No scheme'})`) : ''}
+      </div>
+      
+      <div class="card"><div class="card-title">Certificates Summary</div>
+        <div class="ref-grid">
+          ${gasCert ? `<div class="ref-item"><div class="ref-label">Gas Safety</div><div class="ref-value ${getCertStatus(gasCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(gasCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red'}">${getCertDisplayText(gasCert.expiryDate)}</div></div>` : `<div class="ref-item"><div class="ref-label">Gas Safety</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
+          ${eicrCert ? `<div class="ref-item"><div class="ref-label">EICR</div><div class="ref-value ${getCertStatus(eicrCert.expiryDate) === 'valid' ? 'text-green' : getCertStatus(eicrCert.expiryDate) === 'warning' ? 'text-amber' : 'text-red'}">${getCertDisplayText(eicrCert.expiryDate)}</div></div>` : `<div class="ref-item"><div class="ref-label">EICR</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
+          ${epcCert ? `<div class="ref-item"><div class="ref-label">EPC Rating</div><div class="ref-value">Band ${epcCert.epcRating || '?'} (expires ${formatDate(epcCert.expiryDate)})</div></div>` : `<div class="ref-item"><div class="ref-label">EPC</div><div class="ref-value cert-missing" style="display: inline-block;">Not on file</div></div>`}
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 8px;">
+        <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit Property</button>
+        <button class="btn btn-secondary" onclick="showAddTransactionForProperty('${id}'); closePropDetail();">Add Transaction</button>
+      </div>
+    </div>
+    
+    <div id="dt-certs" class="dtab-content">
+      <button class="btn btn-secondary" style="margin-bottom: 12px" onclick="showAddCertificateForProperty('${id}')">+ Add Certificate</button>
+      ${certs.map(c => `
+        <div class="card">
+          <div class="flex justify-between items-start"><div><div class="prop-name">${escapeHtml(c.type)}</div><div class="prop-addr">Issued: ${formatDate(c.issueDate)} · Issuer: ${escapeHtml(c.issuer || 'Unknown')}</div></div><span class="cert-status ${getCertStatus(c.expiryDate) === 'valid' ? 'cert-valid' : getCertStatus(c.expiryDate) === 'warning' ? 'cert-warning' : 'cert-expired'}">${getCertDisplayText(c.expiryDate)}</span></div>
+          ${c.epcRating ? `<div class="mt-2"><span class="badge badge-blue">EPC Rating ${c.epcRating}</span></div>` : ''}
+          ${c.notes ? `<div class="mt-2" style="font-size: 13px; color: var(--text2);">${escapeHtml(c.notes)}</div>` : ''}
+          <div class="flex gap-2 mt-3"><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="editCertificate('${c.id}')">Edit</button><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="deleteCertificate('${c.id}')">Delete</button></div>
+        </div>
+      `).join('')}
+      ${certs.length === 0 ? '<div class="card text-center">No certificates added</div>' : ''}
+    </div>
+    
+    <div id="dt-finance" class="dtab-content">
+      ${transactions.map(t => `
+        <div class="txn-row">
+          <div class="txn-icon" style="background: ${t.type === 'income' ? 'var(--green-bg)' : 'var(--red-bg)'}">${t.type === 'income' ? '↓' : '↑'}</div>
+          <div class="txn-body"><div class="txn-desc">${escapeHtml(t.description)}</div><div class="txn-meta">${formatDate(t.date)} · ${escapeHtml(t.category)}${t.periodStart ? ` · ${formatDate(t.periodStart)} to ${formatDate(t.periodEnd)}` : ''}</div></div>
+          <div class="txn-amount ${t.type === 'income' ? 'txn-income' : 'txn-expense'}">${t.type === 'expense' ? '-' : ''}${formatMoney(t.amount)}</div>
+          <button class="icon-btn-sm" onclick="editTransaction('${t.id}')" style="margin-left: 8px;">✎</button>
+        </div>
+      `).join('')}
+      ${transactions.length === 0 ? '<div class="card text-center">No transactions</div>' : ''}
+      <button class="btn btn-secondary" style="margin-top: 12px" onclick="showAddTransactionForProperty('${id}'); closePropDetail();">+ Add Transaction</button>
+    </div>
+    
+    <div id="dt-maintenance" class="dtab-content">
+      ${maintenance.map(m => `
+        <div class="card">
+          <div class="flex justify-between"><div class="prop-name">${escapeHtml(m.description)}</div><span class="badge ${m.status === 'open' ? 'badge-amber' : 'badge-green'}">${m.status === 'open' ? 'Open' : 'Resolved'}</span></div>
+          <div class="prop-addr">Reported: ${formatDate(m.date)} · Priority: ${m.priority || 'medium'}</div>
+          ${m.cost > 0 ? `<div class="mt-2">Cost: ${formatMoney(m.cost)}</div>` : ''}
+          ${m.notes ? `<div class="mt-2" style="font-size: 13px; color: var(--text2);">${escapeHtml(m.notes)}</div>` : ''}
+          <div class="flex gap-2 mt-3"><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="editMaintenance('${m.id}')">Edit</button><button class="btn-secondary" style="padding: 6px 12px; font-size: 12px; width: auto;" onclick="deleteMaintenance('${m.id}')">Delete</button></div>
+        </div>
+      `).join('')}
+      ${maintenance.length === 0 ? '<div class="card text-center">No maintenance issues</div>' : ''}
+      <button class="btn btn-secondary" style="margin-top: 12px" onclick="showAddMaintenanceForProperty('${id}'); closePropDetail();">+ Log Issue</button>
+    </div>
+    
+    <div id="dt-contacts" class="dtab-content">
+      <div class="card"><div class="card-title">Key Contacts</div>
+        ${infoRow('Letting Agent', p.agent || '—')}
+        ${p.agentPhone ? infoRow('Agent Phone', p.agentPhone) : ''}
+        ${p.agentEmail ? infoRow('Agent Email', `<a href="mailto:${escapeHtml(p.agentEmail)}" style="color: var(--blue);">${escapeHtml(p.agentEmail)}</a>`) : ''}
+        ${infoRow('Gas Engineer', p.gasEngineer || '—')}
+        ${p.gasEngineerPhone ? infoRow('Gas Engineer Phone', p.gasEngineerPhone) : ''}
+        ${infoRow('Electrician', p.electrician || '—')}
+        ${p.electricianPhone ? infoRow('Electrician Phone', p.electricianPhone) : ''}
+        ${infoRow('Solicitor', p.solicitor || '—')}
+      </div>
+      <button class="btn btn-secondary" onclick="editProperty('${id}'); closePropDetail();">Edit All Contacts</button>
+    </div>
+  `;
+}
+
+function switchTab(tabName, btn) {
+  document.querySelectorAll('.dtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dtab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`dt-${tabName}`).classList.add('active');
+}
+
+function infoRow(label, value) {
+  return `<div class="info-row"><span class="info-label">${escapeHtml(label)}</span><span class="info-val">${value}</span></div>`;
+}
+
+// ============================================
+// EDIT FUNCTIONS
+// ============================================
+function editProperty(id) {
+  const p = state.properties.find(prop => prop.id === id);
+  if (!p) return;
+  showSheet('Edit Property', `
+    <div class="form-group"><label class="form-label">Property Name</label><input type="text" id="edit-name" class="form-input" value="${escapeHtml(p.name)}"></div>
+    <div class="form-group"><label class="form-label">Address</label><input type="text" id="edit-addr" class="form-input" value="${escapeHtml(p.address)}"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Rent (£/mo)</label><input type="number" id="edit-rent" class="form-input" value="${p.rent}"></div><div class="form-group"><label class="form-label">Status</label><select id="edit-status" class="form-select"><option value="let" ${p.status === 'let' ? 'selected' : ''}>Let</option><option value="vacant" ${p.status === 'vacant' ? 'selected' : ''}>Vacant</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Purchase Price (£)</label><input type="number" id="edit-purchase" class="form-input" value="${p.purchasePrice}"></div><div class="form-group"><label class="form-label">Current Value (£)</label><input type="number" id="edit-value" class="form-input" value="${p.currentValue}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Mortgage (£/mo)</label><input type="number" id="edit-mortgage" class="form-input" value="${p.mortgage}"></div><div class="form-group"><label class="form-label">Lender</label><input type="text" id="edit-lender" class="form-input" value="${escapeHtml(p.lender)}"></div></div>
+    <div class="card-title mt-2">Tenant Details</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Name</label><input type="text" id="edit-tenant" class="form-input" value="${escapeHtml(p.tenant)}"></div><div class="form-group"><label class="form-label">Tenant Email</label><input type="email" id="edit-tenant-email" class="form-input" value="${escapeHtml(p.tenantEmail || '')}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Phone</label><input type="tel" id="edit-tenant-phone" class="form-input" value="${escapeHtml(p.tenantPhone || '')}"></div><div class="form-group"><label class="form-label">Lease Start</label><input type="date" id="edit-lease-start" class="form-input" value="${p.leaseStart !== '—' ? p.leaseStart : ''}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Lease End</label><input type="date" id="edit-lease-end" class="form-input" value="${p.leaseEnd !== '—' ? p.leaseEnd : ''}"></div><div class="form-group"><label class="form-label">Deposit (£)</label><input type="number" id="edit-deposit" class="form-input" value="${p.deposit || 0}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Deposit Scheme</label><select id="edit-deposit-scheme" class="form-select"><option value="">None</option><option value="DPS" ${p.depositScheme === 'DPS' ? 'selected' : ''}>DPS</option><option value="TDS" ${p.depositScheme === 'TDS' ? 'selected' : ''}>TDS</option><option value="MyDeposits" ${p.depositScheme === 'MyDeposits' ? 'selected' : ''}>MyDeposits</option></select></div><div class="form-group"><label class="form-label">Letting Agent</label><input type="text" id="edit-agent" class="form-input" value="${escapeHtml(p.agent || '')}"></div></div>
+    <div class="card-title mt-2">Insurance</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Insurance Provider</label><input type="text" id="edit-insurance" class="form-input" value="${escapeHtml(p.insurance || '')}"></div><div class="form-group"><label class="form-label">Policy Number</label><input type="text" id="edit-insurance-policy" class="form-input" value="${escapeHtml(p.insurancePolicy || '')}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Insurance Expiry</label><input type="date" id="edit-insurance-expiry" class="form-input" value="${p.insuranceExpiry || ''}"></div></div>
+    <div class="card-title mt-2">Contacts</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Gas Engineer</label><input type="text" id="edit-gas" class="form-input" value="${escapeHtml(p.gasEngineer || '')}"></div><div class="form-group"><label class="form-label">Gas Engineer Phone</label><input type="text" id="edit-gas-phone" class="form-input" value="${escapeHtml(p.gasEngineerPhone || '')}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Electrician</label><input type="text" id="edit-electric" class="form-input" value="${escapeHtml(p.electrician || '')}"></div><div class="form-group"><label class="form-label">Electrician Phone</label><input type="text" id="edit-electric-phone" class="form-input" value="${escapeHtml(p.electricianPhone || '')}"></div></div>
+    <div class="form-group"><label class="form-label">Solicitor</label><input type="text" id="edit-solicitor" class="form-input" value="${escapeHtml(p.solicitor || '')}"></div>
+  `, () => {
+    const index = state.properties.findIndex(prop => prop.id === id);
+    if (index !== -1) {
+      state.properties[index] = {
+        ...p,
+        name: document.getElementById('edit-name').value,
+        address: document.getElementById('edit-addr').value,
+        rent: parseFloat(document.getElementById('edit-rent').value) || 0,
+        status: document.getElementById('edit-status').value,
+        purchasePrice: parseFloat(document.getElementById('edit-purchase').value) || 0,
+        currentValue: parseFloat(document.getElementById('edit-value').value) || 0,
+        mortgage: parseFloat(document.getElementById('edit-mortgage').value) || 0,
+        lender: document.getElementById('edit-lender').value,
+        tenant: document.getElementById('edit-tenant').value || '—',
+        tenantEmail: document.getElementById('edit-tenant-email').value,
+        tenantPhone: document.getElementById('edit-tenant-phone').value,
+        leaseStart: document.getElementById('edit-lease-start').value || '—',
+        leaseEnd: document.getElementById('edit-lease-end').value || '—',
+        deposit: parseFloat(document.getElementById('edit-deposit').value) || 0,
+        depositScheme: document.getElementById('edit-deposit-scheme').value,
+        agent: document.getElementById('edit-agent').value,
+        insurance: document.getElementById('edit-insurance').value,
+        insurancePolicy: document.getElementById('edit-insurance-policy').value,
+        insuranceExpiry: document.getElementById('edit-insurance-expiry').value,
+        gasEngineer: document.getElementById('edit-gas').value,
+        gasEngineerPhone: document.getElementById('edit-gas-phone').value,
+        electrician: document.getElementById('edit-electric').value,
+        electricianPhone: document.getElementById('edit-electric-phone').value,
+        solicitor: document.getElementById('edit-solicitor').value
+      };
+      saveState();
+      closeSheet();
+      showToast('Property updated');
+      renderDashboard();
+      if (currentScreen === 'properties') renderProperties();
+    }
+  });
+}
+
+function editTransaction(id) {
+  const t = state.transactions.find(tx => tx.id === id);
+  if (!t) return;
+  showSheet('Edit Transaction', `
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-desc" class="form-input" value="${escapeHtml(t.description)}"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="edit-amount" class="form-input" step="0.01" value="${t.amount}"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-date" class="form-input" value="${t.date}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="edit-type" class="form-select"><option value="income" ${t.type === 'income' ? 'selected' : ''}>Income</option><option value="expense" ${t.type === 'expense' ? 'selected' : ''}>Expense</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="edit-cat" class="form-select"><option value="rent" ${t.category === 'rent' ? 'selected' : ''}>Rent</option><option value="repairs" ${t.category === 'repairs' ? 'selected' : ''}>Repairs</option><option value="insurance" ${t.category === 'insurance' ? 'selected' : ''}>Insurance</option><option value="utilities" ${t.category === 'utilities' ? 'selected' : ''}>Utilities</option><option value="other" ${t.category === 'other' ? 'selected' : ''}>Other</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Period Start</label><input type="date" id="edit-period-start" class="form-input" value="${t.periodStart || ''}"></div><div class="form-group"><label class="form-label">Period End</label><input type="date" id="edit-period-end" class="form-input" value="${t.periodEnd || ''}"></div></div>
+  `, () => {
+    const index = state.transactions.findIndex(tx => tx.id === id);
+    if (index !== -1) {
+      state.transactions[index] = {
+        ...t,
+        description: document.getElementById('edit-desc').value,
+        amount: parseFloat(document.getElementById('edit-amount').value) || 0,
+        date: document.getElementById('edit-date').value,
+        type: document.getElementById('edit-type').value,
+        category: document.getElementById('edit-cat').value,
+        periodStart: document.getElementById('edit-period-start').value || undefined,
+        periodEnd: document.getElementById('edit-period-end').value || undefined
+      };
+      saveState();
+      closeSheet();
+      showToast('Transaction updated');
+      renderDashboard();
+      if (currentScreen === 'finance') renderFinance();
+    }
+  });
+}
+
+function editCertificate(id) {
+  const c = state.certificates.find(cert => cert.id === id);
+  if (!c) return;
+  showSheet('Edit Certificate', `
+    <div class="form-group"><label class="form-label">Certificate Type</label><select id="edit-type" class="form-select"><option value="Gas Safety" ${c.type === 'Gas Safety' ? 'selected' : ''}>Gas Safety</option><option value="EICR" ${c.type === 'EICR' ? 'selected' : ''}>EICR</option><option value="EPC" ${c.type === 'EPC' ? 'selected' : ''}>EPC</option><option value="PAT Testing" ${c.type === 'PAT Testing' ? 'selected' : ''}>PAT Testing</option><option value="Legionella" ${c.type === 'Legionella' ? 'selected' : ''}>Legionella</option><option value="Other" ${c.type === 'Other' ? 'selected' : ''}>Other</option></select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Issue Date</label><input type="date" id="edit-issue" class="form-input" value="${c.issueDate}"></div><div class="form-group"><label class="form-label">Expiry Date</label><input type="date" id="edit-expiry" class="form-input" value="${c.expiryDate}"></div></div>
+    <div class="form-group"><label class="form-label">Issuer</label><input type="text" id="edit-issuer" class="form-input" value="${escapeHtml(c.issuer || '')}"></div>
+    ${c.type === 'EPC' ? `<div class="form-group"><label class="form-label">EPC Rating</label><select id="edit-rating" class="form-select">${['A','B','C','D','E','F','G'].map(r => `<option value="${r}" ${c.epcRating === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>` : ''}
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="edit-notes" class="form-textarea" rows="2">${escapeHtml(c.notes || '')}</textarea></div>
+  `, () => {
+    const index = state.certificates.findIndex(cert => cert.id === id);
+    if (index !== -1) {
+      state.certificates[index] = {
+        ...c,
+        type: document.getElementById('edit-type').value,
+        issueDate: document.getElementById('edit-issue').value,
+        expiryDate: document.getElementById('edit-expiry').value,
+        issuer: document.getElementById('edit-issuer').value,
+        epcRating: c.type === 'EPC' ? document.getElementById('edit-rating').value : c.epcRating,
+        notes: document.getElementById('edit-notes').value
+      };
+      saveState();
+      closeSheet();
+      showToast('Certificate updated');
+      renderDashboard();
+    }
+  });
+}
+
+function deleteCertificate(id) {
+  if (confirm('Delete this certificate?')) {
+    state.certificates = state.certificates.filter(c => c.id !== id);
+    saveState();
+    showToast('Certificate deleted');
+    renderDashboard();
+  }
+}
+
+function editMaintenance(id) {
+  const m = state.maintenance.find(maint => maint.id === id);
+  if (!m) return;
+  showSheet('Edit Maintenance', `
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="edit-desc" class="form-input" value="${escapeHtml(m.description)}"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="edit-date" class="form-input" value="${m.date}"></div><div class="form-group"><label class="form-label">Status</label><select id="edit-status" class="form-select"><option value="open" ${m.status === 'open' ? 'selected' : ''}>Open</option><option value="resolved" ${m.status === 'resolved' ? 'selected' : ''}>Resolved</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="edit-priority" class="form-select"><option value="low" ${m.priority === 'low' ? 'selected' : ''}>Low</option><option value="medium" ${m.priority === 'medium' ? 'selected' : ''}>Medium</option><option value="high" ${m.priority === 'high' ? 'selected' : ''}>High</option></select></div><div class="form-group"><label class="form-label">Cost (£)</label><input type="number" id="edit-cost" class="form-input" step="0.01" value="${m.cost || 0}"></div></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="edit-notes" class="form-textarea" rows="2">${escapeHtml(m.notes || '')}</textarea></div>
+  `, () => {
+    const index = state.maintenance.findIndex(maint => maint.id === id);
+    if (index !== -1) {
+      state.maintenance[index] = {
+        ...m,
+        description: document.getElementById('edit-desc').value,
+        date: document.getElementById('edit-date').value,
+        status: document.getElementById('edit-status').value,
+        priority: document.getElementById('edit-priority').value,
+        cost: parseFloat(document.getElementById('edit-cost').value) || 0,
+        notes: document.getElementById('edit-notes').value
+      };
+      saveState();
+      closeSheet();
+      showToast('Maintenance updated');
+      if (currentScreen === 'maintenance') renderMaintenance();
+      renderDashboard();
+    }
+  });
+}
+
+function deleteMaintenance(id) {
+  if (confirm('Delete this maintenance issue?')) {
+    state.maintenance = state.maintenance.filter(m => m.id !== id);
+    saveState();
+    showToast('Maintenance deleted');
+    if (currentScreen === 'maintenance') renderMaintenance();
+    renderDashboard();
+  }
+}
+
+// ============================================
+// ADD FUNCTIONS
+// ============================================
+function showAddProperty() {
+  showSheet('Add Property', `
+    <div class="form-group"><label class="form-label">Property Name</label><input type="text" id="new-name" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Address</label><input type="text" id="new-addr" class="form-input"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Rent (£/mo)</label><input type="number" id="new-rent" class="form-input"></div><div class="form-group"><label class="form-label">Status</label><select id="new-status" class="form-select"><option value="let">Let</option><option value="vacant">Vacant</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Purchase Price (£)</label><input type="number" id="new-purchase" class="form-input"></div><div class="form-group"><label class="form-label">Current Value (£)</label><input type="number" id="new-value" class="form-input"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Mortgage (£/mo)</label><input type="number" id="new-mortgage" class="form-input"></div><div class="form-group"><label class="form-label">Lender</label><input type="text" id="new-lender" class="form-input"></div></div>
+    <div class="card-title mt-2">Tenant Details (Optional)</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tenant Name</label><input type="text" id="new-tenant" class="form-input"></div><div class="form-group"><label class="form-label">Lease Start</label><input type="date" id="new-lease-start" class="form-input"></div></div>
+  `, () => {
+    const colors = ['#2D5A27', '#1A3A5C', '#7A4A0A', '#3D2B6B', '#1A4A40'];
+    state.properties.push({
+      id: generateId(),
+      name: document.getElementById('new-name').value,
+      address: document.getElementById('new-addr').value || '—',
+      status: document.getElementById('new-status').value,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rent: parseFloat(document.getElementById('new-rent').value) || 0,
+      purchasePrice: parseFloat(document.getElementById('new-purchase').value) || 0,
+      currentValue: parseFloat(document.getElementById('new-value').value) || 0,
+      mortgage: parseFloat(document.getElementById('new-mortgage').value) || 0,
+      lender: document.getElementById('new-lender').value || '—',
+      tenant: document.getElementById('new-tenant').value || '—',
+      tenantEmail: '', tenantPhone: '',
+      leaseStart: document.getElementById('new-lease-start').value || '—',
+      leaseEnd: '—', deposit: 0, depositScheme: '', agent: '', gasEngineer: '', electrician: '',
+      createdAt: new Date().toISOString().split('T')[0], archived: false
+    });
+    saveState();
+    closeSheet();
+    showToast('Property added');
+    renderDashboard();
+  });
+}
+
+function showAddTransaction() {
+  const props = state.properties.filter(p => !p.archived);
+  const propOptions = props.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  showSheet('Add Transaction', `
+    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="new-desc" class="form-input"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="new-amount" class="form-input" step="0.01"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="new-type" class="form-select"><option value="expense">Expense</option><option value="income">Income</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="new-cat" class="form-select"><option value="repairs">Repairs</option><option value="rent">Rent</option><option value="insurance">Insurance</option><option value="utilities">Utilities</option><option value="other">Other</option></select></div></div>
+  `, () => {
+    state.transactions.push({
+      id: generateId(),
+      propertyId: document.getElementById('new-prop').value,
+      description: document.getElementById('new-desc').value,
+      amount: parseFloat(document.getElementById('new-amount').value) || 0,
+      date: document.getElementById('new-date').value,
+      type: document.getElementById('new-type').value,
+      category: document.getElementById('new-cat').value
+    });
+    saveState();
+    closeSheet();
+    showToast('Transaction added');
+    renderDashboard();
+    if (currentScreen === 'finance') renderFinance();
+  });
+}
+
+function showAddTransactionForProperty(propertyId) {
+  const props = state.properties.filter(p => !p.archived);
+  const propOptions = props.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  showSheet('Add Transaction', `
+    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="new-desc" class="form-input"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="new-amount" class="form-input" step="0.01"></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select id="new-type" class="form-select"><option value="expense">Expense</option><option value="income">Income</option></select></div><div class="form-group"><label class="form-label">Category</label><select id="new-cat" class="form-select"><option value="repairs">Repairs</option><option value="rent">Rent</option><option value="insurance">Insurance</option><option value="utilities">Utilities</option><option value="other">Other</option></select></div></div>
+  `, () => {
+    state.transactions.push({
+      id: generateId(),
+      propertyId: document.getElementById('new-prop').value,
+      description: document.getElementById('new-desc').value,
+      amount: parseFloat(document.getElementById('new-amount').value) || 0,
+      date: document.getElementById('new-date').value,
+      type: document.getElementById('new-type').value,
+      category: document.getElementById('new-cat').value
+    });
+    saveState();
+    closeSheet();
+    showToast('Transaction added');
+    renderDashboard();
+    if (currentScreen === 'finance') renderFinance();
+  });
+}
+
+function showAddMaintenance() {
+  const props = state.properties.filter(p => !p.archived);
+  const propOptions = props.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  showSheet('Log Maintenance', `
+    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
+    <div class="form-group"><label class="form-label">Issue Description</label><input type="text" id="new-desc" class="form-input"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="new-priority" class="form-select"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="new-notes" class="form-textarea" rows="2"></textarea></div>
+  `, () => {
+    state.maintenance.push({
+      id: generateId(),
+      propertyId: document.getElementById('new-prop').value,
+      description: document.getElementById('new-desc').value,
+      date: document.getElementById('new-date').value,
+      status: 'open',
+      priority: document.getElementById('new-priority').value,
+      cost: 0,
+      notes: document.getElementById('new-notes').value
+    });
+    saveState();
+    closeSheet();
+    showToast('Maintenance logged');
+    if (currentScreen === 'maintenance') renderMaintenance();
+    renderDashboard();
+  });
+}
+
+function showAddMaintenanceForProperty(propertyId) {
+  const props = state.properties.filter(p => !p.archived);
+  const propOptions = props.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  showSheet('Log Maintenance', `
+    <div class="form-group"><label class="form-label">Property</label><select id="new-prop" class="form-select">${propOptions}</select></div>
+    <div class="form-group"><label class="form-label">Issue Description</label><input type="text" id="new-desc" class="form-input"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="new-priority" class="form-select"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div><div class="form-group"><label class="form-label">Date</label><input type="date" id="new-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="new-notes" class="form-textarea" rows="2"></textarea></div>
+  `, () => {
+    state.maintenance.push({
+      id: generateId(),
+      propertyId: document.getElementById('new-prop').value,
+      description: document.getElementById('new-desc').value,
+      date: document.getElementById('new-date').value,
+      status: 'open',
+      priority: document.getElementById('new-priority').value,
+      cost: 0,
+      notes: document.getElementById('new-notes').value
+    });
+    saveState();
+    closeSheet();
+    showToast('Maintenance logged');
+    if (currentScreen === 'maintenance') renderMaintenance();
+    renderDashboard();
+  });
+}
+
+function showAddCertificateForProperty(propertyId) {
+  showSheet('Add Certificate', `
+    <div class="form-group"><label class="form-label">Certificate Type</label><select id="new-type" class="form-select"><option value="Gas Safety">Gas Safety</option><option value="EICR">EICR</option><option value="EPC">EPC</option><option value="PAT Testing">PAT Testing</option><option value="Legionella">Legionella</option><option value="Other">Other</option></select></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Issue Date</label><input type="date" id="new-issue" class="form-input"></div><div class="form-group"><label class="form-label">Expiry Date</label><input type="date" id="new-expiry" class="form-input"></div></div>
+    <div class="form-group"><label class="form-label">Issuer</label><input type="text" id="new-issuer" class="form-input"></div>
+    <div id="epc-wrap" style="display:none"><div class="form-group"><label class="form-label">EPC Rating</label><select id="new-rating" class="form-select"><option value="">— Select —</option>${['A','B','C','D','E','F','G'].map(r => `<option value="${r}">${r}</option>`).join('')}</select></div></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="new-notes" class="form-textarea" rows="2"></textarea></div>
+  `, () => {
+    const type = document.getElementById('new-type').value;
+    state.certificates.push({
+      id: generateId(),
+      propertyId: propertyId,
+      type: type,
+      issueDate: document.getElementById('new-issue').value,
+      expiryDate: document.getElementById('new-expiry').value,
+      issuer: document.getElementById('new-issuer').value,
+      epcRating: type === 'EPC' ? document.getElementById('new-rating').value : undefined,
+      notes: document.getElementById('new-notes').value
+    });
+    saveState();
+    closeSheet();
+    showToast('Certificate added');
+    renderDashboard();
+  });
+  
+  document.getElementById('new-type').addEventListener('change', function() {
+    document.getElementById('epc-wrap').style.display = this.value === 'EPC' ? 'block' : 'none';
+  });
+}
+
+// ============================================
+// MODAL & UTILITIES
 // ============================================
 function showSheet(title, contentHtml, onConfirm = null) {
   const sheet = document.getElementById('bottom-sheet');
   const overlay = document.getElementById('sheet-overlay');
   const sheetContent = document.getElementById('sheet-content');
-  if (!sheet || !overlay || !sheetContent) return;
-  
   sheetContent.innerHTML = `<div class="sheet-title">${escapeHtml(title)}</div>${contentHtml}<div class="flex gap-2" style="margin-top: 20px;"><button class="btn btn-secondary" onclick="closeSheet()">Cancel</button>${onConfirm ? `<button class="btn btn-primary" id="sheet-confirm-btn">Confirm</button>` : ''}</div>`;
   sheet.classList.add('open');
   overlay.classList.add('open');
-  if (onConfirm) {
-    const confirmBtn = document.getElementById('sheet-confirm-btn');
-    if (confirmBtn) confirmBtn.onclick = onConfirm;
-  }
+  if (onConfirm) document.getElementById('sheet-confirm-btn').onclick = onConfirm;
 }
 
 function closeSheet() {
-  const sheet = document.getElementById('bottom-sheet');
-  const overlay = document.getElementById('sheet-overlay');
-  if (sheet) sheet.classList.remove('open');
-  if (overlay) overlay.classList.remove('open');
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
 }
 
-function navigate(screen) {
-  currentScreen = screen;
-  document.querySelectorAll('.nav-item').forEach(item => {
-    if (item.dataset.nav === screen) item.classList.add('active');
-    else item.classList.remove('active');
-  });
-  renderAll();
-}
-
-function showQuickExpense() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-  showSheet('Add Expense', `
-    <div class="form-group"><label class="form-label">Property</label><select id="expense-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="expense-amount" class="form-input" step="0.01"></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="expense-desc" class="form-input"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="expense-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div>
-    <div class="form-group"><label class="form-label">Category</label><select id="expense-cat" class="form-select"><option value="repairs">Repairs</option><option value="insurance">Insurance</option><option value="utilities">Utilities</option><option value="other">Other</option></select></div></div>
-  `, () => {
-    const amount = parseFloat(document.getElementById('expense-amount').value);
-    const description = document.getElementById('expense-desc').value;
-    if (!amount || !description) { showToast('Fill all fields', true); return; }
-    state.transactions.push({ id: generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId: document.getElementById('expense-prop').value, amount, category: document.getElementById('expense-cat').value });
-    saveState();
-    closeSheet();
-    showToast('Expense added');
-    renderAll();
-  });
-}
-
-function showQuickIncome() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-  showSheet('Add Income', `
-    <div class="form-group"><label class="form-label">Property</label><select id="income-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="income-amount" class="form-input" step="0.01"></div>
-    <div class="form-group"><label class="form-label">Description</label><input type="text" id="income-desc" class="form-input"></div>
-    <div class="form-group"><label class="form-label">Date</label><input type="date" id="income-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div>
-  `, () => {
-    const amount = parseFloat(document.getElementById('income-amount').value);
-    const description = document.getElementById('income-desc').value;
-    if (!amount || !description) { showToast('Fill all fields', true); return; }
-    state.transactions.push({ id: generateId(), date: document.getElementById('income-date').value, type: 'income', description, propertyId: document.getElementById('income-prop').value, amount, category: 'rent' });
-    saveState();
-    closeSheet();
-    showToast('Income added');
-    renderAll();
-  });
-}
-
-function showQuickMaintenance() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-  showSheet('Log Maintenance', `
-    <div class="form-group"><label class="form-label">Property</label><select id="maint-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Issue</label><input type="text" id="maint-desc" class="form-input"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select id="maint-priority" class="form-select"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
-    <div class="form-group"><label class="form-label">Date</label><input type="date" id="maint-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
-  `, () => {
-    if (!document.getElementById('maint-desc').value) { showToast('Describe the issue', true); return; }
-    state.maintenance.push({ id: generateId(), propertyId: document.getElementById('maint-prop').value, description: document.getElementById('maint-desc').value, date: document.getElementById('maint-date').value, status: 'open', priority: document.getElementById('maint-priority').value, cost: 0 });
-    saveState();
-    closeSheet();
-    showToast('Maintenance logged');
-    renderAll();
-  });
-}
-
-function showAddProperty() {
-  showSheet('Add Property', `
-    <div class="form-group"><label class="form-label">Property name</label><input type="text" id="prop-name" class="form-input"></div>
-    <div class="form-group"><label class="form-label">Address</label><input type="text" id="prop-addr" class="form-input"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Purchase price (£)</label><input type="number" id="prop-purchase" class="form-input"></div>
-    <div class="form-group"><label class="form-label">Monthly rent (£)</label><input type="number" id="prop-rent" class="form-input"></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Status</label><select id="prop-status" class="form-select"><option value="let">Let</option><option value="vacant">Vacant</option></select></div></div>
-  `, () => {
-    const name = document.getElementById('prop-name').value;
-    if (!name) { showToast('Enter property name', true); return; }
-    const colors = ['#28A745', '#007AFF', '#FFC107', '#5856D6', '#FF3B30'];
-    state.properties.push({ id: generateId(), name, address: document.getElementById('prop-addr').value || '—', status: document.getElementById('prop-status').value, color: colors[Math.floor(Math.random() * colors.length)], rent: parseFloat(document.getElementById('prop-rent').value) || 0, purchasePrice: parseFloat(document.getElementById('prop-purchase').value) || 0, currentValue: parseFloat(document.getElementById('prop-purchase').value) || 0, mortgage: 0, lender: '—', tenant: '—', tenantEmail: '', tenantPhone: '', leaseStart: '—', leaseEnd: '—', deposit: 0, depositScheme: '', agent: '', gasEngineer: '', electrician: '', howToRentSent: false, rightToRentChecked: false, alarmsTested: false, createdAt: new Date().toISOString().split('T')[0], archived: false });
-    saveState();
-    closeSheet();
-    showToast('Property added');
-    renderAll();
-  });
-}
-
-function showAddCertificate() {
-  const propOptions = state.properties.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-  showSheet('Add Certificate', `
-    <div class="form-group"><label class="form-label">Property</label><select id="cert-prop" class="form-select">${propOptions}</select></div>
-    <div class="form-group"><label class="form-label">Certificate Type</label><select id="cert-type" class="form-select"><option value="Gas Safety">Gas Safety</option><option value="EPC">EPC</option><option value="EICR">EICR</option><option value="PAT Testing">PAT Testing</option><option value="Legionella">Legionella</option><option value="Other">Other</option></select></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">Issue Date</label><input type="date" id="cert-issue" class="form-input"></div>
-    <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" id="cert-expiry" class="form-input"></div></div>
-    <div class="form-group"><label class="form-label">Issuer</label><input type="text" id="cert-issuer" class="form-input"></div>
-    <div id="cert-epc-wrap" style="display:none"><div class="form-group"><label class="form-label">EPC Rating</label><select id="cert-epc-rating" class="form-select"><option value="">— Select —</option>${['A','B','C','D','E','F','G'].map(r => `<option value="${r}">${r}</option>`).join('')}</select></div></div>
-  `, () => {
-    const type = document.getElementById('cert-type').value;
-    state.certificates.push({ id: generateId(), propertyId: document.getElementById('cert-prop').value, type, issueDate: document.getElementById('cert-issue').value, expiryDate: document.getElementById('cert-expiry').value, issuer: document.getElementById('cert-issuer').value, epcRating: type === 'EPC' ? document.getElementById('cert-epc-rating').value : undefined });
-    saveState();
-    closeSheet();
-    showToast('Certificate added');
-    renderAll();
-  });
-  
-  document.getElementById('cert-type').addEventListener('change', function() {
-    const wrap = document.getElementById('cert-epc-wrap');
-    if (wrap) wrap.style.display = this.value === 'EPC' ? 'block' : 'none';
-  });
-}
-
-function showAddTransaction() { showQuickExpense(); }
-
-function showPropertyDetail(id) {
-  const p = state.properties.find(p => p.id === id);
-  if (!p) return;
-  const summary = state.transactions.filter(t => t.propertyId === id).reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
-  const maintenance = state.maintenance.filter(m => m.propertyId === id && m.status === 'open');
-  const certs = state.certificates.filter(c => c.propertyId === id);
-  
-  showSheet(p.name, `
-    <div class="metrics-grid" style="grid-template-columns: 1fr 1fr;">
-      <div class="metric-card"><div class="metric-label">Monthly rent</div><div class="metric-value">${formatMoney(p.rent)}</div></div>
-      <div class="metric-card"><div class="metric-label">Net income</div><div class="metric-value ${summary >= 0 ? 'text-green' : 'text-red'}">${formatMoney(summary)}</div></div>
-    </div>
-    <div class="card"><div class="card-title">Property Details</div>
-      <div><strong>Address:</strong> ${escapeHtml(p.address)}</div>
-      <div><strong>Tenant:</strong> ${escapeHtml(p.tenant)}</div>
-      <div><strong>Lease:</strong> ${p.leaseStart} → ${p.leaseEnd}</div>
-      <div><strong>Lender:</strong> ${escapeHtml(p.lender)}</div>
-      <div><strong>Mortgage:</strong> ${formatMoney(p.mortgage)}/mo</div>
-      ${p.deposit > 0 ? `<div><strong>Deposit:</strong> ${formatMoney(p.deposit)} (${p.depositScheme || 'No scheme'})</div>` : ''}
-    </div>
-    ${certs.length > 0 ? `<div class="card"><div class="card-title">Certificates</div>${certs.map(c => `<div class="flex justify-between items-center" style="padding: 8px 0;"><span>${escapeHtml(c.type)}</span><span>Expires: ${formatDate(c.expiryDate)}</span></div>`).join('')}</div>` : ''}
-    ${maintenance.length > 0 ? `<div class="card"><div class="card-title">🔧 Open Issues</div>${maintenance.map(m => `<div class="flex justify-between items-center" style="padding: 8px 0;"><span>${escapeHtml(m.description)}</span><span class="compliance-due due-soon">${m.priority}</span></div>`).join('')}</div>` : ''}
-    <div class="flex gap-2"><button class="btn btn-secondary" onclick="editProperty('${escapeJs(id)}'); closeSheet();">Edit Property</button><button class="btn btn-secondary" onclick="showQuickExpenseForProperty('${escapeJs(id)}'); closeSheet();">Add Expense</button></div>
+function showQuickActions() {
+  showSheet('Quick Actions', `
+    <button class="btn btn-primary mb-2" onclick="showAddProperty(); closeSheet();">🏠 Add Property</button>
+    <button class="btn btn-primary mb-2" onclick="showAddTransaction(); closeSheet();">💰 Add Transaction</button>
+    <button class="btn btn-primary mb-2" onclick="showAddMaintenance(); closeSheet();">🔧 Log Maintenance</button>
+    <button class="btn btn-primary" onclick="exportData(); closeSheet();">📤 Export Data</button>
   `);
-}
-
-function showQuickExpenseForProperty(propertyId) {
-  setTimeout(() => {
-    const propOptions = state.properties.map(p => `<option value="${p.id}" ${p.id === propertyId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
-    showSheet('Add Expense', `
-      <div class="form-group"><label class="form-label">Property</label><select id="expense-prop" class="form-select">${propOptions}</select></div>
-      <div class="form-group"><label class="form-label">Amount (£)</label><input type="number" id="expense-amount" class="form-input" step="0.01"></div>
-      <div class="form-group"><label class="form-label">Description</label><input type="text" id="expense-desc" class="form-input"></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">Date</label><input type="date" id="expense-date" class="form-input" value="${new Date().toISOString().split('T')[0]}"></div>
-      <div class="form-group"><label class="form-label">Category</label><select id="expense-cat" class="form-select"><option value="repairs">Repairs</option><option value="insurance">Insurance</option><option value="other">Other</option></select></div></div>
-    `, () => {
-      const amount = parseFloat(document.getElementById('expense-amount').value);
-      const description = document.getElementById('expense-desc').value;
-      if (!amount || !description) { showToast('Fill all fields', true); return; }
-      state.transactions.push({ id: generateId(), date: document.getElementById('expense-date').value, type: 'expense', description, propertyId, amount, category: document.getElementById('expense-cat').value });
-      saveState();
-      closeSheet();
-      showToast('Expense added');
-      renderAll();
-    });
-  }, 100);
-}
-
-function showSearch() {
-  const properties = state.properties;
-  showSheet('Search', `
-    <div class="form-group"><input type="text" id="searchInput" class="form-input" placeholder="Search properties..." oninput="performSearch(this.value)"></div>
-    <div id="searchResults">${properties.slice(0, 5).map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${escapeHtml(p.name)}</div><div class="metric-label">${escapeHtml(p.address)}</div></div></div>`).join('')}</div>
-  `);
-}
-
-function performSearch(query) {
-  if (!query || !query.trim()) return;
-  const results = state.properties.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.address.toLowerCase().includes(query.toLowerCase()));
-  const resultsDiv = document.getElementById('searchResults');
-  if (resultsDiv) {
-    resultsDiv.innerHTML = results.map(p => `<div class="property-item" style="margin-bottom: 8px; cursor: pointer;" onclick="showPropertyDetail('${escapeJs(p.id)}'); closeSheet();"><div style="padding: 12px;"><div class="property-name">${escapeHtml(p.name)}</div><div class="metric-label">${escapeHtml(p.address)}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No results found</div>';
-  }
 }
 
 function showSettings() {
@@ -1172,63 +1155,42 @@ function showSettings() {
     </div>
     <div class="card"><div class="card-title">Data Management</div>
       <button class="btn btn-secondary mb-2" onclick="exportData()">📤 Export Data</button>
-      <button class="btn btn-secondary mb-2" onclick="exportBackup()">💾 Create Backup</button>
       <button class="btn btn-danger" onclick="confirmReset()">⚠️ Reset All Data</button>
-    </div>
-    <div class="card"><div class="card-title">About</div>
-      <div class="metric-label">Version 2.0 - Complete Edition</div>
-      <div class="metric-label">Data stored locally and optionally in Google Drive</div>
     </div>
   `);
 }
 
-function showQuickActions() {
-  showSheet('Quick Actions', `
-    <button class="btn btn-primary mb-2" onclick="showQuickExpense(); closeSheet();">💰 Add Expense</button>
-    <button class="btn btn-primary mb-2" onclick="showQuickIncome(); closeSheet();">📈 Add Income</button>
-    <button class="btn btn-primary mb-2" onclick="showQuickMaintenance(); closeSheet();">🔧 Log Maintenance</button>
-    <button class="btn btn-primary mb-2" onclick="showAddCertificate(); closeSheet();">📋 Add Certificate</button>
-    <button class="btn btn-primary" onclick="showAddProperty(); closeSheet();">🏠 Add Property</button>
+function showSearch() {
+  const properties = state.properties.filter(p => !p.archived);
+  showSheet('Search', `
+    <div class="form-group"><input type="text" id="search-input" class="form-input" placeholder="Search properties..." oninput="performSearch(this.value)"></div>
+    <div id="search-results"></div>
   `);
+}
+
+function performSearch(query) {
+  if (!query.trim()) return;
+  const results = state.properties.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.address.toLowerCase().includes(query.toLowerCase()));
+  document.getElementById('search-results').innerHTML = results.map(p => `<div class="prop-item" onclick="showPropertyDetail('${p.id}'); closeSheet();"><div class="prop-dot" style="background: ${p.color}"></div><div><div class="prop-name">${escapeHtml(p.name)}</div><div class="prop-addr">${escapeHtml(p.address)}</div></div></div>`).join('') || '<div class="text-center" style="padding: 20px;">No results</div>';
 }
 
 function exportData() {
-  const dataToExport = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates };
-  const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+  const data = { properties: state.properties, transactions: state.transactions, maintenance: state.maintenance, certificates: state.certificates };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = `portfolio-${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 100);
   showToast('Data exported');
 }
 
-function exportBackup() {
-  const backup = { timestamp: new Date().toISOString(), version: '2.0', data: state };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-  showToast('Backup created');
-}
-
 function confirmReset() {
-  closeSheet();
-  setTimeout(() => {
-    if (confirm('⚠️ WARNING: This will delete ALL your data.\n\nProperties, transactions, maintenance records, certificates, and all other data will be permanently deleted.\n\nThis action cannot be undone. Are you absolutely sure?')) {
-      localStorage.clear();
-      showToast('Data reset. Refreshing...');
-      setTimeout(() => location.reload(), 1000);
-    }
-  }, 100);
+  if (confirm('⚠️ WARNING: This will delete ALL your data. This cannot be undone. Are you sure?')) {
+    localStorage.clear();
+    location.reload();
+  }
 }
 
 // ============================================
@@ -1236,41 +1198,45 @@ function confirmReset() {
 // ============================================
 window.onload = function() {
   loadLocalData();
-  renderAll();
+  renderDashboard();
   checkGoogleReady();
   
-  // Expose functions globally
   window.navigate = navigate;
   window.closeSheet = closeSheet;
-  window.showQuickExpense = showQuickExpense;
-  window.showQuickIncome = showQuickIncome;
-  window.showQuickMaintenance = showQuickMaintenance;
+  window.showQuickActions = showQuickActions;
+  window.showSettings = showSettings;
+  window.showSearch = showSearch;
   window.showAddProperty = showAddProperty;
   window.showAddTransaction = showAddTransaction;
-  window.showAddCertificate = showAddCertificate;
-  window.showPropertyDetail = showPropertyDetail;
-  window.showSearch = showSearch;
-  window.showSettings = showSettings;
-  window.showQuickActions = showQuickActions;
-  window.exportData = exportData;
-  window.exportBackup = exportBackup;
-  window.confirmReset = confirmReset;
-  window.signIn = signIn;
-  window.signOut = signOut;
+  window.showAddMaintenance = showAddMaintenance;
   window.editProperty = editProperty;
   window.editTransaction = editTransaction;
   window.editMaintenance = editMaintenance;
   window.editCertificate = editCertificate;
-  window.deleteProperty = deleteProperty;
-  window.deleteTransaction = deleteTransaction;
-  window.deleteMaintenance = deleteMaintenance;
   window.deleteCertificate = deleteCertificate;
-  window.showQuickExpenseForProperty = showQuickExpenseForProperty;
+  window.deleteMaintenance = deleteMaintenance;
+  window.showAddTransactionForProperty = showAddTransactionForProperty;
+  window.showAddMaintenanceForProperty = showAddMaintenanceForProperty;
+  window.showAddCertificateForProperty = showAddCertificateForProperty;
+  window.showPropertyDetail = showPropertyDetail;
+  window.closePropDetail = closePropDetail;
+  window.switchTab = switchTab;
+  window.setFilterProp = setFilterProp;
+  window.signIn = signIn;
+  window.signOut = signOut;
+  window.exportData = exportData;
+  window.confirmReset = confirmReset;
   window.performSearch = performSearch;
-  window.prevMonth = prevMonth;
-  window.nextMonth = nextMonth;
-  window.showDayEvents = showDayEvents;
 };
 </script>
+
+<!-- Property Detail Container -->
+<div id="prop-detail">
+  <div id="detail-header">
+    <button class="back-btn" onclick="closePropDetail()">← Back</button>
+    <div style="flex:1; font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" id="detail-prop-name"></div>
+  </div>
+  <div id="detail-content"></div>
+</div>
 </body>
 </html>
