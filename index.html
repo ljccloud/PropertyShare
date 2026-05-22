@@ -1085,8 +1085,19 @@ function renderPropDetailContent(id) {
       ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
-      ${rh.length?`<div class="card"><div class="card-title">Rent history</div>${rh.map(r=>`<div class="info-row"><span>${fmtMoney(r.amount)}/mo</span><span>${fmtDate(r.startDate)} → ${r.endDate?fmtDate(r.endDate):'Present'}</span></div>`).join('')}</div>`:''}
-      <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
+       ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
+  .sort((a, b) => {
+    // Sort by startDate descending (most recent first)
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
+    return b.startDate.localeCompare(a.startDate);
+  })
+  .map(r => `<div class="info-row">
+    <span style="font-weight:500">${fmtMoney(r.amount)}/mo</span>
+    <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
+    ${r.notes ? `<span class="text-sm" style="color:var(--text3);margin-left:8px">${escapeHtml(r.notes)}</span>` : ''}
+  </div>`).join('')}</div>` : ''}   
+    <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
     </div>
     <div id="dtab-financials" class="dtab-content">
       <div class="card">${infoRows([['Ownership',(p.owners||[]).map(o=>{const ow=state.owners.find(x=>x.id===o.ownerId);return (ow?ow.name:'?')+': '+o.share+'%';}).join(', ')||(p.ownershipShare||100)+'%'],['Purchase',fmtMoney(p.purchase)],['Value',fmtMoney(p.value)],['Mortgage',fmtMoney(p.mortgage)+'/mo'],['Lender',p.lender],['Yield',p.value>0?((p.rent*12/p.value)*100).toFixed(1)+'%':'—']])}</div>
