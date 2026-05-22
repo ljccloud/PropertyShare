@@ -270,7 +270,7 @@ const INCOME_CATS = ['rental-income'];
 const EXPENSE_CATS = ['premises', 'repairs', 'financial', 'professional', 'services', 'travel', 'other-allowable'];
 
 // ============================================
-// DEFAULT DATA with new fields
+// DEFAULT DATA with tenure fields
 // ============================================
 const DEFAULT_PROPS = [
   {id:'p1',name:'14 Maple Close',address:'Manchester, M20 3RD',status:'let',archived:false,color:PROP_COLORS[0],ownershipShare:100,
@@ -437,7 +437,7 @@ async function findOrCreateFolder(name, parentId) {
   if(result.files && result.files.length > 0) return result.files[0].id;
   const created = await driveRequest('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] })
   });
   return created.id;
@@ -624,7 +624,12 @@ async function loadFromLocal() {
   state.txns=state.txns.map(t=>({...t,cat:CAT_LEGACY[t.cat]||t.cat}));
   state.props.forEach(p=>{
     if(!p.docs) p.docs=[];
-    (p.tenancyDocs||[]).forEach(d=>{if(!p.docs.find(x=>x.id===d.id))p.docs.push({...d,section:'tenancy',label:d.type||'Tenancy'});});
+    if(p.tenancyDocs) {
+      p.tenancyDocs.forEach(d=>{
+        if(!p.docs.find(x=>x.id===d.id)) p.docs.push({...d, section:'tenancy', label:d.type||'Tenancy', propertyId: p.id });
+      });
+      delete p.tenancyDocs;
+    }
   });
 }
 
@@ -717,7 +722,7 @@ function renderScreen(name) {
 }
 
 // ============================================
-// DASHBOARD
+// DASHBOARD - FIXED
 // ============================================
 function currentTaxYear() {
   const now=new Date(), y=now.getFullYear();
@@ -1213,7 +1218,7 @@ function renderProperties() {
 }
 
 // ============================================
-// PROPERTY DETAIL - Updated tabs
+// PROPERTY DETAIL - Updated with requested changes
 // ============================================
 function openPropDetail(id) {
   const p = getProp(id);
@@ -1245,6 +1250,7 @@ function renderPropDetailContent(id) {
   }
   rhRecords.sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
   
+  // Tab 1: Tenant (unchanged)
   const tenantTab = `<div id="dtab-tenant" class="dtab-content active">
     <div class="card"><div class="flex-row" style="margin-bottom:10px"><div class="card-title" style="margin-bottom:0">Tenant details</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditTenantModal('${id}')">Edit</button></div>
     ${infoRows([['Tenant', p.tenant||'—'],['Lease start', fmtDate(p.leaseStart)],['Lease end', fmtDate(p.leaseEnd)],['Deposit', p.deposit||'—'],['Email', p.tenantEmail||'—'],['Phone', p.tenantPhone||'—'],['Current rent', fmtMoney(p.rent)+'/mo'],['Last rent increase', p.lastRentIncrease ? fmtDate(p.lastRentIncrease) : '—'],['Previous rent', (p.lastRentAmount||0)>0 ? fmtMoney(p.lastRentAmount)+'/mo'+(p.rent&&p.lastRentAmount>0?' (+'+(((p.rent-p.lastRentAmount)/p.lastRentAmount)*100).toFixed(1)+'%)':'') : '—']])}</div>
@@ -1254,7 +1260,7 @@ function renderPropDetailContent(id) {
     <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
   </div>`;
   
-  // UPDATED: "Prop Details" tab with tenure information
+  // Tab 2: Prop Details (renamed from Financials) with leasehold/freehold
   const share = getOwnerShare(p);
   const dispRent = state.shareMode ? shareOf(p,p.rent) : p.rent;
   const dispValue = state.shareMode ? shareOf(p,p.value) : p.value;
@@ -1263,42 +1269,52 @@ function renderPropDetailContent(id) {
   const yld = dispValue>0 ? ((dispRent*12)/dispValue*100).toFixed(1)+'%' : '—';
   const ownerList = (p.owners&&p.owners.length) ? p.owners.map(o=>{ const ow=state.owners.find(x=>x.id===o.ownerId); return (ow?ow.name:'?')+': '+o.share+'%'; }).join(', ') : (p.ownershipShare||100)+'% (you)';
   const sfx = state.shareMode?' (your share)':'';
-  const tenureRows = p.tenure === 'leasehold' 
-    ? [['Lease commencement', fmtDate(p.leaseCommencement)], ['Lease length', p.leaseLength ? p.leaseLength + ' years' : '—']]
-    : [];
+  const leaseholdFields = p.tenure === 'leasehold' ? [['Lease commencement', fmtDate(p.leaseCommencement)], ['Lease length', p.leaseLength ? p.leaseLength + ' years' : '—']] : [];
   
   const propDetailsTab = `<div id="dtab-propdetails" class="dtab-content">
-    <div class="card">${infoRows([['Ownership', ownerList],['Tenure', p.tenure === 'leasehold' ? 'Leasehold' : 'Freehold'], ...tenureRows,['Monthly rent'+sfx, fmtMoney(dispRent)+'/mo'],['Annual rent'+sfx, fmtMoney(dispRent*12)],['Purchase price'+sfx, fmtMoney(dispPurch)],['Current value'+sfx, fmtMoney(dispValue)],['Gross yield', yld],['Mortgage/mo'+sfx, fmtMoney(dispMort)],['Net/mo'+sfx, fmtMoney(dispRent-dispMort)],['Lender', p.lender||'—']])}</div>
+    <div class="card">${infoRows([['Ownership', ownerList],['Tenure', p.tenure === 'leasehold' ? 'Leasehold' : 'Freehold'], ...leaseholdFields,['Monthly rent'+sfx, fmtMoney(dispRent)+'/mo'],['Annual rent'+sfx, fmtMoney(dispRent*12)],['Purchase price'+sfx, fmtMoney(dispPurch)],['Current value'+sfx, fmtMoney(dispValue)],['Gross yield', yld],['Mortgage/mo'+sfx, fmtMoney(dispMort)],['Net/mo'+sfx, fmtMoney(dispRent-dispMort)],['Lender', p.lender||'—']])}</div>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="openEditPropDetailsModal('${id}')">Edit property details</button>
     <button class="btn btn-secondary" style="margin-top:8px" onclick="openEditOwnershipModal('${id}')">Edit ownership</button>
     <button class="btn" style="margin-top:8px;background:${p.archived?'var(--green-bg)':'var(--amber-bg)'};color:${p.archived?'var(--green)':'var(--amber)'}" onclick="toggleArchiveProp('${id}')">${p.archived?'✓ Restore property':'Archive property'}</button>
     ${p.archived?'<div style="font-size:12px;color:var(--amber);margin-top:6px">Archived — hidden from calculations. Restore to include again.</div>':''}
   </div>`;
   
-  // UPDATED: Certs tab - removed appliances (moved to Documents)
+  // Tab 3: Certificates (appliances removed - moved to Documents)
   const certsTab = `<div id="dtab-certs" class="dtab-content">
     <div style="font-size:13px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Certificates</div>
     ${propCerts.length ? propCerts.map(c=>`<div class="cert-item" style="cursor:${c.docData?'pointer':'default'}" onclick="${c.docData?'openCertDoc(\''+c.id+'\')':''}"><div class="cert-info"><div class="cert-name">${c.type}${c.type==='EPC'&&c.epcRating?epcBand(c.epcRating):''}</div><div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div>${c.issuer?'<div class="cert-meta">'+c.issuer+'</div>':''}${c.notes?'<div class="cert-meta" style="color:var(--text3)">'+c.notes+'</div>':''}${c.docData?'<div class="cert-meta" style="color:var(--blue);margin-top:3px">📄 Document attached — tap to open</div>':'<div class="cert-meta" style="color:var(--text3);margin-top:3px">No document — upload via Documents tab</div>'}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span>${c.docData?'<button class="icon-btn" style="font-size:11px;width:auto;padding:2px 8px;border-radius:var(--radius-sm)" onclick="event.stopPropagation();openCertDoc(\''+c.id+'\')">Open</button>':''}<button class="icon-btn" onclick="event.stopPropagation();deleteCert('${c.id}','${id}')" title="Delete">✕</button></div></div>`).join('') : '<div class="empty"><div class="empty-icon">📋</div>No certificates yet</div>'}
     <button class="btn btn-secondary" style="margin-top:8px;margin-bottom:16px" onclick="openAddCertModal('${id}')">+ Add certificate</button>
   </div>`;
   
+  // Tab 4: Maintenance
   const maintTab = `<div id="dtab-maintenance" class="dtab-content">
     ${propMaint.length ? propMaint.map(m=>`<div class="cert-item" style="cursor:pointer" onclick="editMaint('${m.id}')"><div class="cert-info"><div class="cert-name">${m.desc}</div><div class="cert-meta">${fmtDate(m.date)}${m.cost?' · '+fmtMoney(m.cost):''}</div>${m.notes?'<div class="cert-meta" style="color:var(--text3)">'+m.notes+'</div>':''}${m.resolution?`<div class="cert-meta" style="color:var(--green);margin-top:4px">✓ Resolved ${fmtDate(m.resolvedDate)}: ${m.resolution}</div>`:''}</div><span class="badge badge-${m.status==='open'?'amber':'green'}">${m.status}</span><button class="icon-btn" onclick="event.stopPropagation();deleteMaint('${m.id}','${id}')" title="Delete">✕</button></div>`).join('') : '<div class="empty"><div class="empty-icon">🔧</div>No maintenance issues</div>'}
     <button class="btn btn-secondary" style="margin-top:8px" onclick="openAddMaintModal('${id}')">+ Log issue</button>
   </div>`;
   
+  // Tab 5: Contacts
   const contactsTab = `<div id="dtab-contacts" class="dtab-content">
     <div class="card"><div class="card-title">Key contacts</div>${infoRows([['Letting agent', p.agentName||p.agent||'—'],['Agent phone', p.agentTel||'—'],['Gas engineer', p.gasEngineer||'—'],['Electrician', p.electrician||'—'],['Solicitor', p.solicitor||'—']])}</div>
     <div class="card" style="margin-top:10px"><div class="card-title">Insurance</div>${infoRows([['Provider', p.insuranceProvider||p.insurance||'—'],['Policy no.', p.insurancePolicyNo||'—'],['Type', p.insuranceType||'—'],['Premium', p.insurancePremium?fmtMoney(p.insurancePremium)+'/yr':'—'],['Renewal', p.insuranceRenewal?fmtDate(p.insuranceRenewal):'—'],['Broker', p.insuranceContact||'—']])}<button class="btn btn-secondary" style="margin-top:10px" onclick="openEditInsuranceModal('${id}')">Edit insurance</button></div>
   </div>`;
   
+  // Tab 6: Finance log
   const finLogTab = `<div id="dtab-transactions" class="dtab-content"><div class="card">${propTxns.length ? propTxns.map(t=>txnRow(t,`deleteTxn('${t.id}','${id}')`,false)).join('') : '<div class="empty" style="padding:12px 0">No transactions yet</div>'}</div></div>`;
   
-  // UPDATED: Documents tab - includes appliances at the top, single-line document display
+  // Tab 7: Documents - includes appliances at the top, single-line document display
   const propDocs = (p.docs || []).filter(d => d.propertyId === id || !d.propertyId);
   const categorizedDocs = { 'Tenancy': [], 'Certificates': [], 'Receipts': [], 'Ownership': [], 'Other': [] };
-  propDocs.forEach(doc => { const cat = doc.category || 'Other'; if(categorizedDocs[cat]) categorizedDocs[cat].push(doc); else categorizedDocs['Other'].push(doc); });
-  propCerts.forEach(cert => { if(cert.docData) categorizedDocs['Certificates'].push({ id: cert.id, name: `${cert.type} Certificate`, category: 'Certificates', date: cert.issueDate, fileData: cert.docData, fileMime: cert.docMime, isCert: true }); });
+  propDocs.forEach(doc => { 
+    const cat = doc.category || 'Other'; 
+    if(categorizedDocs[cat]) categorizedDocs[cat].push(doc); 
+    else categorizedDocs['Other'].push(doc); 
+  });
+  propCerts.forEach(cert => { 
+    if(cert.docData) categorizedDocs['Certificates'].push({ 
+      id: cert.id, name: `${cert.type} Certificate`, category: 'Certificates', 
+      date: cert.issueDate, fileData: cert.docData, fileMime: cert.docMime, isCert: true 
+    }); 
+  });
   
   // Appliances section at top of Documents tab
   const appliancesSection = propApps.length ? `
@@ -1309,6 +1325,7 @@ function renderPropDetailContent(id) {
     </div>
   ` : '<div class="card"><div class="card-title">Appliances</div><div class="empty">No appliances logged</div><button class="btn btn-secondary" style="margin-top:8px" onclick="openAddApplianceModal('${id}')">+ Add appliance</button></div>';
   
+  // Single-line document display
   const docsTab = `<div id="dtab-documents" class="dtab-content">
     ${appliancesSection}
     <div class="card"><div class="card-title">Upload Document</div><div class="form-field"><label>Category</label><select id="prop-doc-category"><option value="Tenancy">🏠 Tenancy</option><option value="Certificates">✅ Certificates</option><option value="Receipts">💰 Receipts</option><option value="Ownership">📋 Ownership</option><option value="Other">📁 Other</option></select></div><div class="form-field"><label>Document Date</label><input type="date" id="prop-doc-date" value="${new Date().toISOString().slice(0,10)}"></div><div class="form-field"><label>Description (optional)</label><input type="text" id="prop-doc-label" placeholder="e.g. Tenancy agreement"></div><div class="upload-zone" onclick="document.getElementById('prop-doc-file').click()"><p>📎 Tap to choose a file</p><span>PDF, JPG, or PNG</span></div><input type="file" id="prop-doc-file" class="upload-input" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadPropertyDoc('${id}')"><div id="prop-doc-status"></div></div>
@@ -1902,7 +1919,7 @@ function saveApplianceEdit(appId, propId) {
 }
 
 // ============================================
-// UNIFIED DOCUMENT MANAGEMENT (Main Docs Tab) - FIXED DOCUMENT LINKS
+// UNIFIED DOCUMENT MANAGEMENT (Main Docs Tab)
 // ============================================
 let pendingUploadData = null;
 
@@ -1912,11 +1929,6 @@ function renderUnifiedDocs() {
     if(prop.docs && prop.docs.length) {
       prop.docs.forEach(doc => {
         allDocs.push({ ...doc, propertyName: prop.name, propertyId: prop.id, source: 'prop' });
-      });
-    }
-    if(prop.tenancyDocs && prop.tenancyDocs.length) {
-      prop.tenancyDocs.forEach(doc => {
-        allDocs.push({ ...doc, propertyName: prop.name, propertyId: prop.id, source: 'tenancy', category: 'Tenancy' });
       });
     }
   });
@@ -2003,7 +2015,6 @@ function openUnifiedDoc(propId, docId, source) {
   const prop = getProp(propId);
   let doc = null;
   if(source === 'cert') { doc = state.certs.find(c => c.id === docId); }
-  else if(source === 'tenancy') { doc = prop?.tenancyDocs?.find(d => d.id === docId); }
   else { doc = prop?.docs?.find(d => d.id === docId); }
   if(!doc || !doc.fileData) { showToast('Document data not found', true); return; }
   try {
@@ -2022,10 +2033,6 @@ function deleteUnifiedDoc(propId, docId, source) {
   if(source === 'cert') {
     state.certs = state.certs.filter(c => c.id !== docId);
     saveState('certs');
-  } else if(source === 'tenancy') {
-    const prop = getProp(propId);
-    if(prop) prop.tenancyDocs = prop.tenancyDocs?.filter(d => d.id !== docId) || [];
-    saveState('props');
   } else {
     const prop = getProp(propId);
     if(prop) prop.docs = prop.docs?.filter(d => d.id !== docId) || [];
@@ -2037,7 +2044,7 @@ function deleteUnifiedDoc(propId, docId, source) {
 }
 
 // ============================================
-// PROPERTY DOCUMENTS - FIXED LINKS
+// PROPERTY DOCUMENTS
 // ============================================
 function uploadPropertyDoc(propId) {
   const file = document.getElementById('prop-doc-file').files[0];
