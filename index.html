@@ -386,24 +386,22 @@ function propFirstWord(propId) {
   return alphaWord || words[0] || 'Property';
 }
 
-// Build filename: MMYY_Property_Category_FirstWordOfDescription.ext
-function buildDocumentFilename(propId, category, description, fileExt) {
+// Build filename: Property_YYMM_Category_FirstWordOfDescription.ext
+function buildDocumentFilename(propId, category, description, fileExt, documentDate) {
   const prop = getProp(propId);
-  if(!prop) return `document${fileExt}`;
-  
-  const now = new Date();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yy = String(now.getFullYear()).slice(2);
-  
-  // Get first meaningful word from property name (skip numbers)
-  const words = prop.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().split(/\s+/);
-  const propertyShort = words.find(w => isNaN(parseInt(w))) || words[0] || 'Property';
-  
-  // Get first word of description for filename
+  let date = new Date();
+  if (documentDate) {
+    date = new Date(documentDate);
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+  }
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yy = String(date.getFullYear()).slice(2);
+  const propertyShort = propFirstWord(propId);
   const descWords = (description || 'document').trim().split(/\s+/);
-  const firstWord = descWords[0].replace(/[^a-zA-Z0-9]/g, '') || 'Doc';
-  
-  return `${mm}${yy}_${propertyShort}_${category}_${firstWord}${fileExt}`;
+  const firstWord = descWords[0].replace(/[^a-zA-Z0-9]/g, '');
+  return `${propertyShort}_${yy}${mm}_${category}_${firstWord}${fileExt}`;
 }
 // ============================================
 // DRIVE API
@@ -1713,7 +1711,7 @@ async function savePendingDocument() {
     const base64 = e.target.result.split(',')[1];
     const mime = pendingUploadFile.type || 'application/pdf';
     const ext = mime === 'application/pdf' ? '.pdf' : (mime.includes('png') ? '.png' : '.jpg');
-    const filename = buildDocumentFilename(propId, category, description, ext);
+    const filename = buildDocumentFilename(propId, category, description, ext, docDate);
     
     const prop = getProp(propId);
     if(!prop.docs) prop.docs = [];
