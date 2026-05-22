@@ -312,8 +312,30 @@ const MAX_SAVE_RETRIES = 3;
 // ============================================
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 function fmtMoney(n) { return '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}); }
-function fmtDate(d) { if(!d||d==='—') return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function fmtDate(d) { 
+  if (!d || d === '—') return '—'; 
+  const parts = d.split('-');
+  if (parts.length !== 3) return '—';
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1;
+  const day = parseInt(parts[2]);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return '—';
+  const date = new Date(year, month, day);
+  const dayStr = date.getDate().toString().padStart(2, '0');
+  const monthStr = date.toLocaleString('en-GB', { month: 'short' });
+  const yearStr = date.getFullYear().toString().slice(-2);
+  return `${dayStr} ${monthStr} ${yearStr}`;
+}
 function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
 function certStatus(expiry) {
   if(!expiry) return 'grey';
   const d = daysUntil(expiry);
@@ -321,6 +343,7 @@ function certStatus(expiry) {
   if(d < 60) return 'amber';
   return 'green';
 }
+  
 function certLabel(expiry) {
   if(!expiry) return 'No date';
   const d = daysUntil(expiry);
@@ -1085,15 +1108,10 @@ function renderPropDetailContent(id) {
       ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
-       ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
-  .sort((a, b) => {
-    // Sort by startDate descending (most recent first)
-    if (!a.startDate) return 1;
-    if (!b.startDate) return -1;
-    return b.startDate.localeCompare(a.startDate);
-  })
+      ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
+  .sort((a, b) => b.startDate.localeCompare(a.startDate))
   .map(r => `<div class="info-row">
-    <span style="font-weight:500">${fmtMoney(r.amount)}/mo</span>
+    <span>${fmtMoney(r.amount)}/mo</span>
     <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
     ${r.notes ? `<span class="text-sm" style="color:var(--text3);margin-left:8px">${escapeHtml(r.notes)}</span>` : ''}
   </div>`).join('')}</div>` : ''}   
