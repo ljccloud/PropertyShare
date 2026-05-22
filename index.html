@@ -226,8 +226,18 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 </div>
 
 <script>
-<!-- END OF PART 1 Doctype to CSS -->
-  // ============================================
+// ============================================
+// ORIGIN DETECTION
+// ============================================
+if(window.location.protocol === 'file:') {
+  const originEl = document.getElementById('login-origin');
+  if(originEl) {
+    originEl.innerHTML = '⚠ Running from local file. Google Drive sign-in requires a web server (localhost or HTTPS).';
+    originEl.style.color = 'var(--red)';
+  }
+}
+
+// ============================================
 // CONFIGURATION
 // ============================================
 const DRIVE_MODE = true;
@@ -265,13 +275,7 @@ const DATA_FILENAME = 'portfolio-data.json';
 const DRIVE_FOLDER_NAME = 'Property Portfolio';
 
 // ============================================
-// CATEGORIES BY TYPE
-// ============================================
-const INCOME_CATS = ['rental-income'];
-const EXPENSE_CATS = ['premises', 'repairs', 'financial', 'professional', 'services', 'travel', 'other-allowable'];
-
-// ============================================
-// DEFAULT DATA with tenure fields
+// DEFAULT DATA
 // ============================================
 const DEFAULT_PROPS = [
   {id:'p1',name:'14 Maple Close',address:'Manchester, M20 3RD',status:'let',archived:false,color:PROP_COLORS[0],ownershipShare:100,
@@ -721,8 +725,8 @@ function renderScreen(name) {
   else if(name==='maintenance') renderMaintenance();
   else if(name==='docs') renderUnifiedDocs();
 }
-<!-- END OF PART 2 configuration through to UI rendering -->
-  // ============================================
+
+// ============================================
 // DASHBOARD
 // ============================================
 function currentTaxYear() {
@@ -1219,7 +1223,7 @@ function renderProperties() {
 }
 
 // ============================================
-// PROPERTY DETAIL - Core functions
+// PROPERTY DETAIL
 // ============================================
 function openPropDetail(id) {
   const p = getProp(id);
@@ -1328,9 +1332,8 @@ function renderPropDetailContent(id) {
     </div>
     ${tenantTab}${propDetailsTab}${certsTab}${maintTab}${contactsTab}${finLogTab}${docsTab}`;
 }
-<!-- END OF PART 3 Dashboard and Properties rendering-->
 
-  // ============================================
+// ============================================
 // EDIT MODALS
 // ============================================
 function openEditTenantModal(propId) {
@@ -1827,10 +1830,42 @@ function deleteRentHistory(rhId, propId) {
     showToast('Rent record deleted');
   }
 }
-<!-- END OF PART 4 Edit Modals, Finance, MTD -->
 
 // ============================================
-// EDIT PROP DETAILS MODAL (with tenure fields)
+// OPEN EDIT APPLIANCE MODAL
+// ============================================
+function openEditApplianceModal(appId, propId) {
+  const a = state.appliances.find(x=>x.id===appId);
+  if(!a) return;
+  openModal(`<div class="modal-title">Edit appliance</div>
+    <div class="form-field"><label>Name</label><input type="text" id="ea-name" value="${a.name}"></div>
+    <div class="form-row"><div class="form-field"><label>Make</label><input type="text" id="ea-make" value="${a.make||''}"></div><div class="form-field"><label>Model</label><input type="text" id="ea-model" value="${a.model||''}"></div></div>
+    <div class="form-field"><label>Serial number</label><input type="text" id="ea-serial" value="${a.serial||''}"></div>
+    <div class="form-field"><label>Location</label><input type="text" id="ea-location" value="${a.location||''}"></div>
+    <div class="form-field"><label>Notes</label><input type="text" id="ea-notes" value="${a.notes||''}"></div>
+    <button class="btn btn-primary" onclick="saveApplianceEdit('${appId}','${propId}')">Save</button>
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`);
+}
+
+function saveApplianceEdit(appId, propId) {
+  const a = state.appliances.find(x=>x.id===appId);
+  if(a) {
+    a.name = document.getElementById('ea-name').value;
+    a.make = document.getElementById('ea-make').value;
+    a.model = document.getElementById('ea-model').value;
+    a.serial = document.getElementById('ea-serial').value;
+    a.location = document.getElementById('ea-location').value;
+    a.notes = document.getElementById('ea-notes').value;
+    saveState('appliances');
+    closeModal();
+    renderPropDetailContent(propId);
+    renderAll();
+    showToast('Appliance updated');
+  }
+}
+
+// ============================================
+// EDIT PROP DETAILS MODAL
 // ============================================
 function openEditPropDetailsModal(propId) {
   const p = getProp(propId);
@@ -1868,132 +1903,6 @@ function savePropDetailsEdit(propId) {
   p.mortgage = parseFloat(document.getElementById('edit-mortgage').value) || p.mortgage;
   p.lender = document.getElementById('edit-lender').value || '—';
   saveState('props'); closeModal(); renderPropDetailContent(propId); renderAll();
-}
-
-// ============================================
-// OPEN EDIT APPLIANCE MODAL
-// ============================================
-function openEditApplianceModal(appId, propId) {
-  const a = state.appliances.find(x=>x.id===appId);
-  if(!a) return;
-  openModal(`<div class="modal-title">Edit appliance</div>
-    <div class="form-field"><label>Name</label><input type="text" id="ea-name" value="${a.name}"></div>
-    <div class="form-row"><div class="form-field"><label>Make</label><input type="text" id="ea-make" value="${a.make||''}"></div><div class="form-field"><label>Model</label><input type="text" id="ea-model" value="${a.model||''}"></div></div>
-    <div class="form-field"><label>Serial number</label><input type="text" id="ea-serial" value="${a.serial||''}"></div>
-    <div class="form-field"><label>Location</label><input type="text" id="ea-location" value="${a.location||''}"></div>
-    <div class="form-field"><label>Notes</label><input type="text" id="ea-notes" value="${a.notes||''}"></div>
-    <button class="btn btn-primary" onclick="saveApplianceEdit('${appId}','${propId}')">Save</button>
-    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`);
-}
-
-function saveApplianceEdit(appId, propId) {
-  const a = state.appliances.find(x=>x.id===appId);
-  if(a) {
-    a.name = document.getElementById('ea-name').value;
-    a.make = document.getElementById('ea-make').value;
-    a.model = document.getElementById('ea-model').value;
-    a.serial = document.getElementById('ea-serial').value;
-    a.location = document.getElementById('ea-location').value;
-    a.notes = document.getElementById('ea-notes').value;
-    saveState('appliances');
-    closeModal();
-    renderPropDetailContent(propId);
-    renderAll();
-    showToast('Appliance updated');
-  }
-}
-
-// ============================================
-// OWNER MANAGEMENT FUNCTIONS (MISSING FROM PART 5)
-// ============================================
-function openOwnerModal() {
-  const ownerRows = state.owners.length > 0
-    ? state.owners.map(o => {
-        const shares = state.props
-          .map(p => { const po = (p.owners||[]).find(x=>x.ownerId===o.id&&x.share>0); return po ? `${p.name} (${po.share}%)` : null; })
-          .filter(Boolean);
-        const isActive = shares.length > 0;
-        return `
-          <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;background:${isActive?'var(--surface)':'var(--surface2)'}">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:${isActive?'6px':'0'}">
-              <input type="text" value="${o.name}" id="ownname-${o.id}"
-                style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--surface)"
-                onchange="renameOwner('${o.id}',this.value)">
-              <button class="icon-btn" onclick="deleteOwner('${o.id}')" title="Remove">✕</button>
-            </div>
-            ${isActive
-              ? `<div class="text-sm">${shares.join(' · ')}</div>`
-              : `<div style="font-size:12px;color:var(--text3)">No property share — won't appear in dropdown</div>`}
-          </div>`;
-      }).join('')
-    : '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">No owners yet. Add one below.</div>';
-
-  openModal(`
-    <div class="modal-title">Manage owners</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">Owners only appear in the dropdown if they have a share in at least one property. Set shares via each property's Financials tab.</p>
-    <div id="owner-rows">${ownerRows}</div>
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
-      <div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Add owner</div>
-      <div class="gap-8">
-        <input type="text" id="new-global-owner" placeholder="Owner name"
-          style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px"
-          onkeydown="if(event.key==='Enter')addGlobalOwner()">
-        <button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:13px" onclick="addGlobalOwner()">Add</button>
-      </div>
-    </div>
-    <button class="btn btn-secondary" style="margin-top:10px" onclick="closeModal()">Done</button>`);
-}
-
-function addGlobalOwner() {
-  const el = document.getElementById('new-global-owner');
-  const name = el?.value?.trim();
-  if(!name) return;
-  if(state.owners.find(o=>o.name.toLowerCase()===name.toLowerCase())) {
-    const msg = document.getElementById('new-global-owner');
-    if(msg) { msg.style.borderColor='var(--red)'; msg.placeholder='Name already exists'; msg.value=''; }
-    setTimeout(()=>{ if(msg){msg.style.borderColor='';msg.placeholder='Owner name';} },2000);
-    return;
-  }
-  state.owners.push({id:uid(), name});
-  saveState('owners');
-  el.value = '';
-  openOwnerModal();
-  populateOwnerSelect();
-}
-
-function renameOwner(id, newName) {
-  const o = state.owners.find(x=>x.id===id);
-  if(o && newName.trim()) { o.name = newName.trim(); saveState('owners'); populateOwnerSelect(); }
-}
-
-function deleteOwner(id) {
-  const o = state.owners.find(x=>x.id===id);
-  if(!o) return;
-  const shares = state.props
-    .map(p => { const po = (p.owners||[]).find(x=>x.ownerId===id&&x.share>0); return po ? p.name : null; })
-    .filter(Boolean);
-  const warning = shares.length > 0
-    ? `<div class="alert alert-red" style="margin-bottom:10px">This will also remove ${o.name} from: ${shares.join(', ')}</div>`
-    : '';
-  openModal(`
-    <div class="modal-title">Remove owner</div>
-    ${warning}
-    <p style="font-size:14px;margin-bottom:20px">Remove <strong>${o.name}</strong> from the owners list?</p>
-    <div class="gap-8">
-      <button class="btn btn-secondary" style="flex:1" onclick="openOwnerModal()">Cancel</button>
-      <button class="btn" style="flex:1;background:var(--red-bg);color:var(--red)" onclick="confirmDeleteOwner('${id}')">Remove</button>
-    </div>`);
-}
-
-function confirmDeleteOwner(id) {
-  state.owners = state.owners.filter(o=>o.id!==id);
-  if(state.selectedOwner===id) { state.shareMode=false; state.selectedOwner=null; }
-  state.props.forEach(p=>{ if(p.owners) p.owners=p.owners.filter(o=>o.ownerId!==id); });
-  saveState('owners');
-  saveState('props');
-  populateOwnerSelect();
-  renderAll();
-  openOwnerModal();
 }
 
 // ============================================
@@ -2206,7 +2115,7 @@ function deletePropertyDoc(propId, docId, type) {
 }
 
 // ============================================
-// ADD PROPERTY OWNER STEP FUNCTIONS
+// ADD PROPERTY / CERT / APPLIANCE MODALS
 // ============================================
 function openAddPropModal() {
   openModal(`<div class="modal-title">Add property</div><div style="font-size:12px;color:var(--text2);margin-bottom:14px">Step 1 of 2 — Property details</div>
@@ -2331,9 +2240,6 @@ function toggleArchiveProp(id) {
   renderProperties();
 }
 
-// ============================================
-// OWNERSHIP, INSURANCE, CERTIFICATE, APPLIANCE FUNCTIONS
-// ============================================
 function openEditOwnershipModal(propId) {
   const p = getProp(propId);
   const propOwners = p.owners || [{ownerId:'o1',share:p.ownershipShare??100}];
@@ -2561,4 +2467,6 @@ function openModal(html) { document.getElementById('modal-body').innerHTML = htm
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
 loadState();
-<!-- END OF PART 5 - FILE COMPLETE -->
+</script>
+</body>
+</html>
