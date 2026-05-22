@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -561,7 +560,6 @@ function signIn() {
     if(btn){btn.disabled=false; btn.innerHTML='Sign in with Google';}
     return;
   }
-  
   try {
     const tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
@@ -608,7 +606,11 @@ function signIn() {
     if(btn){btn.disabled=false; btn.innerHTML='Sign in with Google';}
   }
 }
-
+// Add this immediately after the signIn function
+console.log('signIn function defined');
+console.log('signIn type:', typeof signIn);
+console.log('DRIVE_MODE:', DRIVE_MODE);
+console.log('CLIENT_ID exists:', !!CLIENT_ID);
 function signOut() {
   if(gAccessToken) {
     try {
