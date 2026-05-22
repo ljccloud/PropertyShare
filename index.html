@@ -221,6 +221,16 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const DATA_FILENAME = 'portfolio-data.json';
 const DRIVE_FOLDER_NAME = 'Property Portfolio';
 
+// Document category mapping for Drive folders (no emojis)
+const DOC_CATEGORIES = {
+  'Tenancy': 'Tenancies',
+  'Compliance': 'Compliance',
+  'Receipts': 'Receipts',
+  'Rent Statements': 'Rent Statements',
+  'Legal': 'Legal',
+  'Other': 'Other'
+};
+
 // ============================================
 // DEFAULT DATA
 // ============================================
@@ -342,6 +352,29 @@ function showToast(msg, isError) {
   toast.style.color = isError ? 'var(--red)' : 'var(--text2)';
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Get first meaningful word from property name (e.g., "14 Maple Close" -> "Maple")
+function propFirstWord(propId) {
+  const p = getProp(propId);
+  if(!p) return 'Unknown';
+  const words = p.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().split(/\s+/);
+  // Find first word that is not a number
+  const alphaWord = words.find(w => isNaN(parseInt(w)));
+  return alphaWord || words[0] || 'Property';
+}
+
+// Build filename: MMYY_Property_Category_FirstWordOfDescription.ext
+function buildDocumentFilename(propId, category, description, fileExt) {
+  const prop = getProp(propId);
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yy = String(now.getFullYear()).slice(2);
+  const propertyShort = propFirstWord(propId);
+  // Get first word of description for filename
+  const descWords = (description || 'document').trim().split(/\s+/);
+  const firstWord = descWords[0].replace(/[^a-zA-Z0-9]/g, '');
+  return `${mm}${yy}_${propertyShort}_${category}_${firstWord}${fileExt}`;
 }
 
 // ============================================
@@ -579,7 +612,7 @@ function renderScreen(name) {
 }
 
 // ============================================
-// DASHBOARD (with consistent time periods)
+// DASHBOARD (simplified for brevity - full version has all metrics)
 // ============================================
 function currentTaxYear() {
   const now=new Date(), y=now.getFullYear();
@@ -1147,7 +1180,7 @@ function saveRentHistory(propId) {
 }
 
 // ============================================
-// FINANCE SCREEN (MTD Export integrated)
+// FINANCE SCREEN
 // ============================================
 function renderFinance() {
   const period = state.dashPeriod || 'ytd';
@@ -1196,7 +1229,7 @@ function renderFinance() {
     </div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <button class="btn btn-secondary" style="flex:1" onclick="openAddTxnModal()">+ Add transaction</button>
-      <button class="btn btn-primary" style="flex:1" onclick="showMTDExportModal()">📊 MTD Export</button>
+      <button class="btn btn-primary" style="flex:1" onclick="showMTDExportModal()">MTD Export</button>
     </div>
     <div class="toggle-bar">
       <button class="toggle-btn ${typeFilter==='all'?'active':''}" onclick="setFinTab('all')">All</button>
@@ -1231,7 +1264,7 @@ function saveTxn() {
 }
 
 // ============================================
-// MTD EXPORT MODAL (integrated into Finance tab)
+// MTD EXPORT MODAL (in Finance tab)
 // ============================================
 function showMTDExportModal() {
   const currentYear = new Date().getFullYear();
@@ -1501,8 +1534,9 @@ function deleteMaint(id, propId) {
 }
 
 // ============================================
-// UNIFIED DOCUMENT MANAGEMENT SYSTEM (with fixed document links)
+// UNIFIED DOCUMENT MANAGEMENT SYSTEM
 // ============================================
+let pendingUploadFile = null;
 let pendingUploadData = null;
 
 function renderUnifiedDocs() {
@@ -1565,6 +1599,16 @@ function renderUnifiedDocs() {
     `<option value="${p.id}" ${state.filterProp === p.id ? 'selected' : ''}>${p.name}</option>`
   ).join('');
   
+  // Category options - no emojis
+  const categoryOptions = `
+    <option value="Tenancy">Tenancy</option>
+    <option value="Compliance">Compliance</option>
+    <option value="Receipts">Receipts</option>
+    <option value="Rent Statements">Rent Statements</option>
+    <option value="Legal">Legal</option>
+    <option value="Other">Other</option>
+  `;
+  
   const docListHtml = Object.keys(grouped).length === 0 ? 
     '<div class="empty"><div class="empty-icon">📁</div>No documents yet</div>' :
     Object.values(grouped).map(group => `
@@ -1575,7 +1619,7 @@ function renderUnifiedDocs() {
             <div class="cert-info">
               <div class="cert-name">${doc.name || 'Document'}</div>
               <div class="cert-meta">${doc.category || 'Document'} · ${fmtDate(doc.date)}</div>
-              <div class="cert-meta" style="color:var(--blue);margin-top:2px">📄 Click to open</div>
+              <div class="cert-meta" style="color:var(--blue);margin-top:2px">Click to open</div>
             </div>
             <button class="icon-btn" onclick="event.stopPropagation();deleteUnifiedDoc('${doc.propertyId}', '${doc.id}', '${doc.source}')">✕</button>
           </div>
@@ -1584,27 +1628,20 @@ function renderUnifiedDocs() {
     `).join('');
   
   document.getElementById('screen-docs').innerHTML = `
-    <div class="section-label">📄 Unified Document Management</div>
+    <div class="section-label">Unified Document Management</div>
     <div class="card">
       <div class="form-field"><label>Property</label><select id="doc-property">${propertyOptions}</select></div>
       <div class="form-field"><label>Category</label>
-        <select id="doc-category">
-          <option value="Tenancy">🏠 Tenancy & Lease</option>
-          <option value="Certificate">✅ Certificate & Compliance</option>
-          <option value="Financial">💰 Financial & Receipts</option>
-          <option value="Maintenance">🔧 Maintenance & Repairs</option>
-          <option value="Legal">⚖️ Legal & Ownership</option>
-          <option value="Insurance">🛡️ Insurance</option>
-          <option value="Other">📁 Other</option>
-        </select>
+        <select id="doc-category">${categoryOptions}</select>
       </div>
       <div class="form-field"><label>Document Date</label><input type="date" id="doc-date" value="${new Date().toISOString().slice(0,10)}"></div>
-      <div class="form-field"><label>Description (optional)</label><input type="text" id="doc-label" placeholder="e.g. Annual gas inspection"></div>
-      <div class="upload-zone" onclick="document.getElementById('doc-file-input').click()"><p>📎 Tap to choose a file</p><span>PDF, JPG, or PNG</span></div>
+      <div class="form-field"><label>Description</label><input type="text" id="doc-description" placeholder="e.g. Gas safety certificate"></div>
+      <div class="upload-zone" onclick="document.getElementById('doc-file-input').click()"><p>Tap to choose a file</p><span>PDF, JPG, or PNG</span></div>
       <input type="file" id="doc-file-input" class="upload-input" accept=".pdf,.jpg,.jpeg,.png" onchange="prepareUnifiedUpload()">
       <div id="upload-status"></div>
+      <button class="btn btn-primary" id="save-doc-btn" style="margin-top:12px" onclick="savePendingDocument()">Save Document</button>
     </div>
-    <div class="section-label">📂 Document Library</div>
+    <div class="section-label">Document Library</div>
     <div id="document-list">${docListHtml}</div>
   `;
 }
@@ -1612,65 +1649,84 @@ function renderUnifiedDocs() {
 function prepareUnifiedUpload() {
   const file = document.getElementById('doc-file-input').files[0];
   if(!file) return;
+  
+  pendingUploadFile = file;
   const statusDiv = document.getElementById('upload-status');
-  statusDiv.innerHTML = '<div class="loading-box"><span class="spinner"></span> Processing...</div>';
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    pendingUploadData = { base64: e.target.result.split(',')[1], mime: file.type || 'application/pdf', name: file.name };
-    uploadUnifiedDoc();
-  };
-  reader.readAsDataURL(file);
+  statusDiv.innerHTML = '<div class="alert" style="background:var(--blue-bg);color:var(--blue);margin-top:10px">File selected. Fill in the details and click Save Document.</div>';
 }
 
-async function uploadUnifiedDoc() {
-  if(!pendingUploadData) return;
+async function savePendingDocument() {
+  if(!pendingUploadFile) {
+    showToast('Please select a file first', true);
+    return;
+  }
+  
   const propId = document.getElementById('doc-property').value;
   const category = document.getElementById('doc-category').value;
   const docDate = document.getElementById('doc-date').value;
-  const label = document.getElementById('doc-label').value.trim();
-  const statusDiv = document.getElementById('upload-status');
-  const prop = getProp(propId);
-  const roadName = prop.name.split(' ')[0];
-  const dateStr = docDate.replace(/-/g, '').slice(2);
-  const ext = pendingUploadData.mime === 'application/pdf' ? '.pdf' : (pendingUploadData.mime.includes('png') ? '.png' : '.jpg');
-  const filename = `${roadName}_${dateStr}_${category}${label ? '_' + label.replace(/[^a-z0-9]/gi, '-') : ''}${ext}`;
+  const description = document.getElementById('doc-description').value.trim();
   
-  if(!prop.docs) prop.docs = [];
-  prop.docs.push({ 
-    id: uid(), 
-    name: filename, 
-    category: category, 
-    date: docDate, 
-    label: label, 
-    fileData: pendingUploadData.base64, 
-    fileMime: pendingUploadData.mime,
-    propertyId: propId
-  });
-  saveState('props');
-  
-  if(gAccessToken && gDriveFolderIds.root) {
-    try {
-      const folderName = roadName;
-      let propFolderId = await findOrCreateFolder(folderName, gDriveFolderIds.root);
-      let catFolderId = await findOrCreateFolder(category, propFolderId);
-      const bytes = atob(pendingUploadData.base64);
-      const byteArray = new Uint8Array(bytes.length);
-      for(let i = 0; i < bytes.length; i++) byteArray[i] = bytes.charCodeAt(i);
-      const blob = new Blob([byteArray], { type: pendingUploadData.mime });
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify({ name: filename, parents: [catFolderId] })], { type: 'application/json' }));
-      form.append('file', blob);
-      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gAccessToken }, body: form });
-      showToast('✓ Saved to Drive');
-    } catch(e) { console.warn('Drive save failed:', e); }
+  if(!description) {
+    showToast('Please enter a description', true);
+    return;
   }
   
-  statusDiv.innerHTML = '<div class="alert" style="background:var(--green-bg);color:var(--green);margin-top:10px">✓ Uploaded to ' + category + '</div>';
-  setTimeout(() => statusDiv.innerHTML = '', 2000);
-  pendingUploadData = null;
-  document.getElementById('doc-file-input').value = '';
-  document.getElementById('doc-label').value = '';
-  renderUnifiedDocs();
+  const statusDiv = document.getElementById('upload-status');
+  statusDiv.innerHTML = '<div class="loading-box"><span class="spinner"></span> Processing...</div>';
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    const mime = pendingUploadFile.type || 'application/pdf';
+    const ext = mime === 'application/pdf' ? '.pdf' : (mime.includes('png') ? '.png' : '.jpg');
+    const filename = buildDocumentFilename(propId, category, description, ext);
+    
+    const prop = getProp(propId);
+    if(!prop.docs) prop.docs = [];
+    prop.docs.push({ 
+      id: uid(), 
+      name: filename, 
+      category: category, 
+      date: docDate, 
+      description: description,
+      fileData: base64, 
+      fileMime: mime,
+      propertyId: propId
+    });
+    saveState('props');
+    
+    // Save to Drive with proper folder structure
+    if(gAccessToken && gDriveFolderIds.root) {
+      try {
+        const folderName = propFirstWord(propId);
+        let propFolderId = await findOrCreateFolder(folderName, gDriveFolderIds.root);
+        let catFolderId = await findOrCreateFolder(category, propFolderId);
+        
+        const bytes = atob(base64);
+        const byteArray = new Uint8Array(bytes.length);
+        for(let i = 0; i < bytes.length; i++) byteArray[i] = bytes.charCodeAt(i);
+        const blob = new Blob([byteArray], { type: mime });
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify({ name: filename, parents: [catFolderId] })], { type: 'application/json' }));
+        form.append('file', blob);
+        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + gAccessToken },
+          body: form
+        });
+        showToast('✓ Saved to Drive');
+      } catch(e) { console.warn('Drive save failed:', e); }
+    }
+    
+    statusDiv.innerHTML = '<div class="alert" style="background:var(--green-bg);color:var(--green);margin-top:10px">✓ Document saved</div>';
+    setTimeout(() => statusDiv.innerHTML = '', 2000);
+    
+    pendingUploadFile = null;
+    document.getElementById('doc-file-input').value = '';
+    document.getElementById('doc-description').value = '';
+    renderUnifiedDocs();
+  };
+  reader.readAsDataURL(pendingUploadFile);
 }
 
 function openUnifiedDoc(propId, docId, source) {
