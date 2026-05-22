@@ -1107,16 +1107,14 @@ function renderPropDetailContent(id) {
       ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
-   ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
+  ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
   .sort((a, b) => b.startDate.localeCompare(a.startDate))
-  .map(r => `<div class="info-row" style="justify-content: flex-start;">
+  .map(r => `<div class="info-row" style="justify-content: flex-start; gap: 12px;">
     <div style="width: 100px; flex-shrink: 0;">${fmtMoney(r.amount)}/mo</div>
-    <div style="flex: 1;">
-      <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
-      ${r.notes ? `<span class="text-sm" style="color:var(--text3); margin-left: 8px;">${escapeHtml(r.notes)}</span>` : ''}
-    </div>
-  </div>`).join('')}</div>` : ''}
-    <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
+    <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
+    ${r.notes ? `<span class="text-sm" style="color:var(--text3);">${escapeHtml(r.notes)}</span>` : '<span style="width: 0;"></span>'}
+  </div>`).join('')}</div>` : ''}   
+      <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
     </div>
     <div id="dtab-financials" class="dtab-content">
       <div class="card">${infoRows([['Ownership',(p.owners||[]).map(o=>{const ow=state.owners.find(x=>x.id===o.ownerId);return (ow?ow.name:'?')+': '+o.share+'%';}).join(', ')||(p.ownershipShare||100)+'%'],['Purchase',fmtMoney(p.purchase)],['Value',fmtMoney(p.value)],['Mortgage',fmtMoney(p.mortgage)+'/mo'],['Lender',p.lender],['Yield',p.value>0?((p.rent*12/p.value)*100).toFixed(1)+'%':'—']])}</div>
