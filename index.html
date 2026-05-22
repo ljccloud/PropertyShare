@@ -367,16 +367,22 @@ function propFirstWord(propId) {
 // Build filename: MMYY_Property_Category_FirstWordOfDescription.ext
 function buildDocumentFilename(propId, category, description, fileExt) {
   const prop = getProp(propId);
+  if(!prop) return `document${fileExt}`;
+  
   const now = new Date();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const yy = String(now.getFullYear()).slice(2);
-  const propertyShort = propFirstWord(propId);
+  
+  // Get first meaningful word from property name (skip numbers)
+  const words = prop.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().split(/\s+/);
+  const propertyShort = words.find(w => isNaN(parseInt(w))) || words[0] || 'Property';
+  
   // Get first word of description for filename
   const descWords = (description || 'document').trim().split(/\s+/);
-  const firstWord = descWords[0].replace(/[^a-zA-Z0-9]/g, '');
+  const firstWord = descWords[0].replace(/[^a-zA-Z0-9]/g, '') || 'Doc';
+  
   return `${mm}${yy}_${propertyShort}_${category}_${firstWord}${fileExt}`;
 }
-
 // ============================================
 // DRIVE API
 // ============================================
