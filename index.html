@@ -62,6 +62,8 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .badge-red { background: var(--red-bg); color: var(--red); }
 .badge-amber { background: var(--amber-bg); color: var(--amber); }
 .badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-teal { background: var(--teal-bg); color: var(--teal); }
+.badge-purple { background: var(--purple-bg); color: var(--purple); }
 .badge-grey { background: var(--surface2); color: var(--text2); }
 .info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 12px; }
 .info-row:last-child { border-bottom: none; }
@@ -155,7 +157,6 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
     <div id="screen-dashboard" class="screen active"></div>
     <div id="screen-properties" class="screen"></div>
     <div id="screen-finance" class="screen"></div>
-    <div id="screen-mtd" class="screen"></div>
     <div id="screen-maintenance" class="screen"></div>
     <div id="screen-docs" class="screen"></div>
   </div>
@@ -163,7 +164,6 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
     <button class="nav-btn active" onclick="showScreen('dashboard',this)"><span class="nav-icon">⌂</span><span class="nav-label">Overview</span></button>
     <button class="nav-btn" onclick="showScreen('properties',this)"><span class="nav-icon">⊞</span><span class="nav-label">Properties</span></button>
     <button class="nav-btn" onclick="showScreen('finance',this)"><span class="nav-icon">£</span><span class="nav-label">Finance</span></button>
-    <button class="nav-btn" onclick="showScreen('mtd',this)"><span class="nav-icon">📊</span><span class="nav-label">MTD</span></button>
     <button class="nav-btn" onclick="showScreen('maintenance',this)"><span class="nav-icon">🔧</span><span class="nav-label">Maintenance</span></button>
     <button class="nav-btn" onclick="showScreen('docs',this)"><span class="nav-icon">📄</span><span class="nav-label">Documents</span></button>
   </div>
@@ -574,7 +574,6 @@ function renderScreen(name) {
   if(name==='dashboard') renderDashboard();
   else if(name==='properties') renderProperties();
   else if(name==='finance') renderFinance();
-  else if(name==='mtd') renderMTD();
   else if(name==='maintenance') renderMaintenance();
   else if(name==='docs') renderUnifiedDocs();
 }
@@ -1006,7 +1005,7 @@ function renderProperties() {
 }
 
 // ============================================
-// PROPERTY DETAIL (partial - key functions)
+// PROPERTY DETAIL
 // ============================================
 function openPropDetail(id) {
   const p = getProp(id);
@@ -1148,7 +1147,7 @@ function saveRentHistory(propId) {
 }
 
 // ============================================
-// FINANCE SCREEN (with consistent time periods)
+// FINANCE SCREEN (MTD Export integrated)
 // ============================================
 function renderFinance() {
   const period = state.dashPeriod || 'ytd';
@@ -1197,7 +1196,7 @@ function renderFinance() {
     </div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <button class="btn btn-secondary" style="flex:1" onclick="openAddTxnModal()">+ Add transaction</button>
-      <button class="btn btn-primary" style="flex:1" onclick="showScreen('mtd',document.querySelector('[data-screen=mtd]'))">MTD export</button>
+      <button class="btn btn-primary" style="flex:1" onclick="showMTDExportModal()">📊 MTD Export</button>
     </div>
     <div class="toggle-bar">
       <button class="toggle-btn ${typeFilter==='all'?'active':''}" onclick="setFinTab('all')">All</button>
@@ -1232,70 +1231,153 @@ function saveTxn() {
 }
 
 // ============================================
-// MTD SCREEN
+// MTD EXPORT MODAL (integrated into Finance tab)
 // ============================================
+function showMTDExportModal() {
+  const currentYear = new Date().getFullYear();
+  const taxYears = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1].filter(y => y >= 2020);
+  
+  openModal(`
+    <div class="modal-title">MTD for Income Tax Export</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Generate a Making Tax Digital compliant report for HMRC submission.</p>
+    <div class="form-field"><label>Tax Year</label>
+      <select id="mtd-tax-year">${taxYears.map(y => `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}/${y+1}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-field"><label>Export Type</label>
+      <select id="mtd-export-type">
+        <option value="full">Full Year Summary</option>
+        <option value="quarterly">Quarterly Breakdown</option>
+        <option value="csv">CSV Export</option>
+      </select>
+    </div>
+    <div class="form-field" id="mtd-quarter-field" style="display:none"><label>Quarter (for quarterly breakdown)</label>
+      <select id="mtd-quarter">
+        <option value="1">Q1 (6 Apr - 5 Jul)</option>
+        <option value="2">Q2 (6 Jul - 5 Oct)</option>
+        <option value="3">Q3 (6 Oct - 5 Jan)</option>
+        <option value="4">Q4 (6 Jan - 5 Apr)</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="generateMTDReport()">Generate & Save to Drive</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal()">Cancel</button>
+  `);
+  
+  const exportTypeSelect = document.getElementById('mtd-export-type');
+  const quarterField = document.getElementById('mtd-quarter-field');
+  
+  const updateQuarterField = () => {
+    if(quarterField) {
+      quarterField.style.display = exportTypeSelect.value === 'quarterly' ? 'block' : 'none';
+    }
+  };
+  
+  if(exportTypeSelect) {
+    exportTypeSelect.removeEventListener('change', updateQuarterField);
+    exportTypeSelect.addEventListener('change', updateQuarterField);
+    updateQuarterField();
+  }
+}
+
 function getTaxYearForMTD(date) {
   const d = new Date(date);
   const y = d.getFullYear();
-  return d >= new Date(y, 3, 6) ? y : y - 1;
+  const cutoff = new Date(y, 3, 6);
+  return d >= cutoff ? y : y - 1;
 }
 
-function renderMTD() {
-  const yr = state.mtdYear || getTaxYearForMTD(new Date().toISOString().slice(0,10));
-  const start = new Date(yr, 3, 6);
-  const end = new Date(yr+1, 3, 5, 23, 59);
-  const yearTxns = state.txns.filter(t => { if(!t.date) return false; const d = new Date(t.date); return d >= start && d <= end; });
-  const gross = yearTxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
-  const finance = yearTxns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
-  const other = yearTxns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
-  const quarters = [1,2,3,4].map(q => {
-    let qs, qe;
-    if(q===1){qs=new Date(yr,3,6);qe=new Date(yr,6,5,23,59);}
-    else if(q===2){qs=new Date(yr,6,6);qe=new Date(yr,9,5,23,59);}
-    else if(q===3){qs=new Date(yr,9,6);qe=new Date(yr+1,0,5,23,59);}
-    else{qs=new Date(yr+1,0,6);qe=new Date(yr+1,3,5,23,59);}
-    const labels = ['6 Apr – 5 Jul','6 Jul – 5 Oct','6 Oct – 5 Jan','6 Jan – 5 Apr'];
-    const dues = ['7 Aug','7 Nov','7 Feb','7 May'];
-    const qt = yearTxns.filter(t=>{ const d=new Date(t.date); return d>=qs&&d<=qe; });
-    const qInc = qt.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
-    const qFin = qt.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
-    const qOth = qt.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
-    return {q,label:labels[q-1],due:dues[q-1],income:qInc,finance:qFin,other:qOth,total:qInc-qFin-qOth};
-  });
-  const yearOpts = [yr-2, yr-1, yr].map(y=>`<option value="${y}"${y===yr?' selected':''}>${y}/${y+1}</option>`).join('');
+async function generateMTDReport() {
+  const taxYear = parseInt(document.getElementById('mtd-tax-year').value);
+  const exportType = document.getElementById('mtd-export-type').value;
+  const quarter = parseInt(document.getElementById('mtd-quarter')?.value || 1);
   
-  document.getElementById('screen-mtd').innerHTML = `
-    <div class="flex-row" style="margin-bottom:10px"><button class="back-btn" onclick="showScreen('finance',document.querySelector('[data-screen=finance]'))">← Finance</button><div style="flex:1"></div><select onchange="state.mtdYear=parseInt(this.value);renderMTD()">${yearOpts}</select></div>
-    <div class="metrics"><div class="metric"><div class="metric-label">Gross income</div><div style="color:var(--green)">${fmtMoney(gross)}</div></div><div class="metric"><div class="metric-label">Finance costs</div><div style="color:var(--red)">${fmtMoney(finance)}</div></div><div class="metric"><div class="metric-label">Other expenses</div><div style="color:var(--red)">${fmtMoney(other)}</div></div><div class="metric"><div class="metric-label">Net profit</div><div style="color:${gross-finance-other>=0?'var(--green)':'var(--red)'}">${fmtMoney(gross-finance-other)}</div></div></div>
-    ${quarters.map(q=>`<div class="card"><div class="flex-row"><div><div class="fw5-14">${q.label}</div><div class="text-sm">Due ${q.due}</div></div></div><div class="metrics" style="grid-template-columns:1fr 1fr 1fr;margin:10px 0"><div><div class="metric-label">Income</div><div style="color:var(--green)">${fmtMoney(q.income)}</div></div><div><div class="metric-label">Finance</div><div style="color:var(--red)">${fmtMoney(q.finance)}</div></div><div><div class="metric-label">Other</div><div style="color:var(--red)">${fmtMoney(q.other)}</div></div></div><div class="flex-row"><div>Net: <strong style="color:${q.total>=0?'var(--green)':'var(--red)'}">${fmtMoney(q.total)}</strong></div><div class="gap-8"><button class="btn btn-secondary" style="padding:6px 12px;width:auto" onclick="exportQuarterCSV(${q.q},${yr})">CSV</button><button class="btn btn-primary" style="padding:6px 12px;width:auto" onclick="exportQuarterMTD(${q.q},${yr})">MTD</button></div></div></div>`).join('')}`;
-}
-
-function exportQuarterCSV(q, yr) {
-  let qs, qe;
-  if(q===1){qs=new Date(yr,3,6);qe=new Date(yr,6,5);}
-  else if(q===2){qs=new Date(yr,6,6);qe=new Date(yr,9,5);}
-  else if(q===3){qs=new Date(yr,9,6);qe=new Date(yr+1,0,5);}
-  else{qs=new Date(yr+1,0,6);qe=new Date(yr+1,3,5);}
-  const txns = state.txns.filter(t=>{ if(!t.date)return false; const d=new Date(t.date); return d>=qs&&d<=qe; });
-  const rows = [['Date','Description','Property','Category','Type','Amount']];
-  txns.forEach(t=>{ const p = getProp(t.prop); rows.push([t.date, t.desc, p?.name||t.prop, CAT_LABELS[t.cat]||t.cat, t.type, t.type==='expense'?-t.amount:t.amount]); });
-  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = `MTD_Q${q}_${yr}-${yr+1}.csv`; a.click();
-}
-
-function exportQuarterMTD(q, yr) {
-  let qs, qe;
-  if(q===1){qs=new Date(yr,3,6);qe=new Date(yr,6,5);}
-  else if(q===2){qs=new Date(yr,6,6);qe=new Date(yr,9,5);}
-  else if(q===3){qs=new Date(yr,9,6);qe=new Date(yr+1,0,5);}
-  else{qs=new Date(yr+1,0,6);qe=new Date(yr+1,3,5);}
-  const txns = state.txns.filter(t=>{ if(!t.date)return false; const d=new Date(t.date); return d>=qs&&d<=qe; });
-  const inc = txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
-  const fin = txns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t),0);
-  const oth = txns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t),0);
-  const labels = ['','6 Apr – 5 Jul','6 Jul – 5 Oct','6 Oct – 5 Jan','6 Jan – 5 Apr'];
-  const content = `PROPERTY PORTFOLIO – MTD\n${labels[q]} | Tax year ${yr}/${yr+1}\n\nGross rental income: £${inc.toFixed(2)}\nFinance costs: £${fin.toFixed(2)}\nOther expenses: £${oth.toFixed(2)}\nNet profit: £${(inc-fin-oth).toFixed(2)}`;
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content],{type:'text/plain'})); a.download = `MTD_Q${q}_${yr}-${yr+1}_summary.txt`; a.click();
+  const start = new Date(taxYear, 3, 6);
+  const end = new Date(taxYear + 1, 3, 5, 23, 59);
+  
+  const yearTxns = state.txns.filter(t => {
+    if(!t.date) return false;
+    if(t.periodStart && t.periodEnd && t.periodStart !== '' && t.periodEnd !== '') {
+      const ps = new Date(t.periodStart);
+      const pe = new Date(t.periodEnd + 'T23:59:59');
+      return ps <= end && pe >= start;
+    }
+    const d = new Date(t.date);
+    return d >= start && d <= end;
+  });
+  
+  let content = '', filename = '', mimeType = 'text/plain';
+  
+  if(exportType === 'csv') {
+    const rows = [['Date','Description','Property','Category','Type','Amount (£)','Period Start','Period End']];
+    yearTxns.forEach(t => {
+      const p = getProp(t.prop);
+      const apportioned = apportionedAmount(t, start, end);
+      rows.push([t.date, t.desc, p?.name || t.prop, CAT_LABELS[t.cat] || t.cat, t.type === 'income' ? 'Income' : 'Expense', (t.type === 'expense' ? -apportioned : apportioned).toFixed(2), t.periodStart || '', t.periodEnd || '']);
+    });
+    content = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+    filename = `MTD_TaxYear_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.csv`;
+    mimeType = 'text/csv';
+  } else if(exportType === 'quarterly') {
+    const quarters = [1,2,3,4].map(q => {
+      let qs, qe;
+      if(q===1){qs=new Date(taxYear,3,6);qe=new Date(taxYear,6,5,23,59);}
+      else if(q===2){qs=new Date(taxYear,6,6);qe=new Date(taxYear,9,5,23,59);}
+      else if(q===3){qs=new Date(taxYear,9,6);qe=new Date(taxYear+1,0,5,23,59);}
+      else{qs=new Date(taxYear+1,0,6);qe=new Date(taxYear+1,3,5,23,59);}
+      const qt = yearTxns.filter(t => {
+        if(t.periodStart && t.periodEnd && t.periodStart !== '' && t.periodEnd !== '') {
+          const ps = new Date(t.periodStart);
+          const pe = new Date(t.periodEnd + 'T23:59:59');
+          return ps <= qe && pe >= qs;
+        }
+        const d = new Date(t.date);
+        return d >= qs && d <= qe;
+      });
+      const inc = qt.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
+      const fin = qt.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
+      const oth = qt.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
+      const qLabels = ['', '6 Apr – 5 Jul', '6 Jul – 5 Oct', '6 Oct – 5 Jan', '6 Jan – 5 Apr'];
+      return `\n${qLabels[q]}\n${'─'.repeat(40)}\nGross income: £${inc.toFixed(2)}\nFinance costs: £${fin.toFixed(2)}\nOther expenses: £${oth.toFixed(2)}\nNet profit: £${(inc-fin-oth).toFixed(2)}\n`;
+    }).join('');
+    content = `PROPERTY PORTFOLIO – MTD QUARTERLY REPORT\nTax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'═'.repeat(50)}\n${quarters}`;
+    filename = `MTD_Quarterly_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.txt`;
+  } else {
+    const gross = yearTxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
+    const finance = yearTxns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
+    const other = yearTxns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
+    content = `PROPERTY PORTFOLIO – MTD FOR INCOME TAX\nFull tax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'─'.repeat(48)}\n\nUK PROPERTY INCOME\n  Gross rental income: £${gross.toFixed(2)}\n\nALLOWABLE EXPENSES\n  Residential finance costs: £${finance.toFixed(2)}\n  Other allowable expenses: £${other.toFixed(2)}\n\nSUMMARY\n  Total expenses: £${(finance+other).toFixed(2)}\n  Net profit / (loss): £${(gross-finance-other).toFixed(2)}\n\n${'─'.repeat(48)}\nTRANSACTION COUNT: ${yearTxns.length} (${yearTxns.filter(t=>t.type==='income').length} income, ${yearTxns.filter(t=>t.type==='expense').length} expense)\n\nNOTE: This report is for reference only. Submit via HMRC-approved MTD software for official filing.`;
+    filename = `MTD_FullYear_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.txt`;
+  }
+  
+  if(gAccessToken && gDriveFolderIds.root) {
+    try {
+      const reportsFolder = await findOrCreateFolder('Tax Reports', gDriveFolderIds.root);
+      const blob = new Blob([content], { type: mimeType });
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({ name: filename, parents: [reportsFolder] })], { type: 'application/json' }));
+      form.append('file', blob);
+      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + gAccessToken },
+        body: form
+      });
+      showToast('✓ MTD report saved to Drive (Tax Reports folder)');
+    } catch(e) {
+      console.warn('Drive save failed:', e);
+      showToast('⚠ Report saved locally only', true);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], { type: mimeType }));
+      a.download = filename;
+      a.click();
+    }
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: mimeType }));
+    a.download = filename;
+    a.click();
+    showToast('Report downloaded (not signed in to Drive)');
+  }
+  closeModal();
 }
 
 // ============================================
@@ -1419,7 +1501,7 @@ function deleteMaint(id, propId) {
 }
 
 // ============================================
-// UNIFIED DOCUMENT MANAGEMENT SYSTEM (with document opening)
+// UNIFIED DOCUMENT MANAGEMENT SYSTEM (with fixed document links)
 // ============================================
 let pendingUploadData = null;
 
@@ -1429,12 +1511,27 @@ function renderUnifiedDocs() {
   state.props.forEach(prop => {
     if(prop.docs && prop.docs.length) {
       prop.docs.forEach(doc => {
-        allDocs.push({ ...doc, propertyName: prop.name, propertyId: prop.id, source: 'prop' });
+        allDocs.push({ 
+          ...doc, 
+          propertyName: prop.name, 
+          propertyId: prop.id, 
+          source: 'prop',
+          fileData: doc.fileData,
+          fileMime: doc.fileMime
+        });
       });
     }
     if(prop.tenancyDocs && prop.tenancyDocs.length) {
       prop.tenancyDocs.forEach(doc => {
-        allDocs.push({ ...doc, propertyName: prop.name, propertyId: prop.id, source: 'tenancy', category: 'Tenancy' });
+        allDocs.push({ 
+          ...doc, 
+          propertyName: prop.name, 
+          propertyId: prop.id, 
+          source: 'tenancy', 
+          category: 'Tenancy',
+          fileData: doc.docData || doc.fileData,
+          fileMime: doc.docMime || doc.fileMime
+        });
       });
     }
   });
@@ -1443,9 +1540,15 @@ function renderUnifiedDocs() {
     if(cert.docData) {
       const prop = getProp(cert.propId);
       allDocs.push({
-        id: cert.id, name: `${cert.type} Certificate`, category: 'Certificate', date: cert.issueDate,
-        propertyName: prop?.name || 'Unknown', propertyId: cert.propId, source: 'cert',
-        fileData: cert.docData, fileMime: cert.docMime
+        id: cert.id, 
+        name: `${cert.type} Certificate`, 
+        category: 'Certificate', 
+        date: cert.issueDate,
+        propertyName: prop?.name || 'Unknown', 
+        propertyId: cert.propId, 
+        source: 'cert',
+        fileData: cert.docData,
+        fileMime: cert.docMime
       });
     }
   });
@@ -1533,7 +1636,16 @@ async function uploadUnifiedDoc() {
   const filename = `${roadName}_${dateStr}_${category}${label ? '_' + label.replace(/[^a-z0-9]/gi, '-') : ''}${ext}`;
   
   if(!prop.docs) prop.docs = [];
-  prop.docs.push({ id: uid(), name: filename, category: category, date: docDate, label: label, fileData: pendingUploadData.base64, fileMime: pendingUploadData.mime });
+  prop.docs.push({ 
+    id: uid(), 
+    name: filename, 
+    category: category, 
+    date: docDate, 
+    label: label, 
+    fileData: pendingUploadData.base64, 
+    fileMime: pendingUploadData.mime,
+    propertyId: propId
+  });
   saveState('props');
   
   if(gAccessToken && gDriveFolderIds.root) {
@@ -1564,11 +1676,18 @@ async function uploadUnifiedDoc() {
 function openUnifiedDoc(propId, docId, source) {
   const prop = getProp(propId);
   let doc = null;
-  if(source === 'cert') { doc = state.certs.find(c => c.id === docId); }
-  else if(source === 'tenancy') { doc = prop?.tenancyDocs?.find(d => d.id === docId); }
-  else { doc = prop?.docs?.find(d => d.id === docId); }
+  if(source === 'cert') { 
+    doc = state.certs.find(c => c.id === docId); 
+  } else if(source === 'tenancy') { 
+    doc = prop?.tenancyDocs?.find(d => d.id === docId); 
+  } else { 
+    doc = prop?.docs?.find(d => d.id === docId); 
+  }
   
-  if(!doc || !doc.fileData) { showToast('Document data not found', true); return; }
+  if(!doc || !doc.fileData) { 
+    showToast('Document data not found', true); 
+    return; 
+  }
   
   try {
     const bytes = atob(doc.fileData);
@@ -1578,7 +1697,9 @@ function openUnifiedDoc(propId, docId, source) {
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-  } catch(e) { alert('Could not open document'); }
+  } catch(e) { 
+    alert('Could not open document'); 
+  }
 }
 
 function deleteUnifiedDoc(propId, docId, source) {
@@ -1711,18 +1832,24 @@ function toggleArchiveProp(id) {
 }
 
 function deleteCert(certId, propId) {
-  state.certs = state.certs.filter(c=>c.id!==certId);
-  saveState('certs'); renderPropDetailContent(propId); renderAll();
+  if(confirm('Delete certificate?')) {
+    state.certs = state.certs.filter(c=>c.id!==certId);
+    saveState('certs'); renderPropDetailContent(propId); renderAll();
+  }
 }
 
 function deleteAppliance(appId, propId) {
-  state.appliances = state.appliances.filter(a=>a.id!==appId);
-  saveState('appliances'); renderPropDetailContent(propId);
+  if(confirm('Delete appliance?')) {
+    state.appliances = state.appliances.filter(a=>a.id!==appId);
+    saveState('appliances'); renderPropDetailContent(propId);
+  }
 }
 
 function deleteTxn(tId, propId) {
-  state.txns = state.txns.filter(t=>t.id!==tId);
-  saveState('txns'); renderPropDetailContent(propId); renderAll();
+  if(confirm('Delete transaction?')) {
+    state.txns = state.txns.filter(t=>t.id!==tId);
+    saveState('txns'); renderPropDetailContent(propId); renderAll();
+  }
 }
 
 function openModal(html) { document.getElementById('modal-body').innerHTML = html; document.getElementById('modal').classList.add('open'); }
