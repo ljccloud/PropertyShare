@@ -1108,11 +1108,11 @@ function renderPropDetailContent(id) {
       ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
-      ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
+    ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
   .sort((a, b) => b.startDate.localeCompare(a.startDate))
   .map(r => `<div class="info-row">
-    <span>${fmtMoney(r.amount)}/mo</span>
-    <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
+    <span class="info-label" style="width: 100px;">${fmtMoney(r.amount)}/mo</span>
+    <span class="info-val" style="text-align: left;">${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
     ${r.notes ? `<span class="text-sm" style="color:var(--text3);margin-left:8px">${escapeHtml(r.notes)}</span>` : ''}
   </div>`).join('')}</div>` : ''}   
     <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
