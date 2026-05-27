@@ -594,6 +594,7 @@ function saveState(key) {
 // AUTHENTICATION
 // ============================================
 function signIn() {
+   alert('signIn called');
   const btn = document.getElementById('signin-btn');
   const errEl = document.getElementById('login-error');
   if(btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Signing in...'; }
