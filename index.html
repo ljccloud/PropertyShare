@@ -360,7 +360,9 @@ let state = {
   dashPeriod: 'ytd',
   shareMode: false,
   showArchived: false,
-  mtdYear: null
+  mtdYear: null,
+  customStartDate: '',
+  customEndDate: ''
 };
 
 let gAccessToken = null;
@@ -420,8 +422,14 @@ function getOwnerShare(prop) {
   return 0;
 }
 function sumTxns(txns, type, cat, start, end) {
+  // cat: null = all categories, 'financial' = financial only, 'other' = non-financial only
   return txns
-    .filter(t => t.type === type && (cat === null || (cat === 'financial' ? t.cat === 'financial' : t.cat !== 'financial')))
+    .filter(t => {
+      if(t.type !== type) return false;
+      if(cat === null) return true;
+      if(cat === 'financial') return t.cat === 'financial';
+      return t.cat !== 'financial';
+    })
     .reduce((s, t) => s + txnShare(t, apportionedAmount(t, start, end)), 0);
 }
 function shareOf(prop, value) { return state.shareMode ? value * getOwnerShare(prop) : value; }
@@ -681,7 +689,49 @@ function setOwnerMode(val) {
   else { state.shareMode=true; state.selectedOwner=val; state.filterProp=null; }
   populateOwnerSelect(); renderAll();
 }
+function buildPeriodBar() {
+  const currentPeriod = state.dashPeriod;
+  const periods = [
+    { v: 'ytd', l: 'YTD' }, { v: 'tytd', l: 'Tax YTD' }, { v: 'curtaxq', l: 'Tax Q' },
+    { v: 'alltime', l: 'All time' }, { v: 'custom', l: 'Custom' }
+  ];
+  return `
+    <div class="toggle-bar" style="margin-bottom:${currentPeriod === 'custom' ? '8px' : '12px'};overflow-x:auto;flex-wrap:nowrap">
+      ${periods.map(p => `<button class="toggle-btn ${currentPeriod === p.v ? 'active' : ''}" style="white-space:nowrap;padding:6px 10px" onclick="setPeriod('${p.v}')">${p.l}</button>`).join('')}
+    </div>
+    ${currentPeriod === 'custom' ? `
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input type="date" id="custom-start-date" value="${state.customStartDate || ''}"
+          style="flex:1;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">
+        <span style="color:var(--text2);flex-shrink:0">to</span>
+        <input type="date" id="custom-end-date" value="${state.customEndDate || ''}"
+          style="flex:1;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">
+        <button class="toggle-btn active" style="padding:6px 12px;flex-shrink:0" onclick="applyCustomDateRange()">Apply</button>
+      </div>
+    ` : ''}`;
+}
 
+function setPeriod(period) {
+  state.dashPeriod = period;
+  renderScreen(state.currentScreen);
+}
+
+function applyCustomDateRange() {
+  const startDate = document.getElementById('custom-start-date')?.value;
+  const endDate = document.getElementById('custom-end-date')?.value;
+  if(!startDate || !endDate) {
+    showToast('Please select both start and end dates', true);
+    return;
+  }
+  if(new Date(startDate) > new Date(endDate)) {
+    showToast('Start date must be before end date', true);
+    return;
+  }
+  state.customStartDate = startDate;
+  state.customEndDate = endDate;
+  state.dashPeriod = 'custom';
+  renderScreen(state.currentScreen);
+}
 function showScreen(name, btn) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
@@ -726,7 +776,6 @@ function currentTaxQuarter() {
   const now=new Date(), taxY=currentTaxYear();
   return taxQuarterBounds(taxY).find(q=>now>=q.start&&now<=q.end)||taxQuarterBounds(taxY)[0];
 }
-
 function getPeriodRange(period) {
   const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
   const today = new Date(y, mo, d, 23, 59, 59), taxY = currentTaxYear();
@@ -763,7 +812,24 @@ function getPeriodRange(period) {
     prevStart = null;
     prevEnd = null;
     label = 'All time';
-
+} else if(period === 'custom') {
+  if(!state.customStartDate || !state.customEndDate) {
+    start = new Date(y, 0, 1);
+    end = today;
+    prevStart = new Date(y-1, 0, 1);
+    prevEnd = new Date(y-1, mo, d, 23, 59, 59);
+    label = 'YTD ' + y;
+  } else {
+    const [sy, sm, sd] = state.customStartDate.split('-').map(Number);
+    const [ey, em, ed] = state.customEndDate.split('-').map(Number);
+    start = new Date(sy, sm-1, sd, 0, 0, 0);
+    end = new Date(ey, em-1, ed, 23, 59, 59);
+    const duration = end - start;
+    prevEnd = new Date(start.getTime() - 1);
+    prevStart = new Date(prevEnd.getTime() - duration);
+    label = `${fmtDate(state.customStartDate)} – ${fmtDate(state.customEndDate)}`;
+  }
+ 
   } else {
     start = new Date(y, 0, 1);
     end = today;
@@ -774,6 +840,7 @@ function getPeriodRange(period) {
 
   return {start, end, prevStart, prevEnd, label};
 }
+
 function apportionAmount(txn,rangeStart,rangeEnd) {
   if(!txn.periodStart||!txn.periodEnd){const d=new Date(txn.date);return(d>=rangeStart&&d<=rangeEnd)?txn.amount:0;}
   const ps=new Date(txn.periodStart), pe=new Date(txn.periodEnd+'T23:59:59');
@@ -795,14 +862,10 @@ function txnsInRange(start,end){
   });
 }
 function sumIncome(txns, start, end) {
-  return txns.filter(t => t.type === 'income').reduce((s, t) => {
-    return s + txnShare(t, apportionedAmount(t, start, end));
-  }, 0);
+  return sumTxns(txns, 'income', null, start, end);
 }
 function sumExpense(txns, start, end) {
-  return txns.filter(t => t.type === 'expense').reduce((s, t) => {
-    return s + txnShare(t, apportionedAmount(t, start, end));
-  }, 0);
+  return sumTxns(txns, 'expense', null, start, end);
 }
 function deltaChip(curr, prev, prevStart, prevEnd) {
   // No previous period to compare against
@@ -856,12 +919,7 @@ function renderDashboard() {
   if(expiredCerts.length) certAlerts += `<div class="alert-strip">⚠ ${expiredCerts.length} certificate${expiredCerts.length>1?'s':''} expired or overdue</div>`;
   if(warnCerts.length) certAlerts += `<div class="alert-strip alert-strip-amber">⏱ ${warnCerts.length} certificate${warnCerts.length>1?'s':''} expiring within 60 days</div>`;
 
-  const periods = [
-    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},{v:'curtaxq',l:'Tax Q'},{v:'alltime',l:'All time'}
-  ];
-  const periodBar = `<div class="toggle-bar" style="margin-bottom:12px;overflow-x:auto;flex-wrap:nowrap">
-    ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderDashboard()">${p.l}</button>`).join('')}
-  </div>`;
+ const periodBar = buildPeriodBar();
 
  function metricTile(lbl, fullVal, shareVal, prevFull, prevShare, color, sub) {
   const valColor = color || 'var(--text)';
@@ -1334,13 +1392,7 @@ function renderFinance() {
 
   const fmtShort = d => d ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}) : '';
   const dateRange = `${fmtShort(start)} – ${fmtShort(end)}`;
-
-  const periods = [
-    {v:'ytd',l:'YTD'},{v:'tytd',l:'Tax YTD'},{v:'curtaxq',l:'Tax Q'},{v:'alltime',l:'All time'}
-  ];
-  const periodBar = `<div class="toggle-bar" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap">
-    ${periods.map(p=>`<button class="toggle-btn ${period===p.v?'active':''}" style="white-space:nowrap;padding:6px 10px" onclick="state.dashPeriod='${p.v}';renderFinance()">${p.l}</button>`).join('')}
-  </div>`;
+  const periodBar = buildPeriodBar();
 
   document.getElementById('screen-finance').innerHTML = `
     ${periodBar}
