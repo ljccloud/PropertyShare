@@ -830,8 +830,8 @@ function getPeriodRange(period) {
     prevStart = new Date(prevEnd.getTime() - duration);
     label = `${fmtDate(state.customStartDate)} – ${fmtDate(state.customEndDate)}`;
   }
- 
-  } else {
+
+} else {
     start = new Date(y, 0, 1);
     end = today;
     prevStart = new Date(y-1, 0, 1);
