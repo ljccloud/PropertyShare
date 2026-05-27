@@ -1751,6 +1751,15 @@ function deleteMaint(id, propId) {
 // ============================================
 let pendingUploadFile = null;
 let pendingUploadData = null;
+  
+function getFileIcon(mimeType) {
+  if(!mimeType) return 'DOC';
+  if(mimeType.includes('pdf')) return 'PDF';
+  if(mimeType.includes('image')) return 'IMG';
+  if(mimeType.includes('word')) return 'DOC';
+  if(mimeType.includes('excel')) return 'XLS';
+  return 'DOC';
+}
 
 function renderUnifiedDocs() {
   const allDocs = [];
@@ -1867,15 +1876,6 @@ function renderUnifiedDocs() {
   }
 }
   
-function getFileIcon(mimeType) {
-  if(!mimeType) return 'DOC';
-  if(mimeType.includes('pdf')) return 'PDF';
-  if(mimeType.includes('image')) return 'IMG';
-  if(mimeType.includes('word')) return 'DOC';
-  if(mimeType.includes('excel')) return 'XLS';
-  return 'DOC';
-}
-
 function renderPropertyDocuments(propId) {
   const prop = getProp(propId);
   if(!prop) return '<div class="empty">Property not found</div>';
