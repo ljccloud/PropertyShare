@@ -363,6 +363,7 @@ let state = {
   mtdYear: null,
   customStartDate: '',
   customEndDate: ''
+  pendingDocPropId: null
 };
 
 let gAccessToken = null;
@@ -1251,7 +1252,7 @@ function renderPropDetailContent(id) {
   const maint = state.maint.filter(m=>m.propId===id).sort((a,b)=>b.date.localeCompare(a.date));
   const txns = state.txns.filter(t=>t.prop===id).sort((a,b)=>b.date.localeCompare(a.date));
   const rh = state.rentHistory.filter(r=>r.propId===id);
-  
+
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-tabs">
       <button class="dtab active" onclick="switchDTab('tenant',this,'${id}')">Tenant</button>
@@ -1260,19 +1261,20 @@ function renderPropDetailContent(id) {
       <button class="dtab" onclick="switchDTab('maintenance',this,'${id}')">Maintenance</button>
       <button class="dtab" onclick="switchDTab('contacts',this,'${id}')">Contacts</button>
       <button class="dtab" onclick="switchDTab('transactions',this,'${id}')">Finance log</button>
+      <button class="dtab" onclick="switchDTab('documents',this,'${id}')">Documents</button>
     </div>
     <div id="dtab-tenant" class="dtab-content active">
       <div class="card"><div class="flex-row"><div class="card-title">Tenant details</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditTenantModal('${id}')">Edit</button></div>
       ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
-  ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
-  .sort((a, b) => b.startDate.localeCompare(a.startDate))
-  .map(r => `<div class="info-row" style="justify-content: flex-start; gap: 12px;">
-    <div style="width: 100px; flex-shrink: 0;">${fmtMoney(r.amount)}/mo</div>
-    <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
-    ${r.notes ? `<span class="text-sm" style="color:var(--text3);">${escapeHtml(r.notes)}</span>` : '<span style="width: 0;"></span>'}
-  </div>`).join('')}</div>` : ''}   
+      ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
+        .sort((a,b) => b.startDate.localeCompare(a.startDate))
+        .map(r => `<div class="info-row" style="justify-content:flex-start;gap:12px;">
+          <div style="width:100px;flex-shrink:0;">${fmtMoney(r.amount)}/mo</div>
+          <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
+          ${r.notes ? `<span class="text-sm" style="color:var(--text3);">${escapeHtml(r.notes)}</span>` : '<span style="width:0;"></span>'}
+        </div>`).join('')}</div>` : ''}
       <button class="btn btn-secondary" onclick="openAddRentHistoryModal('${id}')">+ Add rent record</button>
     </div>
     <div id="dtab-financials" class="dtab-content">
@@ -1296,10 +1298,15 @@ function renderPropDetailContent(id) {
       <div class="card">${infoRows([['Gas engineer',p.gasEngineer],['Electrician',p.electrician],['Solicitor',p.solicitor]])}</div>
       <div class="card"><div class="card-title">Insurance</div>${infoRows([['Provider',p.insuranceProvider||p.insurance],['Policy',p.insurancePolicyNo],['Renewal',fmtDate(p.insuranceRenewal)]])}<button class="btn btn-secondary" onclick="openEditInsuranceModal('${id}')">Edit</button></div>
     </div>
-    <div id="dtab-transactions" class="dtab-content"><div class="card">${txns.map(t=>txnRow(t,`deleteTxn('${t.id}','${id}')`,false)).join('')||'<div class="empty">No transactions</div>'}</div></div>`;
+    <div id="dtab-transactions" class="dtab-content">
+      <div class="card">${txns.map(t=>txnRow(t,`deleteTxn('${t.id}','${id}')`,false)).join('')||'<div class="empty">No transactions</div>'}</div>
+    </div>
+    <div id="dtab-documents" class="dtab-content">
+      <div class="card-title">Property Documents</div>
+      ${renderPropertyDocuments(id)}
+    </div>`;
 }
-
-function txnRow(t, onDelete, showProp) {
+  function txnRow(t, onDelete, showProp) {
   const p = getProp(t.prop);
   const cat = CAT_LABELS[t.cat] || t.cat;
   const badge = CAT_BADGES[t.cat] || 'badge-grey';
@@ -1801,11 +1808,12 @@ function renderUnifiedDocs() {
     grouped[doc.propertyId].docs.push(doc);
   });
   
-  const propertyOptions = state.props.filter(p => !p.archived).map(p => 
-    `<option value="${p.id}" ${state.filterProp === p.id ? 'selected' : ''}>${p.name}</option>`
+  const hasPendingProp = !!state.pendingDocPropId;
+  const propertyOptions = state.props.filter(p => !p.archived).map(p =>
+    `<option value="${p.id}" ${(state.pendingDocPropId || state.filterProp) === p.id ? 'selected' : ''}>${p.name}</option>`
   ).join('');
-  
-  // Category options - no emojis
+  state.pendingDocPropId = null;
+
   const categoryOptions = `
     <option value="Tenancy">Tenancy</option>
     <option value="Compliance">Compliance</option>
@@ -1816,7 +1824,7 @@ function renderUnifiedDocs() {
   `;
   
   const docListHtml = Object.keys(grouped).length === 0 ? 
-    '<div class="empty"><div class="empty-icon">📁</div>No documents yet</div>' :
+    '<div class="empty"><div style="font-size:32px;margin-bottom:8px;color:var(--text3)">[ ]</div>No documents yet</div>' :
     Object.values(grouped).map(group => `
       <div style="margin-bottom:20px">
         <div class="section-label" style="margin:0 0 8px 0">${group.name}</div>
@@ -1850,8 +1858,97 @@ function renderUnifiedDocs() {
     <div class="section-label">Document Library</div>
     <div id="document-list">${docListHtml}</div>
   `;
+
+  if(hasPendingProp) {
+    requestAnimationFrame(() => {
+      const uploadZone = document.querySelector('.upload-zone');
+      if(uploadZone) uploadZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+}
+  
+function getFileIcon(mimeType) {
+  if(!mimeType) return 'DOC';
+  if(mimeType.includes('pdf')) return 'PDF';
+  if(mimeType.includes('image')) return 'IMG';
+  if(mimeType.includes('word')) return 'DOC';
+  if(mimeType.includes('excel')) return 'XLS';
+  return 'DOC';
 }
 
+function renderPropertyDocuments(propId) {
+  const prop = getProp(propId);
+  if(!prop) return '<div class="empty">Property not found</div>';
+
+  const docs = [];
+
+  if(prop.docs && prop.docs.length) {
+    prop.docs.forEach(doc => {
+      docs.push({
+        ...doc,
+        source: 'prop',
+        icon: getFileIcon(doc.fileMime),
+        date: doc.date
+      });
+    });
+  }
+
+  if(prop.tenancyDocs && prop.tenancyDocs.length) {
+    prop.tenancyDocs.forEach(doc => {
+      docs.push({
+        ...doc,
+        name: doc.name || 'Tenancy Document',
+        category: doc.category || 'Tenancy',
+        source: 'tenancy',
+        icon: getFileIcon(doc.docMime || doc.fileMime),
+        date: doc.date
+      });
+    });
+  }
+
+  const propCerts = state.certs.filter(c => c.propId === propId && c.docData);
+  propCerts.forEach(cert => {
+    docs.push({
+      id: cert.id,
+      name: `${cert.type} Certificate`,
+      category: 'Certificate',
+      source: 'cert',
+      icon: 'PDF',
+      date: cert.issueDate,
+      fileData: cert.docData,
+      fileMime: cert.docMime
+    });
+  });
+
+  docs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  if(docs.length === 0) {
+    return `<div class="empty">
+      <div style="font-size:32px;margin-bottom:8px;color:var(--text3)">[ ]</div>
+      No documents uploaded for this property
+    </div>`;
+  }
+
+  return `
+    <div class="card">
+      ${docs.map(doc => `
+        <div class="cert-item" style="cursor:pointer" onclick="openUnifiedDoc('${propId}', '${doc.id}', '${doc.source}')">
+          <div class="cert-info">
+            <div class="cert-name">${escapeHtml(doc.name || 'Document')}</div>
+            <div class="cert-meta">${escapeHtml(doc.category || 'Document')} · ${doc.date ? fmtDate(doc.date) : 'No date'}</div>
+            <div class="cert-meta" style="color:var(--blue);margin-top:2px">Tap to open</div>
+          </div>
+          <div style="font-size:10px;font-weight:500;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 5px;flex-shrink:0">${doc.icon}</div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="btn btn-secondary" onclick="goToDocumentsScreen('${propId}')">+ Add document</button>`;
+}
+function goToDocumentsScreen(propId) {
+  state.pendingDocPropId = propId;
+  closePropDetail();
+  showScreen('docs', document.querySelector('.nav-btn[onclick*="docs"]'));
+}
 function prepareUnifiedUpload() {
   const file = document.getElementById('doc-file-input').files[0];
   if(!file) return;
