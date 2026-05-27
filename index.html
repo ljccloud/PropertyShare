@@ -56,6 +56,13 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .section-label { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 8px; }
 .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+.metric-value {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -.02em;
+  margin-bottom: 3px;
+}
+.metric-sub { font-size: 12px; color: var(--text2); }
 .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
 .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
 .badge-green { background: var(--green-bg); color: var(--green); }
@@ -65,10 +72,34 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .badge-teal { background: var(--teal-bg); color: var(--teal); }
 .badge-purple { background: var(--purple-bg); color: var(--purple); }
 .badge-grey { background: var(--surface2); color: var(--text2); }
+.alert-strip {  background: var(--red-bg);  border: 1px solid #E8A0A0;  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--red);
+}
+.alert-strip-amber {  background: var(--amber-bg); border-color: #E8C878;  color: var(--amber);
+}
 .info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 12px; }
 .info-row:last-child { border-bottom: none; }
 .info-label { font-size: 13px; color: var(--text2); flex-shrink: 0; }
 .info-val { font-size: 14px; text-align: right; }
+.fw5-14 { font-size: 14px; font-weight: 500; }
+.fw5-13 { font-size: 13px; font-weight: 500; }
+.fw5-11-blue { font-size: 11px; font-weight: 500; color: var(--blue); }
+.label-xs {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.label-xs-mb {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 3px;
+}
 .prop-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 12px; align-items: center; }
 .prop-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
 .prop-name { font-size: 15px; font-weight: 500; }
@@ -76,6 +107,8 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 #prop-detail { position: fixed; inset: 0; z-index: 150; background: var(--bg); display: none; flex-direction: column; }
 #prop-detail.open { display: flex; }
 #detail-header { height: var(--header-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+.prop-arrow { font-size: 18px; color: var(--text3); }
+.prop-certs { display: flex; flex-wrap: wrap; gap: 6px; }
 .back-btn { font-size: 15px; color: var(--text2); background: none; border: none; cursor: pointer; padding: 8px 0; display: flex; align-items: center; gap: 4px; }
 #detail-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; padding-bottom: 32px; }
 #login-screen { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
@@ -83,6 +116,30 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .detail-tabs { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 16px; scrollbar-width: none; }
 .dtab { font-size: 13px; font-weight: 500; padding: 7px 14px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--text2); cursor: pointer; white-space: nowrap; }
 .dtab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.toggle-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.toggle-btn {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.toggle-btn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
 .dtab-content { display: none; }
 .dtab-content.active { display: block; }
 .txn-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
@@ -106,6 +163,12 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; border: none; margin-top: 4px; }
 .btn-primary { background: var(--text); color: var(--bg); }
 .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-sm-edit {
+  font-size: 12px;
+  padding: 4px 10px;
+  width: auto;
+  margin-top: 0;
+}
 .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--text2); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-box { padding: 20px; text-align: center; font-size: 14px; color: var(--text2); }
@@ -355,13 +418,19 @@ function getOwnerShare(prop) {
   if(!state.shareMode || !state.selectedOwner) return 1;
   const ownerEntry = (prop.owners||[]).find(o=>o.ownerId===state.selectedOwner);
   if(ownerEntry) return ownerEntry.share/100;
-  return (prop.ownershipShare??100)/100;
+  return 0;
+}
+function sumTxns(txns, type, cat, start, end) {
+  return txns
+    .filter(t => t.type === type && (cat === null || (cat === 'financial' ? t.cat === 'financial' : t.cat !== 'financial')))
+    .reduce((s, t) => s + txnShare(t, apportionedAmount(t, start, end)), 0);
 }
 function shareOf(prop, value) { return state.shareMode ? value * getOwnerShare(prop) : value; }
-function txnShare(txn) {
-  if(!state.shareMode) return txn.amount;
+function txnShare(txn, amountOverride = null) {
+  const amount = amountOverride !== null ? amountOverride : txn.amount;
+  if (!state.shareMode) return amount;
   const p = getProp(txn.prop);
-  return txn.amount * getOwnerShare(p||{ownershipShare:100});
+  return amount * getOwnerShare(p || {ownershipShare: 100});
 }
 function epcBand(r){return r?'<span class="badge badge-grey">Band '+r+'</span>':''}
 function infoRow(l,v){return '<div class="info-row"><span class="info-label">'+l+'</span><span class="info-val">'+v+'</span></div>';}
@@ -701,10 +770,16 @@ function txnsInRange(start,end){
     const d=new Date(t.date);return d>=start&&d<=end;
   });
 }
-
-function sumIncome(txns,start,end){return txns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t,apportionedAmount(t,start,end)),0);}
-function sumExpense(txns,start,end){return txns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t,apportionedAmount(t,start,end)),0);}
-
+function sumIncome(txns, start, end) {
+  return txns.filter(t => t.type === 'income').reduce((s, t) => {
+    return s + txnShare(t, apportionedAmount(t, start, end));
+  }, 0);
+}
+function sumExpense(txns, start, end) {
+  return txns.filter(t => t.type === 'expense').reduce((s, t) => {
+    return s + txnShare(t, apportionedAmount(t, start, end));
+  }, 0);
+}
 function deltaChip(curr, prev) {
   if(prev===0) return '';
   const diff = curr - prev;
@@ -1354,11 +1429,11 @@ function getTaxYearForMTD(date) {
 async function generateMTDReport() {
   const taxYear = parseInt(document.getElementById('mtd-tax-year').value);
   const exportType = document.getElementById('mtd-export-type').value;
-  const quarter = parseInt(document.getElementById('mtd-quarter')?.value || 1);
-  
+  const today = new Date().toISOString().slice(0, 10);
+
   const start = new Date(taxYear, 3, 6);
   const end = new Date(taxYear + 1, 3, 5, 23, 59);
-  
+
   const yearTxns = state.txns.filter(t => {
     if(!t.date) return false;
     if(t.periodStart && t.periodEnd && t.periodStart !== '' && t.periodEnd !== '') {
@@ -1369,26 +1444,38 @@ async function generateMTDReport() {
     const d = new Date(t.date);
     return d >= start && d <= end;
   });
-  
+
   let content = '', filename = '', mimeType = 'text/plain';
-  
+
   if(exportType === 'csv') {
-    const rows = [['Date','Description','Property','Category','Type','Amount (£)','Period Start','Period End']];
+    const headers = ['Date','Description','Property','Category','Type','Amount (£)','Period Start','Period End'];
+    if(state.shareMode) headers.push('Owner Share Amount (£)');
+    const rows = [headers];
+
     yearTxns.forEach(t => {
       const p = getProp(t.prop);
       const apportioned = apportionedAmount(t, start, end);
-      rows.push([t.date, t.desc, p?.name || t.prop, CAT_LABELS[t.cat] || t.cat, t.type === 'income' ? 'Income' : 'Expense', (t.type === 'expense' ? -apportioned : apportioned).toFixed(2), t.periodStart || '', t.periodEnd || '']);
+      const signed = (t.type === 'expense' ? -1 : 1) * apportioned;
+      const row = [
+        t.date, t.desc, p?.name || t.prop, CAT_LABELS[t.cat] || t.cat,
+        t.type === 'income' ? 'Income' : 'Expense',
+        signed.toFixed(2),
+        t.periodStart || '', t.periodEnd || ''
+      ];
+      if(state.shareMode) row.push(((t.type === 'expense' ? -1 : 1) * txnShare(t, apportioned)).toFixed(2));
+      rows.push(row);
     });
+
     content = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
-    filename = `MTD_TaxYear_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.csv`;
+    filename = `MTD_TaxYear_${taxYear}-${taxYear+1}_${today}.csv`;
     mimeType = 'text/csv';
+
   } else if(exportType === 'quarterly') {
-    const quarters = [1,2,3,4].map(q => {
-      let qs, qe;
-      if(q===1){qs=new Date(taxYear,3,6);qe=new Date(taxYear,6,5,23,59);}
-      else if(q===2){qs=new Date(taxYear,6,6);qe=new Date(taxYear,9,5,23,59);}
-      else if(q===3){qs=new Date(taxYear,9,6);qe=new Date(taxYear+1,0,5,23,59);}
-      else{qs=new Date(taxYear+1,0,6);qe=new Date(taxYear+1,3,5,23,59);}
+    const quarterBounds = taxQuarterBounds(taxYear);
+    const quarterLabels = ['6 Apr – 5 Jul', '6 Jul – 5 Oct', '6 Oct – 5 Jan', '6 Jan – 5 Apr'];
+
+    const quarters = quarterBounds.map((bounds, i) => {
+      const qs = bounds.start, qe = bounds.end;
       const qt = yearTxns.filter(t => {
         if(t.periodStart && t.periodEnd && t.periodStart !== '' && t.periodEnd !== '') {
           const ps = new Date(t.periodStart);
@@ -1398,22 +1485,30 @@ async function generateMTDReport() {
         const d = new Date(t.date);
         return d >= qs && d <= qe;
       });
-      const inc = qt.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
-      const fin = qt.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
-      const oth = qt.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,qs,qe)/(t.amount||1)),0);
-      const qLabels = ['', '6 Apr – 5 Jul', '6 Jul – 5 Oct', '6 Oct – 5 Jan', '6 Jan – 5 Apr'];
-      return `\n${qLabels[q]}\n${'─'.repeat(40)}\nGross income: £${inc.toFixed(2)}\nFinance costs: £${fin.toFixed(2)}\nOther expenses: £${oth.toFixed(2)}\nNet profit: £${(inc-fin-oth).toFixed(2)}\n`;
+
+      const inc = sumTxns(qt, 'income',  null,        qs, qe);
+      const fin = sumTxns(qt, 'expense', 'financial', qs, qe);
+      const oth = sumTxns(qt, 'expense', 'other',     qs, qe);
+      const totalExpenses = fin + oth;
+      const netProfit = inc - totalExpenses;
+
+      return `\nQ${i+1} ${quarterLabels[i]}\n${'─'.repeat(40)}\nGross income: £${inc.toFixed(2)}\nFinance costs: £${fin.toFixed(2)}\nOther expenses: £${oth.toFixed(2)}\nTotal expenses: £${totalExpenses.toFixed(2)}\nNet profit: £${netProfit.toFixed(2)}\n`;
     }).join('');
+
     content = `PROPERTY PORTFOLIO – MTD QUARTERLY REPORT\nTax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'═'.repeat(50)}\n${quarters}`;
-    filename = `MTD_Quarterly_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.txt`;
+    filename = `MTD_Quarterly_${taxYear}-${taxYear+1}_${today}.txt`;
+
   } else {
-    const gross = yearTxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
-    const finance = yearTxns.filter(t=>t.type==='expense'&&t.cat==='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
-    const other = yearTxns.filter(t=>t.type==='expense'&&t.cat!=='financial').reduce((s,t)=>s+txnShare(t)*(apportionedAmount(t,start,end)/(t.amount||1)),0);
-    content = `PROPERTY PORTFOLIO – MTD FOR INCOME TAX\nFull tax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'─'.repeat(48)}\n\nUK PROPERTY INCOME\n  Gross rental income: £${gross.toFixed(2)}\n\nALLOWABLE EXPENSES\n  Residential finance costs: £${finance.toFixed(2)}\n  Other allowable expenses: £${other.toFixed(2)}\n\nSUMMARY\n  Total expenses: £${(finance+other).toFixed(2)}\n  Net profit / (loss): £${(gross-finance-other).toFixed(2)}\n\n${'─'.repeat(48)}\nTRANSACTION COUNT: ${yearTxns.length} (${yearTxns.filter(t=>t.type==='income').length} income, ${yearTxns.filter(t=>t.type==='expense').length} expense)\n\nNOTE: This report is for reference only. Submit via HMRC-approved MTD software for official filing.`;
-    filename = `MTD_FullYear_${taxYear}-${taxYear+1}_${new Date().toISOString().slice(0,10)}.txt`;
+    const gross   = sumTxns(yearTxns, 'income',  null,        start, end);
+    const finance = sumTxns(yearTxns, 'expense', 'financial', start, end);
+    const other   = sumTxns(yearTxns, 'expense', 'other',     start, end);
+    const totalExpenses = finance + other;
+    const netProfit = gross - totalExpenses;
+
+    content = `PROPERTY PORTFOLIO – MTD FOR INCOME TAX\nFull tax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'─'.repeat(48)}\n\nUK PROPERTY INCOME\n  Gross rental income: £${gross.toFixed(2)}\n\nALLOWABLE EXPENSES\n  Residential finance costs: £${finance.toFixed(2)}\n  Other allowable expenses: £${other.toFixed(2)}\n\nSUMMARY\n  Total expenses: £${totalExpenses.toFixed(2)}\n  Net profit / (loss): £${netProfit.toFixed(2)}\n\n${'─'.repeat(48)}\nTRANSACTION COUNT: ${yearTxns.length} (${yearTxns.filter(t=>t.type==='income').length} income, ${yearTxns.filter(t=>t.type==='expense').length} expense)\n\nNOTE: This report is for reference only. Submit via HMRC-approved MTD software for official filing.`;
+    filename = `MTD_FullYear_${taxYear}-${taxYear+1}_${today}.txt`;
   }
-  
+
   if(gAccessToken && gDriveFolderIds.root) {
     try {
       const reportsFolder = await findOrCreateFolder('Tax Reports', gDriveFolderIds.root);
@@ -1444,7 +1539,6 @@ async function generateMTDReport() {
   }
   closeModal();
 }
-
 // ============================================
 // MAINTENANCE SCREEN (with resolution and resolved date)
 // ============================================
