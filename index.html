@@ -1521,20 +1521,23 @@ function togglePeriodFields() {
     if(txnDate && startInput && !startInput.value) {
       startInput.value = txnDate;
     }
+    if(endInput && !endInput.value && txnDate) {
+      const [y, m, d] = txnDate.split('-').map(Number);
+      const nextPeriodStart = new Date(y+1, m-1, d);
+      const defaultEnd = new Date(nextPeriodStart);
+      defaultEnd.setDate(defaultEnd.getDate() - 1);
+      endInput.value = defaultEnd.toISOString().slice(0,10);
+    }
   }
 }
-
 function setEndDatePreset(months) {
   const startVal = document.getElementById('mt-period-start')?.value;
   const endInput = document.getElementById('mt-period-end');
   if(!startVal || !endInput) return;
   const [y, m, d] = startVal.split('-').map(Number);
-  let end;
-  if(months === 12) {
-    end = new Date(y+1, m-1, d-1);
-  } else {
-    end = new Date(y, m-1+months, d-1);
-  }
+  const nextPeriodStart = new Date(months === 12 ? y+1 : y, m-1+months, d);
+  const end = new Date(nextPeriodStart);
+  end.setDate(end.getDate() - 1);
   endInput.value = end.toISOString().slice(0,10);
 }
 function saveTxn() {
