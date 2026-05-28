@@ -594,30 +594,44 @@ function saveState(key) {
 // AUTHENTICATION
 // ============================================
 function signIn() {
-   alert('signIn called');
   const btn = document.getElementById('signin-btn');
   const errEl = document.getElementById('login-error');
-  if(btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Signing in...'; }
-  
-  if(typeof google==='undefined' || !google.accounts) {
-    if(errEl) { errEl.textContent='Google library not loaded. Refresh.'; errEl.style.display='block'; }
-    if(btn) { btn.disabled=false; btn.innerHTML='Sign in with Google'; }
+  const originalBtnHtml = btn ? btn.innerHTML : '';
+
+  if(typeof google === 'undefined' || !google.accounts) {
+    if(errEl) {
+      errEl.textContent = 'Google API still loading. Please wait a moment and try again.';
+      errEl.style.display = 'block';
+    }
     return;
   }
-  
+
+  if(btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Signing in...';
+  }
+
   const tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID, scope: SCOPES,
+    client_id: CLIENT_ID,
+    scope: SCOPES,
     callback: async (resp) => {
       if(resp.error) {
-        if(errEl) { errEl.textContent='Sign-in failed'; errEl.style.display='block'; }
-        if(btn) { btn.disabled=false; btn.innerHTML='Sign in with Google'; }
+        if(errEl) {
+          errEl.textContent = 'Sign-in failed. Please try again.';
+          errEl.style.display = 'block';
+        }
+        if(btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+        }
         return;
       }
+
       gAccessToken = resp.access_token;
       document.getElementById('login-screen').classList.remove('visible');
       document.getElementById('app').style.display = 'flex';
       showToast('Connecting to Drive...');
-      
+
       try {
         gDriveFolderIds.root = await findOrCreateFolder(DRIVE_FOLDER_NAME, 'root');
         const loaded = await loadFromDrive();
@@ -631,6 +645,7 @@ function signIn() {
       }
     }
   });
+
   tokenClient.requestAccessToken();
 }
 
@@ -1307,16 +1322,22 @@ function renderPropDetailContent(id) {
       ${renderPropertyDocuments(id)}
     </div>`;
 }
-  function txnRow(t, onDelete, showProp) {
+function txnRow(t, onDelete, showProp) {
   const p = getProp(t.prop);
   const cat = CAT_LABELS[t.cat] || t.cat;
   const badge = CAT_BADGES[t.cat] || 'badge-grey';
   const propTag = showProp ? ` · ${p ? p.name : '?'}` : '';
+  const periodInfo = (t.periodStart && t.periodEnd)
+    ? '<span class="text-sm" style="margin-left:6px;">('+fmtDate(t.periodStart)+' – '+fmtDate(t.periodEnd)+')</span>'
+    : '';
   return `<div class="txn-row">
     <div class="txn-icon" style="background:${t.type==='income'?'var(--green-bg)':'var(--red-bg)'}">${t.type==='income'?'↓':'↑'}</div>
-    <div class="txn-body"><div class="txn-desc">${t.desc}</div><div class="txn-meta">${fmtDate(t.date)}${propTag} · <span class="badge ${badge}">${cat}</span></div></div>
+    <div class="txn-body">
+      <div class="txn-desc">${t.desc}${periodInfo}</div>
+      <div class="txn-meta">${fmtDate(t.date)}${propTag} · <span class="badge ${badge}">${cat}</span></div>
+    </div>
     <div class="txn-amount ${t.type==='income'?'txn-income':'txn-expense'}">${t.type==='expense'?'-':''}${fmtMoney(t.amount)}</div>
-    ${onDelete ? `<button class="icon-btn" onclick="${onDelete}">✕</button>` : ''}
+    ${onDelete ? '<button class="icon-btn" onclick="'+onDelete+'">✕</button>' : ''}
   </div>`;
 }
 
@@ -1438,24 +1459,119 @@ function renderFinance() {
 
 function setFinTab(t) { state.financeTab=t; renderFinance(); }
 function deleteTxnGlobal(tId) { state.txns=state.txns.filter(t=>t.id!==tId); saveState('txns'); renderFinance(); renderAll(); }
-
 function openAddTxnModal() {
   const propOpts = state.props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  openModal(`<div class="modal-title">Add transaction</div>
+  openModal(`
+    <div class="modal-title">Add transaction</div>
     <div class="form-field"><label>Property</label><select id="mt-prop">${propOpts}</select></div>
-    <div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="mt-date"></div><div class="form-field"><label>Type</label><select id="mt-type"><option value="income">Income</option><option value="expense">Expense</option></select></div></div>
-    <div class="form-row"><div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div><div class="form-field"><label>Category</label><select id="mt-cat">${Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div></div>
+    <div class="form-row">
+      <div class="form-field"><label>Date</label><input type="date" id="mt-date"></div>
+      <div class="form-field"><label>Type</label>
+        <select id="mt-type" onchange="togglePeriodFields()">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div>
+      <div class="form-field"><label>Category</label><select id="mt-cat">${Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
+    </div>
     <div class="form-field"><label>Description</label><input type="text" id="mt-desc"></div>
     <div class="form-field"><label>Supplier</label><input type="text" id="mt-supplier"></div>
+    <div style="margin-top:12px;margin-bottom:8px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="mt-is-period" onchange="togglePeriodFields()">
+        <span style="font-size:13px;">This transaction covers a period (e.g., annual insurance)</span>
+      </label>
+    </div>
+   <div id="period-fields" style="display:none;">
+      <div class="form-row">
+        <div class="form-field"><label>Period Start</label><input type="date" id="mt-period-start"></div>
+        <div class="form-field"><label>Period End</label><input type="date" id="mt-period-end"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button type="button" class="toggle-btn" style="padding:4px 10px;font-size:12px" onclick="setEndDatePreset(1)">1 month</button>
+        <button type="button" class="toggle-btn" style="padding:4px 10px;font-size:12px" onclick="setEndDatePreset(3)">3 months</button>
+        <button type="button" class="toggle-btn" style="padding:4px 10px;font-size:12px" onclick="setEndDatePreset(12)">1 year</button>
+      </div>
+    </div>
     <button class="btn btn-primary" onclick="saveTxn()">Save</button>
-    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`);
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+  `);
+}
+function togglePeriodFields() {
+  const isPeriod = document.getElementById('mt-is-period')?.checked;
+  const periodFields = document.getElementById('period-fields');
+  if(!periodFields) return;
+  periodFields.style.display = isPeriod ? 'block' : 'none';
+  if(isPeriod) {
+    const txnDate = document.getElementById('mt-date')?.value;
+    const startInput = document.getElementById('mt-period-start');
+    const endInput = document.getElementById('mt-period-end');
+    if(txnDate && startInput && !startInput.value) {
+      startInput.value = txnDate;
+    }
+  }
 }
 
+function setEndDatePreset(months) {
+  const startVal = document.getElementById('mt-period-start')?.value;
+  const endInput = document.getElementById('mt-period-end');
+  if(!startVal || !endInput) return;
+  const [y, m, d] = startVal.split('-').map(Number);
+  let end;
+  if(months === 12) {
+    end = new Date(y+1, m-1, d-1);
+  } else {
+    end = new Date(y, m-1+months, d-1);
+  }
+  endInput.value = end.toISOString().slice(0,10);
+}
 function saveTxn() {
-  const d=document.getElementById('mt-date').value, desc=document.getElementById('mt-desc').value, amt=parseFloat(document.getElementById('mt-amount').value);
-  if(!d||!desc||!amt){alert('Fill all fields');return;}
-  state.txns.push({id:uid(),date:d,type:document.getElementById('mt-type').value,desc,prop:document.getElementById('mt-prop').value,cat:document.getElementById('mt-cat').value,amount:amt,supplier:document.getElementById('mt-supplier').value});
-  saveState('txns'); closeModal(); renderFinance(); renderAll();
+  const d = document.getElementById('mt-date').value;
+  const desc = document.getElementById('mt-desc').value;
+  const amt = parseFloat(document.getElementById('mt-amount').value);
+
+  if(!d || !desc || !amt) {
+    showToast('Please fill all required fields', true);
+    return;
+  }
+
+  const isPeriod = document.getElementById('mt-is-period')?.checked;
+  const periodStart = isPeriod ? document.getElementById('mt-period-start').value : null;
+  const periodEnd = isPeriod ? document.getElementById('mt-period-end').value : null;
+
+  if(isPeriod && (!periodStart || !periodEnd)) {
+    showToast('Please enter both period start and end dates', true);
+    return;
+  }
+  if(isPeriod && new Date(periodStart) > new Date(periodEnd)) {
+    showToast('Period start must be before period end', true);
+    return;
+  }
+
+  const txn = {
+    id: uid(),
+    date: d,
+    type: document.getElementById('mt-type').value,
+    desc,
+    prop: document.getElementById('mt-prop').value,
+    cat: document.getElementById('mt-cat').value,
+    amount: amt,
+    supplier: document.getElementById('mt-supplier').value
+  };
+
+  if(isPeriod && periodStart && periodEnd) {
+    txn.periodStart = periodStart;
+    txn.periodEnd = periodEnd;
+  }
+
+  state.txns.push(txn);
+  saveState('txns');
+  closeModal();
+  renderFinance();
+  renderAll();
 }
 
 // ============================================
