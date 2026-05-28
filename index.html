@@ -391,6 +391,19 @@ function fmtDate(d) {
   if (!monthStr) return '—';
   return `${String(day).padStart(2, '0')} ${monthStr} ${String(year).slice(-2)}`;
 }
+function addMonths(date, months) {
+  const result = new Date(date);
+  const originalDay = date.getDate();
+  const targetMonth = result.getMonth() + months;
+  result.setFullYear(
+    result.getFullYear() + Math.floor(targetMonth / 12),
+    targetMonth % 12,
+    1
+  );
+  const daysInMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+  result.setDate(Math.min(originalDay, daysInMonth));
+  return result;
+}
 function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
 function escapeHtml(str) {
   if (!str) return '';
@@ -1508,6 +1521,7 @@ function openAddTxnModal() {
     <button class="btn btn-primary" onclick="saveTxn()">Save</button>
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
   `);
+  togglePeriodFields();
 }
 function togglePeriodFields() {
   const isPeriod = document.getElementById('mt-is-period')?.checked;
@@ -1523,10 +1537,11 @@ function togglePeriodFields() {
     }
     if(endInput && !endInput.value && txnDate) {
       const [y, m, d] = txnDate.split('-').map(Number);
-      const nextPeriodStart = new Date(y+1, m-1, d);
+      const startDate = new Date(y, m-1, d);
+      const nextPeriodStart = addMonths(startDate, 12);
       const defaultEnd = new Date(nextPeriodStart);
       defaultEnd.setDate(defaultEnd.getDate() - 1);
-      endInput.value = defaultEnd.toISOString().slice(0,10);
+      endInput.value = defaultEnd.toISOString().slice(0, 10);
     }
   }
 }
@@ -1535,10 +1550,11 @@ function setEndDatePreset(months) {
   const endInput = document.getElementById('mt-period-end');
   if(!startVal || !endInput) return;
   const [y, m, d] = startVal.split('-').map(Number);
-  const nextPeriodStart = new Date(months === 12 ? y+1 : y, m-1+months, d);
+  const startDate = new Date(y, m-1, d);
+  const nextPeriodStart = addMonths(startDate, months);
   const end = new Date(nextPeriodStart);
   end.setDate(end.getDate() - 1);
-  endInput.value = end.toISOString().slice(0,10);
+  endInput.value = end.toISOString().slice(0, 10);
 }
 function saveTxn() {
   const d = document.getElementById('mt-date').value;
