@@ -404,6 +404,28 @@ function addMonths(date, months) {
   result.setDate(Math.min(originalDay, daysInMonth));
   return result;
 }
+function toDateInputValue(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function today() {
+  return toDateInputValue(new Date());
+}
+function addMonths(date, months) {
+  const result = new Date(date);
+  const originalDay = date.getDate();
+  const targetMonth = result.getMonth() + months;
+  result.setFullYear(
+    result.getFullYear() + Math.floor(targetMonth / 12),
+    targetMonth % 12,
+    1
+  );
+  const daysInMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+  result.setDate(Math.min(originalDay, daysInMonth));
+  return result;
+}
 function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
 function escapeHtml(str) {
   if (!str) return '';
@@ -1518,7 +1540,7 @@ function openAddTxnModal() {
         <button type="button" class="toggle-btn" style="padding:4px 10px;font-size:12px" onclick="setEndDatePreset(12)">1 year</button>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="saveTxn()">Save</button>
+   <button class="btn btn-primary" onclick="saveTxn()">Save</button>
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
   `);
   togglePeriodFields();
@@ -1541,7 +1563,7 @@ function togglePeriodFields() {
       const nextPeriodStart = addMonths(startDate, 12);
       const defaultEnd = new Date(nextPeriodStart);
       defaultEnd.setDate(defaultEnd.getDate() - 1);
-      endInput.value = defaultEnd.toISOString().slice(0, 10);
+      endInput.value = toDateInputValue(defaultEnd);
     }
   }
 }
@@ -1554,7 +1576,7 @@ function setEndDatePreset(months) {
   const nextPeriodStart = addMonths(startDate, months);
   const end = new Date(nextPeriodStart);
   end.setDate(end.getDate() - 1);
-  endInput.value = end.toISOString().slice(0, 10);
+  endInput.value = toDateInputValue(end);
 }
 function saveTxn() {
   const d = document.getElementById('mt-date').value;
@@ -1661,7 +1683,7 @@ function getTaxYearForMTD(date) {
 async function generateMTDReport() {
   const taxYear = parseInt(document.getElementById('mtd-tax-year').value);
   const exportType = document.getElementById('mtd-export-type').value;
-  const today = new Date().toISOString().slice(0, 10);
+  const reportDate = new Date().toISOString().slice(0, 10);
 
   const start = new Date(taxYear, 3, 6);
   const end = new Date(taxYear + 1, 3, 5, 23, 59);
@@ -1699,7 +1721,7 @@ async function generateMTDReport() {
     });
 
     content = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
-    filename = `MTD_TaxYear_${taxYear}-${taxYear+1}_${today}.csv`;
+    filename = `MTD_TaxYear_${taxYear}-${taxYear+1}_${reportDate}.csv`;
     mimeType = 'text/csv';
 
   } else if(exportType === 'quarterly') {
@@ -1728,7 +1750,7 @@ async function generateMTDReport() {
     }).join('');
 
     content = `PROPERTY PORTFOLIO – MTD QUARTERLY REPORT\nTax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'═'.repeat(50)}\n${quarters}`;
-    filename = `MTD_Quarterly_${taxYear}-${taxYear+1}_${today}.txt`;
+    filename = `MTD_Quarterly_${taxYear}-${taxYear+1}_${reportDate}.txt`;
 
   } else {
     const gross   = sumTxns(yearTxns, 'income',  null,        start, end);
@@ -1738,7 +1760,7 @@ async function generateMTDReport() {
     const netProfit = gross - totalExpenses;
 
     content = `PROPERTY PORTFOLIO – MTD FOR INCOME TAX\nFull tax year ${taxYear}/${taxYear+1}\nGenerated: ${new Date().toLocaleDateString('en-GB')}\n${'─'.repeat(48)}\n\nUK PROPERTY INCOME\n  Gross rental income: £${gross.toFixed(2)}\n\nALLOWABLE EXPENSES\n  Residential finance costs: £${finance.toFixed(2)}\n  Other allowable expenses: £${other.toFixed(2)}\n\nSUMMARY\n  Total expenses: £${totalExpenses.toFixed(2)}\n  Net profit / (loss): £${netProfit.toFixed(2)}\n\n${'─'.repeat(48)}\nTRANSACTION COUNT: ${yearTxns.length} (${yearTxns.filter(t=>t.type==='income').length} income, ${yearTxns.filter(t=>t.type==='expense').length} expense)\n\nNOTE: This report is for reference only. Submit via HMRC-approved MTD software for official filing.`;
-    filename = `MTD_FullYear_${taxYear}-${taxYear+1}_${today}.txt`;
+    filename = `MTD_FullYear_${taxYear}-${taxYear+1}_${reportDate}.txt`;
   }
 
   if(gAccessToken && gDriveFolderIds.root) {
@@ -1797,7 +1819,7 @@ function openAddMaintModal(propId) {
     <div class="form-field"><label>Cost (£)</label><input type="number" id="mm-cost" step="0.01"></div>
     <div class="form-field"><label>Notes</label><textarea id="mm-notes" rows="2"></textarea></div>
     <div id="mm-resolved-wrap" style="display:none">
-      <div class="form-field"><label>Resolution date</label><input type="date" id="mm-resolved-date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-field"><label>Resolution date</label><input type="date" id="mm-resolved-date" value="${today()}"></div>
       <div class="form-field"><label>Resolution notes</label><textarea id="mm-resolution" rows="2" placeholder="What was done?"></textarea></div>
     </div>
     <button class="btn btn-primary" onclick="saveMaintWithResolution()">Save</button>
@@ -2002,7 +2024,7 @@ function renderUnifiedDocs() {
       <div class="form-field"><label>Category</label>
         <select id="doc-category">${categoryOptions}</select>
       </div>
-      <div class="form-field"><label>Document Date</label><input type="date" id="doc-date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-field"><label>Document Date</label><input type="date" id="doc-date" value="${today()}"></div>
       <div class="form-field"><label>Description</label><input type="text" id="doc-description" placeholder="e.g. Gas safety certificate"></div>
       <div class="upload-zone" onclick="document.getElementById('doc-file-input').click()"><p>Tap to choose a file</p><span>PDF, JPG, or PNG</span></div>
       <input type="file" id="doc-file-input" class="upload-input" accept=".pdf,.jpg,.jpeg,.png" onchange="prepareUnifiedUpload()">
