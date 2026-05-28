@@ -1408,11 +1408,20 @@ function renderFinance() {
   const period = state.dashPeriod || 'ytd';
   const {start, end, label} = getPeriodRange(period);
   const allTxns = state.filterProp ? state.txns.filter(t=>t.prop===state.filterProp) : state.txns;
-  const ftxns = allTxns.filter(t=>{
-    if(!t.date) return false;
-    const d = new Date(t.date);
-    return d >= start && d <= end;
-  }).sort((a,b)=>b.date.localeCompare(a.date));
+  const ftxns = allTxns.filter(t => {
+  if(!t.date) return false;
+  if(t.periodStart && t.periodEnd) {
+    const ps = new Date(t.periodStart);
+    const pe = new Date(t.periodEnd + 'T23:59:59');
+    return ps <= end && pe >= start;
+  }
+  const d = new Date(t.date);
+  return d >= start && d <= end;
+}).sort((a, b) => {
+  const aDate = a.periodStart || a.date;
+  const bDate = b.periodStart || b.date;
+  return bDate.localeCompare(aDate);
+});
   const typeFilter = state.financeTab;
   const shown = typeFilter==='all' ? ftxns : ftxns.filter(t=>t.type===typeFilter);
   const income = ftxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
