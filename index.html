@@ -159,7 +159,13 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
 }
-.form-field input[type="date"],
+.form-field input[type="date"] {
+  font-size: 13px;
+  padding: 8px 6px;
+}
+.form-row > .form-field {
+  min-width: 0;
+}
 .form-field select {
   width: 100%;
   box-sizing: border-box;
