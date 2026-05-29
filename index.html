@@ -184,7 +184,7 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
 .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--text2); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-box { padding: 20px; text-align: center; font-size: 14px; color: var(--text2); }
-.cert-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.cert-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; justify-content: space-between; }
 .cert-info { flex: 1; }
 .cert-name { font-size: 14px; font-weight: 500; }
 .cert-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
@@ -1376,7 +1376,7 @@ function renderPropDetailContent(id) {
       ${certs.map(c=>`<div class="cert-item"><div><div class="cert-name">${c.type}${c.epcRating?epcBand(c.epcRating):''}</div><div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div></div><span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span><button class="icon-btn" onclick="deleteCert('${c.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No certificates</div>'}
       <button class="btn btn-secondary" onclick="openAddCertModal('${id}')">+ Add certificate</button>
      <div class="card-title" style="margin-top:16px">Appliances</div>
-${apps.map(a=>`<div class="cert-item"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}${a.purchaseDate ? ' · Purchased: '+fmtDate(a.purchaseDate) : ''}</div></div><button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
+${apps.map(a=>`<div class="cert-item"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}</div></div><button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
       <button class="btn btn-secondary" onclick="openAddApplianceModal('${id}')">+ Add appliance</button>
     </div>
     <div id="dtab-maintenance" class="dtab-content">
