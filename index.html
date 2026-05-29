@@ -159,9 +159,11 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); font-size: 15px; 
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
 }
-.form-field input[type="date"] {
+.form-field input[type="date"],
+.form-field select {
   width: 100%;
   box-sizing: border-box;
+  min-width: 0;
 }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; border: none; margin-top: 4px; }
