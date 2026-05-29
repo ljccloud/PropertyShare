@@ -1361,7 +1361,7 @@ function renderPropDetailContent(id) {
       ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
         .sort((a,b) => b.startDate.localeCompare(a.startDate))
         .map(r => `<div class="info-row" style="justify-content:flex-start;gap:12px;">
-          <div style="width:100px;flex-shrink:0;">${fmtMoney(r.amount)}/mo</div>
+          <div style="width:100px;flex-shrink:0;">${fmtMoney(r.amount)}</div>
           <span>${fmtDate(r.startDate)} → ${r.endDate ? fmtDate(r.endDate) : 'Present'}</span>
           ${r.notes ? `<span class="text-sm" style="color:var(--text3);">${escapeHtml(r.notes)}</span>` : '<span style="width:0;"></span>'}
         </div>`).join('')}</div>` : ''}
