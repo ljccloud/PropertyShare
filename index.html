@@ -1355,7 +1355,7 @@ function renderPropDetailContent(id) {
     </div>
     <div id="dtab-tenant" class="dtab-content active">
       <div class="card"><div class="flex-row"><div class="card-title">Tenant details</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditTenantModal('${id}')">Edit</button></div>
-      ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Lease end',fmtDate(p.leaseEnd)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
+      ${infoRows([['Tenant',p.tenant],['Lease start',fmtDate(p.leaseStart)],['Deposit',p.deposit],['Email',p.tenantEmail],['Phone',p.tenantPhone],['Rent',fmtMoney(p.rent)+'/mo']])}</div>
       <div class="card"><div class="flex-row"><div class="card-title">Letting agent</div><button class="btn btn-secondary btn-sm-edit" onclick="openEditAgentModal('${id}')">Edit</button></div>
       ${infoRows([['Agent',p.agentName||p.agent],['Phone',p.agentTel],['Email',p.agentEmail]])}</div>
       ${rh.length ? `<div class="card"><div class="card-title">Rent history</div>${rh
@@ -1422,7 +1422,7 @@ function openEditTenantModal(propId) {
   const p = getProp(propId);
   openModal(`<div class="modal-title">Edit tenant</div>
     <div class="form-row"><div class="form-field"><label>Name</label><input type="text" id="et-name" value="${p.tenant||''}"></div><div class="form-field"><label>Rent</label><input type="number" id="et-rent" value="${p.rent||''}"></div></div>
-    <div class="form-row"><div class="form-field"><label>Lease start</label><input type="date" id="et-start" value="${p.leaseStart!=='—'?p.leaseStart:''}"></div><div class="form-field"><label>Lease end</label><input type="date" id="et-end" value="${p.leaseEnd!=='—'?p.leaseEnd:''}"></div></div>
+    <div class="form-row"><div class="form-field"><label>Lease start</label><input type="date" id="et-start" value="${p.leaseStart!=='—'?p.leaseStart:''}"></div></div>
     <div class="form-row"><div class="form-field"><label>Deposit</label><input type="text" id="et-deposit" value="${p.deposit||''}"></div><div class="form-field"><label>Email</label><input type="email" id="et-email" value="${p.tenantEmail||''}"></div></div>
     <div class="form-field"><label>Phone</label><input type="text" id="et-phone" value="${p.tenantPhone||''}"></div>
     <button class="btn btn-primary" onclick="saveTenantEdit('${propId}')">Save</button>
@@ -2303,7 +2303,7 @@ function openAddPropModal() {
     <div class="form-row"><div class="form-field"><label>Status</label><select id="np-status"><option value="let">Let</option><option value="vacant">Vacant</option></select></div><div class="form-field"><label>Rent (£)</label><input type="number" id="np-rent" step="1"></div></div>
     <div class="form-row"><div class="form-field"><label>Purchase (£)</label><input type="number" id="np-purchase" step="1000"></div><div class="form-field"><label>Value (£)</label><input type="number" id="np-value" step="1000"></div></div>
     <div class="form-field"><label>Tenant</label><input type="text" id="np-tenant"></div>
-    <div class="form-row"><div class="form-field"><label>Lease start</label><input type="date" id="np-start"></div><div class="form-field"><label>Lease end</label><input type="date" id="np-end"></div></div>
+    <div class="form-row"><div class="form-field"><label>Lease start</label><input type="date" id="np-start"></div></div>
     <button class="btn btn-primary" onclick="addProperty()">Add</button>
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`);
 }
