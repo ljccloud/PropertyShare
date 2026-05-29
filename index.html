@@ -1376,7 +1376,7 @@ function renderPropDetailContent(id) {
       ${certs.map(c=>`<div class="cert-item"><div><div class="cert-name">${c.type}${c.epcRating?epcBand(c.epcRating):''}</div><div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div></div><span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span><button class="icon-btn" onclick="deleteCert('${c.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No certificates</div>'}
       <button class="btn btn-secondary" onclick="openAddCertModal('${id}')">+ Add certificate</button>
      <div class="card-title" style="margin-top:16px">Appliances</div>
-${apps.map(a=>`<div class="cert-item"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}${a.purchaseDate ? ' · Purchased: '+fmtDate(a.purchaseDate) : ''}</div></div><button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
+     ${apps.map(a=>`<div class="cert-item" style="cursor:pointer" onclick="viewApplianceDetails('${a.id}')"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}${a.purchaseDate ? ' · Purchased: '+fmtDate(a.purchaseDate) : ''}</div></div><button class="icon-btn" onclick="event.stopPropagation();deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
       <button class="btn btn-secondary" onclick="openAddApplianceModal('${id}')">+ Add appliance</button>
     </div>
     <div id="dtab-maintenance" class="dtab-content">
@@ -2415,7 +2415,11 @@ function deleteAppliance(appId, propId) {
     saveState('appliances'); renderPropDetailContent(propId);
   }
 }
-
+function viewApplianceDetails(id) {
+  const a = state.appliances.find(a => a.id === id);
+  if (!a) return;
+  alert(`Name: ${a.name}\nMake: ${a.make}\nModel: ${a.model}\nSerial: ${a.serial}\nLocation: ${a.location}\nPurchase Date: ${a.purchaseDate || 'Not set'}\nNotes: ${a.notes || 'None'}`);
+}
 function deleteTxn(tId, propId) {
   if(confirm('Delete transaction?')) {
     state.txns = state.txns.filter(t=>t.id!==tId);
