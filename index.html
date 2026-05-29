@@ -265,17 +265,39 @@ if(window.location.protocol === 'file:') {
 // ============================================
 const PROP_COLORS = ['#2D5A27','#1A3A5C','#7A4A0A','#3D2B6B','#1A4A40'];
 const CAT_LABELS = {
-  'rental-income':'Rental income', 'premises':'Premises costs', 'repairs':'Repairs',
-  'financial':'Financial costs', 'professional':'Professional fees', 'services':'Cost of services',
-  'travel':'Travel costs', 'other-allowable':'Other expenses'
+  'rental-income': 'Rental income',
+  'other-income': 'Other income',
+  'premises': 'Rent, rates, insurance and ground rents',
+  'repairs': 'Property repairs and maintenance',
+  'professional': 'Legal, management and other professional fees',
+  'services': 'Costs of services',
+  'domestic-items': 'Costs of replacing domestic items',
+  'other-allowable': 'Other allowable property expense',
+  'financial': 'Residential property finance costs'
 };
 const CAT_BADGES = {
-  'rental-income':'badge-green', 'premises':'badge-blue', 'repairs':'badge-red',
-  'financial':'badge-purple', 'professional':'badge-amber', 'services':'badge-teal',
-  'travel':'badge-grey', 'other-allowable':'badge-grey'
+  'rental-income': 'badge-green',
+  'other-income': 'badge-teal',
+  'premises': 'badge-blue',
+  'repairs': 'badge-red',
+  'professional': 'badge-amber',
+  'services': 'badge-teal',
+  'domestic-items': 'badge-purple',
+  'other-allowable': 'badge-grey',
+  'financial': 'badge-purple'
 };
-const CAT_LEGACY = { rent:'rental-income', repairs:'repairs', mortgage:'financial',
-  insurance:'premises', fees:'professional', utilities:'premises', other:'other-allowable' };
+const CAT_LEGACY = {
+  rent: 'rental-income',
+  repairs: 'repairs',
+  mortgage: 'financial',
+  insurance: 'premises',
+  fees: 'professional',
+  utilities: 'premises',
+  other: 'other-allowable',
+  travel: 'other-allowable',
+  'domestic-items': 'domestic-items',
+  services: 'services'
+};
 const CERT_TYPES = ['Gas Safety','EPC','EICR','PAT Testing','Legionella','HMO Licence','Other'];
 
 const DRIVE_MODE = true;
@@ -426,6 +448,12 @@ function addMonths(date, months) {
   result.setDate(Math.min(originalDay, daysInMonth));
   return result;
 }
+function getCatOptions(type) {
+  const incomeCategories = ['rental-income', 'other-income'];
+  const expenseCategories = ['premises', 'repairs', 'professional', 'services', 'domestic-items', 'other-allowable', 'financial'];
+  const cats = type === 'income' ? incomeCategories : expenseCategories;
+  return cats.map(v => `<option value="${v}">${CAT_LABELS[v]}</option>`).join('');
+}  
 function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
 function escapeHtml(str) {
   if (!str) return '';
@@ -555,7 +583,7 @@ async function loadFromDrive() {
   if(!response.ok) throw new Error('Failed to load');
   const data = await response.json();
   if(data.props) state.props = data.props;
-  if(data.txns) state.txns = data.txns;
+  if(data.txns) state.txns = data.txns.map(t=>({...t, cat: CAT_LEGACY[t.cat]||t.cat}));
   if(data.certs) state.certs = data.certs;
   if(data.appliances) state.appliances = data.appliances;
   if(data.maint) state.maint = data.maint;
@@ -1154,17 +1182,15 @@ function renderProperties() {
   const {start, end, label} = getPeriodRange(period);
   const showShare = state.shareMode && state.selectedOwner;
   const selectedOwnerName = showShare ? (state.owners.find(o=>o.id===state.selectedOwner)?.name || '') : '';
-
   const expCatDefs = [
-    ['premises','Premises costs'],
-    ['repairs','Repairs & maintenance'],
-    ['financial','Financial costs'],
-    ['professional','Professional fees'],
-    ['services','Cost of services'],
-    ['travel','Travel costs'],
-    ['other-allowable','Other allowable expenses'],
-  ];
-
+  ['premises','Rent, rates, insurance and ground rents'],
+  ['repairs','Property repairs and maintenance'],
+  ['professional','Legal, management and other professional fees'],
+  ['services','Costs of services provided'],
+  ['domestic-items','Costs of replacing domestic items'],
+  ['other-allowable','Other allowable property expense'],
+  ['financial','Residential property finance costs'],
+];
   function txnCatTotals(propId, start, end) {
     const txns = state.txns.filter(t=>t.prop===propId && t.date && new Date(t.date)>=start && new Date(t.date)<=end);
     const totals = Object.fromEntries(Object.keys(CAT_LABELS).map(k=>[k,0]));
@@ -1187,10 +1213,10 @@ function renderProperties() {
     const catFull = txnCatTotals(p.id, start, end);
     const catShare = Object.fromEntries(Object.entries(catFull).map(([k,v])=>[k,v*ownerShare]));
 
-    const fullIncome = catFull['rental-income'];
+    const fullIncome = catFull['rental-income'] + (catFull['other-income'] || 0);
     const fullExpenses = Object.entries(catFull).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
     const fullNet = fullIncome - fullExpenses;
-    const shareIncome = catShare['rental-income'];
+    const shareIncome = catShare['rental-income'] + (catShare['other-income'] || 0);
     const shareExpenses = Object.entries(catShare).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
     const shareNet = shareIncome - shareExpenses;
 
@@ -1509,27 +1535,31 @@ function openAddTxnModal() {
     <div class="modal-title">Add transaction</div>
     <div class="form-field"><label>Property</label><select id="mt-prop">${propOpts}</select></div>
     <div class="form-row">
-      <div class="form-field"><label>Date</label><input type="date" id="mt-date"></div>
       <div class="form-field"><label>Type</label>
-        <select id="mt-type" onchange="togglePeriodFields()">
+        <select id="mt-type" onchange="updateCatOptions();togglePeriodFields()">
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
       </div>
+      <div class="form-field"><label>Category</label>
+        <select id="mt-cat">${getCatOptions('income')}</select>
+      </div>
     </div>
     <div class="form-row">
+      <div class="form-field"><label>Date</label><input type="date" id="mt-date" value="${today()}"></div>
       <div class="form-field"><label>Amount (£)</label><input type="number" id="mt-amount" step="0.01"></div>
-      <div class="form-field"><label>Category</label><select id="mt-cat">${Object.entries(CAT_LABELS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>
     </div>
-    <div class="form-field"><label>Description</label><input type="text" id="mt-desc"></div>
-    <div class="form-field"><label>Supplier</label><input type="text" id="mt-supplier"></div>
+    <div class="form-row">
+      <div class="form-field"><label>Description</label><input type="text" id="mt-desc"></div>
+      <div class="form-field"><label>Supplier</label><input type="text" id="mt-supplier"></div>
+    </div>
     <div style="margin-top:12px;margin-bottom:8px;">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
         <input type="checkbox" id="mt-is-period" onchange="togglePeriodFields()">
-        <span style="font-size:13px;">This transaction covers a period</span>
+        <span style="font-size:13px;">This transaction covers a period (e.g., annual insurance)</span>
       </label>
     </div>
-   <div id="period-fields" style="display:none;">
+    <div id="period-fields" style="display:none;">
       <div class="form-row">
         <div class="form-field"><label>Period Start</label><input type="date" id="mt-period-start"></div>
         <div class="form-field"><label>Period End</label><input type="date" id="mt-period-end"></div>
@@ -1540,10 +1570,16 @@ function openAddTxnModal() {
         <button type="button" class="toggle-btn" style="padding:4px 10px;font-size:12px" onclick="setEndDatePreset(12)">1 year</button>
       </div>
     </div>
-   <button class="btn btn-primary" onclick="saveTxn()">Save</button>
+    <button class="btn btn-primary" onclick="saveTxn()">Save</button>
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
   `);
   togglePeriodFields();
+}
+function updateCatOptions() {
+  const type = document.getElementById('mt-type')?.value;
+  const catSelect = document.getElementById('mt-cat');
+  if(!catSelect || !type) return;
+  catSelect.innerHTML = getCatOptions(type);
 }
 function togglePeriodFields() {
   const isPeriod = document.getElementById('mt-is-period')?.checked;
