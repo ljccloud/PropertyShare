@@ -1375,8 +1375,8 @@ function renderPropDetailContent(id) {
       <div class="card-title">Certificates</div>
       ${certs.map(c=>`<div class="cert-item"><div><div class="cert-name">${c.type}${c.epcRating?epcBand(c.epcRating):''}</div><div class="cert-meta">Issued ${fmtDate(c.issueDate)} · Expires ${fmtDate(c.expiryDate)}</div></div><span class="badge badge-${certStatus(c.expiryDate)}">${certLabel(c.expiryDate)}</span><button class="icon-btn" onclick="deleteCert('${c.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No certificates</div>'}
       <button class="btn btn-secondary" onclick="openAddCertModal('${id}')">+ Add certificate</button>
-      <div class="card-title" style="margin-top:16px">Appliances</div>
-      ${apps.map(a=>`<div class="cert-item"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}</div></div><button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
+     <div class="card-title" style="margin-top:16px">Appliances</div>
+${apps.map(a=>`<div class="cert-item"><div><div class="cert-name">${a.name}</div><div class="cert-meta">${a.make} ${a.model} · S/N: ${a.serial}${a.purchaseDate ? ' · Purchased: '+fmtDate(a.purchaseDate) : ''}</div></div><button class="icon-btn" onclick="deleteAppliance('${a.id}','${id}')">✕</button></div>`).join('')||'<div class="empty">No appliances</div>'}
       <button class="btn btn-secondary" onclick="openAddApplianceModal('${id}')">+ Add appliance</button>
     </div>
     <div id="dtab-maintenance" class="dtab-content">
@@ -2335,23 +2335,21 @@ function saveCert(propId) {
   state.certs.push({ id: uid(), propId, type, issueDate: document.getElementById('cert-issue').value, expiryDate: document.getElementById('cert-expiry').value, issuer: document.getElementById('cert-issuer').value, notes: document.getElementById('cert-notes').value, epcRating: type==='EPC'?'' : '' });
   saveState('certs'); closeModal(); if(propId) renderPropDetailContent(propId); renderAll();
 }
-
 function openAddApplianceModal(propId) {
   openModal(`<div class="modal-title">Add appliance</div>
     <div class="form-field"><label>Name</label><input type="text" id="app-name"></div>
     <div class="form-row"><div class="form-field"><label>Make</label><input type="text" id="app-make"></div><div class="form-field"><label>Model</label><input type="text" id="app-model"></div></div>
     <div class="form-field"><label>Serial number</label><input type="text" id="app-serial"></div>
     <div class="form-field"><label>Location</label><input type="text" id="app-location"></div>
+    <div class="form-field"><label>Purchase date</label><input type="date" id="app-purchase-date"></div>
     <div class="form-field"><label>Notes</label><input type="text" id="app-notes"></div>
     <button class="btn btn-primary" onclick="saveAppliance('${propId}')">Save</button>
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`);
 }
-
 function saveAppliance(propId) {
-  state.appliances.push({ id: uid(), propId, name: document.getElementById('app-name').value, make: document.getElementById('app-make').value, model: document.getElementById('app-model').value, serial: document.getElementById('app-serial').value, location: document.getElementById('app-location').value, notes: document.getElementById('app-notes').value });
+  state.appliances.push({ id: uid(), propId, name: document.getElementById('app-name').value, make: document.getElementById('app-make').value, model: document.getElementById('app-model').value, serial: document.getElementById('app-serial').value, location: document.getElementById('app-location').value, purchaseDate: document.getElementById('app-purchase-date').value, notes: document.getElementById('app-notes').value });
   saveState('appliances'); closeModal(); if(propId) renderPropDetailContent(propId);
 }
-
 function openEditOwnershipModal(propId) {
   const p = getProp(propId);
   const owners = state.owners.map(o=>{const entry=(p.owners||[]).find(x=>x.ownerId===o.id);return `<div class="form-row"><div class="form-field"><label>${o.name}</label><input type="number" id="own-${o.id}" value="${entry?entry.share:0}" min="0" max="100" step="0.1" oninput="updateOwnerTotal()"></div><div style="padding-top:18px">%</div></div>`;}).join('');
