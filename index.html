@@ -1092,19 +1092,27 @@ function renderDashboard() {
     const yld = dispValue > 0 ? ((fullRentP*12)/dispValue*100).toFixed(1)+'%' : '—';
 
     const certRow = certBadgeRow(p.id);
-    const propTxns = state.txns.filter(t=>t.prop===p.id&&t.date&&new Date(t.date)>=start&&new Date(t.date)<=end);
-    const ptFullIncome = propTxns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const ptFullAgentFees = propTxns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+t.amount,0);
-    const ptFullPremises = propTxns.filter(t=>t.type==='expense'&&t.cat==='premises').reduce((s,t)=>s+t.amount,0);
-    const ptFullOther = propTxns.filter(t=>t.type==='expense'&&!['professional','premises'].includes(t.cat)).reduce((s,t)=>s+t.amount,0);
-    const ptFullNet = ptFullIncome - ptFullAgentFees - ptFullPremises - ptFullOther;
-
-    const ptShareIncome = ptFullIncome * ownerShare;
-    const ptShareFees = ptFullAgentFees * ownerShare;
-    const ptSharePremises = ptFullPremises * ownerShare;
-    const ptShareOther = ptFullOther * ownerShare;
-    const ptShareNet = ptShareIncome - ptShareFees - ptSharePremises - ptShareOther;
-
+const propTxns = state.txns.filter(t => {
+  if(t.prop !== p.id || !t.date) return false;
+  if(t.periodStart && t.periodEnd) {
+    const ps = new Date(t.periodStart);
+    const pe = new Date(t.periodEnd + 'T23:59:59');
+    return ps <= end && pe >= start;
+  }
+  const d = new Date(t.date);
+  return d >= start && d <= end;
+});
+const ptFullIncome = propTxns.filter(t=>t.type==='income').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+const ptFullAgentFees = propTxns.filter(t=>t.type==='expense'&&t.cat==='professional').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+const ptFullPremises = propTxns.filter(t=>t.type==='expense'&&t.cat==='premises').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+const ptFullOther = propTxns.filter(t=>t.type==='expense'&&t.cat!=='professional'&&t.cat!=='premises').reduce((s,t)=>s+apportionedAmount(t,start,end),0);
+const ptFullNet = ptFullIncome - ptFullAgentFees - ptFullPremises - ptFullOther;
+const ptShareIncome = ptFullIncome * ownerShare;
+const ptShareFees = ptFullAgentFees * ownerShare;
+const ptSharePremises = ptFullPremises * ownerShare;
+const ptShareOther = ptFullOther * ownerShare;
+const ptShareNet = ptShareIncome - ptShareFees - ptSharePremises - ptShareOther;
+    
     const shareBadge = p.owners && p.owners.length>1 ? `<span class="badge badge-blue" style="margin-left:4px">${p.owners.length} owners</span>` : '';
     const rentDisplay = showShare && ownerShare < 1
       ? `<div class="fw5-14">${fmtMoney(fullRentP)}</div><div class="fw5-11-blue">${fmtMoney(shareRentP)} ${selectedOwnerName}</div>`
