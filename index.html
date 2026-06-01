@@ -436,7 +436,6 @@ function addMonths(date, months) {
     1
   );
   const daysInMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
-  const daysInMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
   result.setDate(Math.min(originalDay, daysInMonth));
   return result;
 }
