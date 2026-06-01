@@ -470,12 +470,14 @@ function getCatOptions(type) {
 function daysUntil(d) { return Math.round((new Date(d)-new Date())/(1000*60*60*24)); }
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
+return str.replace(/[&<>"']/g, function(m) {
+  if (m === '&') return '&amp;';
+  if (m === '<') return '&lt;';
+  if (m === '>') return '&gt;';
+  if (m === '"') return '&quot;';
+  if (m === "'") return '&#39;';
+  return m;
+});
 }
 function certStatus(expiry) {
   if(!expiry) return 'grey';
@@ -1213,9 +1215,17 @@ function renderProperties() {
   ['financial','Residential property finance costs'],
 ];
   function txnCatTotals(propId, start, end) {
-    const txns = state.txns.filter(t=>t.prop===propId && t.date && new Date(t.date)>=start && new Date(t.date)<=end);
+  const txns = state.txns.filter(t => {
+    if(t.prop !== propId || !t.date) return false;
+    if(t.periodStart && t.periodEnd) {
+      const ps = new Date(t.periodStart);
+      const pe = new Date(t.periodEnd + 'T23:59:59');
+    return ps <= end && pe >= start;
+  }
+  return new Date(t.date) >= start && new Date(t.date) <= end;
+});
     const totals = Object.fromEntries(Object.keys(CAT_LABELS).map(k=>[k,0]));
-    txns.forEach(t=>{ if(t.cat in totals) totals[t.cat]+=t.amount; });
+    txns.forEach(t=>{ if(t.cat in totals) totals[t.cat]+=apportionedAmount(t,start,end); });
     return totals;
   }
 
@@ -1235,7 +1245,8 @@ function renderProperties() {
     const catShare = Object.fromEntries(Object.entries(catFull).map(([k,v])=>[k,v*ownerShare]));
 
     const fullIncome = catFull['rental-income'] + (catFull['other-income'] || 0);
-    const fullExpenses = Object.entries(catFull).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
+    const fullExpenses = Object.entries(catFull).filter(([k])=>k!=='rental-income'&&k!=='other-income').reduce((s,[,v])=>s+v,0);
+    const shareExpenses = Object.entries(catShare).filter(([k])=>k!=='rental-income'&&k!=='other-income').reduce((s,[,v])=>s+v,0);
     const fullNet = fullIncome - fullExpenses;
     const shareIncome = catShare['rental-income'] + (catShare['other-income'] || 0);
     const shareExpenses = Object.entries(catShare).filter(([k])=>k!=='rental-income').reduce((s,[,v])=>s+v,0);
@@ -1506,8 +1517,8 @@ function renderFinance() {
 });
   const typeFilter = state.financeTab;
   const shown = typeFilter==='all' ? ftxns : ftxns.filter(t=>t.type===typeFilter);
-  const income = ftxns.filter(t=>t.type==='income').reduce((s,t)=>s+txnShare(t),0);
-  const expense = ftxns.filter(t=>t.type==='expense').reduce((s,t)=>s+txnShare(t),0);
+  const income = sumIncome(ftxns, start, end);
+  const expense = sumExpense(ftxns, start, end);
   const net = income - expense;
 
   const fmtShort = d => d ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}) : '';
